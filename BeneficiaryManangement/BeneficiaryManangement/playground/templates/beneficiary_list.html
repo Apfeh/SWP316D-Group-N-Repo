@@ -1,0 +1,11 @@
+<h2>Beneficiaries</h2>
+<a href="{% url 'beneficiary_create' %}">Add New</a>
+<ul>
+    {% for b in beneficiaries %}
+        <li>
+            {{ b.name }} - {{ b.relationshipToInsured }}
+            <a href="{% url 'beneficiary_update' b.beneficiaryId %}">Edit</a>
+            <a href="{% url 'beneficiary_delete' b.beneficiaryId %}">Delete</a>
+        </li>
+    {% endfor %}
+</ul>

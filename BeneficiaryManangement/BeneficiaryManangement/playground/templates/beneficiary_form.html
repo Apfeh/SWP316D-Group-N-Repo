@@ -1,0 +1,6 @@
+<h1>Beneficiary Form</h1>
+<form method="POST">
+    {%csrf_token%}
+    {{form.as_p}}
+    <button type="submit">Save</button>
+</form>
