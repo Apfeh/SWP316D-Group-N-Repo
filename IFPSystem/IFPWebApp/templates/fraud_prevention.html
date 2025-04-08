@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Fraud Prevention Team</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    {% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    <h2 class="text-center mb-4">Fraud Prevention Team</h2>
+
+    <!-- Add New Member Form -->
+    <div class="card mb-4 shadow">
+        <div class="card-header">Add New Team Member</div>
+        <div class="card-body">
+            <form method="POST" class="row g-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <div class="col-md-2">
+                    <input type="number" name="claimid" class="form-control" placeholder="Claim ID" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="policyid" class="form-control" placeholder="Policy ID" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="contactNumber" class="form-control" placeholder="Contact Number" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="department" class="form-control" placeholder="Department" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="investigatorName" class="form-control" placeholder="Investigator Name" required>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success w-100">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member List and Update Table -->
+    <table class="table table-bordered table-striped align-middle text-center shadow">
+        <thead class="table-dark">
+            <tr>
+                <th>Team ID</th>
+                <th>Claim ID</th>
+                <th>Policy ID</th>
+                <th>Contact Number</th>
+                <th>Department</th>
+                <th>Investigator Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for member in team_members %}
+            <tr>
+                <form method="POST">
+                    {% csrf_token %}
+                    <td>
+                        {{ member.teamid }}
+                        <input type="hidden" name="teamid" value="{{ member.teamid }}">
+                    </td>
+                    <td><input type="number" class="form-control" name="claimid" value="{{ member.claimid }}"></td>
+                    <td><input type="number" class="form-control" name="policyid" value="{{ member.policyid }}"></td>
+                    <td><input type="text" class="form-control" name="contactNumber" value="{{ member.contactNumber }}"></td>
+                    <td><input type="text" class="form-control" name="department" value="{{ member.department }}"></td>
+                    <td><input type="text" class="form-control" name="investigatorName" value="{{ member.investigatorName }}"></td>
+                    <td>
+                        <button type="submit" name="action" value="update" class="btn btn-primary btn-sm">Update</button>
+                        <button type="submit" name="action" value="delete" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this team member?');">Remove</button>
+                    </td>
+                </form>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7">No team members found. Add some above.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
