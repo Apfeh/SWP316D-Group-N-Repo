@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Affairs Registry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Home Affairs Registry</h1>
+        <!-- Create Public Record Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Simulate Adding New Public Records</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Add Record</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Home Affairs List -->
+        <h3>Public Records List</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Record Name</th>
+                    <th>Record Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in home_affairs_records %}
+                    <tr>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.type }}</td>
+                        <td>
+                            <a href="{% url 'insert_homeaffairs' record.pk %}" class="btn btn-warning btn-sm">Insert</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
