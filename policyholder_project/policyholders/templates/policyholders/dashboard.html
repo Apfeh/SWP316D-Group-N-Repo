@@ -1,0 +1,11 @@
+{% extends 'policyholders/base.html' %}
+
+    <title>{% block title %}Dashboard{% endblock %}</title>
+
+{% block content %}
+    <h1 class="mb-4">Policyholder Dashboard</h1>
+    <a href="{% url 'add_policyholder' %}" class="btn btn-success mb-2">Add Policyholder</a><br>
+    <a href="{% url 'list_policyholders' %}" class="btn btn-primary">View Policyholders</a>
+{% endblock %}
+
+
