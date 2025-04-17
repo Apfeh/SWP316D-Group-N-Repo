@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law Enforcement Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <h1 class="text-center mb-4">Law Enforcement Portal - Update Fraud Case Details</h1>
+
+    <table class="table table-bordered table-striped shadow text-center align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Claim ID</th>
+                <th>Policy ID</th>
+                <th>Officer Name</th>
+                <th>Approved</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for case in cases %}
+            <tr>
+                <form action="{% url 'update_case' case.id %}" method="post">
+                    {% csrf_token %}
+                    <td>{{ case.claim_id }}</td>
+                    <td>{{ case.policy_id }}</td>
+                    <td>{{ case.officer_name }}</td>
+                    <td>
+                        <select name="approved" class="form-control">
+                            <option value="Yes" {% if case.approved == "Yes" %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if case.approved == "No" %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><button type="submit" class="btn btn-primary btn-sm">Update</button></td>
+                </form>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No fraud cases found.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
