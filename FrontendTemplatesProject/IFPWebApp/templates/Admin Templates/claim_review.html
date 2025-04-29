@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claim Review</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    /* [Copied Styles from Policy Review Page] */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #003366;
+      color: white;
+      padding-top: 90px;
+      padding-left: 20px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .sidebar a:hover {
+      color: #00b894;
+    }
+    .navbar {
+      background-color: white;
+      padding: 1rem;
+      color: #003366;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      left: 250px;
+      width: calc(100% - 250px);
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .navbar a {
+      color: #003366;
+      text-decoration: none;
+    }
+    .navbar a:hover {
+      color: #00b894;
+    }
+    .top-right-icons {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+    }
+    .top-right-icons a {
+      margin-left: 15px;
+      color: #003366;
+      font-size: 1.5rem;
+    }
+    .container {
+      margin-top: 80px;
+      margin-left: 270px;
+      margin-bottom: 80px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: #003366;
+    }
+    .table {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    .table th, .table td {
+      text-align: center;
+      padding: 1rem;
+    }
+    .table thead {
+      background-color: #003366;
+      color: white;
+    }
+    .table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+    input[type="checkbox"]:checked ~ .modal-backdrop {
+      display: block;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 50%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+    input[type="checkbox"]:checked ~ .modal {
+      display: block;
+    }
+    .modal-header {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    .modal-body p {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+    }
+    .modal-btn {
+      padding: 0.6rem 2rem;
+      border-radius: 4px;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    .btn-investigate {
+      background-color: #ffc107;
+      color: white;
+    }
+    .close-modal {
+      background-color: #6c757d;
+      color: white;
+    }
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #003366;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      left: 0;
+    }
+    input[type="checkbox"] {
+      display: none;
+    }
+    .modal-trigger {
+      cursor: pointer;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+  <a href="{% url 'policy_review' %}">Policy Review</a>
+  <a href="#">Claim Review</a>
+  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+  <a href="{% url 'user_management' %}">User Management</a>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar d-flex align-items-center justify-content-between">
+  <form class="d-flex ms-3" role="search" style="width: 300px;">
+    <input class="form-control me-2" type="search" placeholder="Search ..." aria-label="Search">
+    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+
+  <div class="top-right-icons">
+    <a href="#"><i class="bi bi-person-circle"></i></a>
+    <a href="#"><i class="bi bi-bell-fill"></i></a>
+    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+  <h2>Claim Review</h2>
+
+  <!-- Claims Table -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Claim ID</th>
+        <th>Policy Holder</th>
+        <th>Insured Person</th>
+        <th>Claim Amount</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>101</td>
+        <td>John Doe</td>
+        <td>Jane Doe</td>
+        <td>R250,000</td>
+        <td>Pending</td>
+        <td>
+          <a class="modal-trigger" onclick="document.getElementById('claim-modal-checkbox').checked = true;">Review</a>
+        </td>
+      </tr>
+      <tr>
+        <td>102</td>
+        <td>Alice Smith</td>
+        <td>Bob Smith</td>
+        <td>R500,000</td>
+        <td>Pending</td>
+        <td>
+          <a class="modal-trigger" onclick="document.getElementById('claim-modal-checkbox').checked = true;">Review</a>
+        </td>
+      </tr>
+      <!-- More dummy claims if needed -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Hidden Checkbox for Modal -->
+<input type="checkbox" id="claim-modal-checkbox">
+
+<!-- Modal -->
+<div class="modal">
+  <div class="modal-header">
+    <h5>Claim Review</h5>
+  </div>
+  <div class="modal-body">
+    <p><strong>Death Certificate:</strong></p>
+    <img src="https://via.placeholder.com/400x300.png?text=Death+Certificate" alt="Death Certificate" class="img-fluid mb-3">
+    
+    <p><strong>Timeline of Events:</strong> Death occurred on 2025-03-10. Claim filed 2025-03-12.</p>
+    <p><strong>Cause of Death:</strong> Natural Causes.</p>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-btn btn-approve">Approve</button>
+    <button class="modal-btn btn-reject">Reject</button>
+    <button class="modal-btn btn-investigate">Investigate</button>
+    <button class="close-modal" onclick="document.getElementById('claim-modal-checkbox').checked = false;">Close</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
+</div>
+
+</body>
+</html>
