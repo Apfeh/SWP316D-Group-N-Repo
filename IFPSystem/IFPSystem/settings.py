@@ -75,12 +75,8 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':'db_insurance',
-        'USER':'Lethokuhle',
-        'PASSWORD' :'lethokuhle123',
-        'HOST':'10.2.42.221',
-        'PORT':'3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 

@@ -1,15 +1,20 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .fraud_detection import run_automatic_checks
+
 
 
 
 
 #Policy Holder
 class PolicyHolder(models.Model):
-    policyHolderId = models.AutoField(primary_key=True)
+    id_number = models.CharField(primary_key=True,max_length=13)  # New Field
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     contact = models.CharField(max_length=20)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)  # Used as username
+    password = models.CharField(max_length=128)
 
     class Meta:
         db_table = 'policyholder'
@@ -17,7 +22,7 @@ class PolicyHolder(models.Model):
 #Policy 
 class Policy(models.Model):#remeber to remove this
     policyId = models.AutoField(primary_key=True)
-    policyHolder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
+    policyHolder = models.ForeignKey(PolicyHolder, to_field="id_number", on_delete=models.CASCADE)
     policyType = models.CharField(max_length=100)
     premiumAmount = models.DecimalField(max_digits=10, decimal_places=2)
     startDate = models.DateField()
@@ -77,3 +82,39 @@ class FraudPreventionTeam(models.Model):
 
     class Meta:
         db_table = 'fraudpreventionteam'
+
+
+from django.utils import timezone
+
+# Suspicious activities detected by the system
+class SuspiciousActivity(models.Model):
+    policyHolder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
+    description = models.TextField()
+    detected_at = models.DateTimeField(default=timezone.now)
+    resolved = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'suspicious_activity'
+
+    def __str__(self):
+        return f"SuspiciousActivity for {self.policyHolder.name} at {self.detected_at}"
+
+
+# Risk score for a policyholder after assessment
+class RiskAssessment(models.Model):
+    policyHolder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
+    risk_score = models.IntegerField()
+    requires_manual_approval = models.BooleanField(default=False)
+    assessed_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'risk_assessment'
+
+    def __str__(self):
+        return f"RiskAssessment: {self.policyHolder.name} = {self.risk_score}"
+
+
+@receiver(post_save, sender=Policy)
+def auto_check_fraud(sender, instance, created, **kwargs):
+    if created:
+        run_automatic_checks(instance.policyHolder)
