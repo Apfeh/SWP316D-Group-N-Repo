@@ -10,6 +10,13 @@ from django.http import HttpResponseNotAllowed
 from django.http import HttpResponse
 from django.contrib import messages
 from .models import FraudPreventionTeam,Policy
+from django.contrib.auth.hashers import make_password
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import PolicyHolder
+from .fraud_detection import run_automatic_checks
+
 
 
 
@@ -102,12 +109,15 @@ def add_policyholder(request):
         address = request.POST.get('address')
         contact = request.POST.get('contact')
         email = request.POST.get('email')
+        password = request.POST.get('password')
+
         PolicyHolder.objects.create(
             policyHolderId=policyHolderId,
             name=name,
             address=address,
             contact=contact,
-            email=email
+            email=email,
+            password=make_password(password)
         )
         return redirect('dashboard')
     return render(request, 'add.html')
@@ -124,19 +134,23 @@ def list_policyholders(request):
 # Add new PolicyHolder
 def add_policyholder(request):
     if request.method == "POST":
-        policyHolderId = request.POST.get('policyHolderId')
+        id_number = request.POST.get('id_number')
         name = request.POST.get('name')
         address = request.POST.get('address')
         contact = request.POST.get('contact')
         email = request.POST.get('email')
+        password = request.POST.get('password')  # Consider hashing in real usage
+
         PolicyHolder.objects.create(
-            policyHolderId=policyHolderId,
+            id_number=id_number,
             name=name,
             address=address,
             contact=contact,
-            email=email
+            email=email,
+            password=password
         )
         return redirect('dashboard')
+
     return render(request, 'add.html')
 
 # Update a PolicyHolder
@@ -509,3 +523,269 @@ def claim_status(request):
 def index(request):
     # Placeholder: Redirect to landing page or handle logout
     return redirect('dashboard')  # Temporary redirect for testing
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.http import HttpResponseNotAllowed, HttpResponse
+from django.contrib import messages
+from .models import Beneficiary, Claim, InsuredPerson, PolicyHolder, FraudPreventionTeam, Policy
+from .forms import BeneficiaryForm, ClaimForm
+import logging
+from datetime import datetime
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
+# Landing and Authentication
+
+def landing_page(request):
+    return render(request, 'landing_page.html')
+
+def login(request):
+    return render(request, 'login.html')
+
+def register(request):
+    return render(request, 'register.html')
+
+# Beneficiary Views
+
+def beneficiary_list(request):
+    beneficiaries = Beneficiary.objects.all()
+    return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries})
+
+def beneficiary_create(request):
+    if request.method == 'POST':
+        form = BeneficiaryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('beneficiary_list')
+    else:
+        form = BeneficiaryForm()
+    return render(request, 'beneficiary_form.html', {'form': form})
+
+def beneficiary_update(request, id):
+    beneficiary = get_object_or_404(Beneficiary, pk=id)
+    if request.method == 'POST':
+        form = BeneficiaryForm(request.POST, instance=beneficiary)
+        if form.is_valid():
+            form.save()
+            return redirect('beneficiary_list')
+    else:
+        form = BeneficiaryForm(instance=beneficiary)
+    return render(request, 'beneficiary_form.html', {'form': form})
+
+def beneficiary_delete(request, id):
+    beneficiary = get_object_or_404(Beneficiary, pk=id)
+    if request.method == 'POST':
+        beneficiary.delete()
+        return redirect('beneficiary_list')
+    return render(request, 'beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
+
+# Claims View
+
+def claim(request):
+    if request.method == 'POST':
+        form = ClaimForm(request.POST)
+        if form.is_valid():
+            claim_instance = form.save(commit=False)
+            claim_instance.status = 'pending'
+            claim_instance.save()
+            form = ClaimForm()
+    else:
+        form = ClaimForm()
+
+    claims = Claim.objects.all().order_by('-dateFiled')
+    return render(request, 'claim.html', {'form': form, 'claims': claims})
+
+# Insured Person Views
+
+def index(request):
+    insured_persons = InsuredPerson.objects.all()
+    return render(request, 'insured_persons.html', {'insured_persons': insured_persons})
+
+def delete_insured_person(request, id):
+    person = get_object_or_404(InsuredPerson, id=id)
+    if request.method == 'POST':
+        person.delete()
+        return redirect(reverse('insured_persons_list'))
+    return redirect(reverse('insured_persons_list'))
+
+# PolicyHolder Views
+
+def dashboard(request):
+    return render(request, 'dashboard.html')
+
+def list_policyholders(request):
+    policyholders = PolicyHolder.objects.all()
+    return render(request, 'list.html', {'policyholders': policyholders})
+
+def add_policyholder(request):
+    if request.method == "POST":
+        policyHolderId = request.POST.get('policyHolderId')
+        name = request.POST.get('name')
+        address = request.POST.get('address')
+        contact = request.POST.get('contact')
+        email = request.POST.get('email')
+        PolicyHolder.objects.create(
+            policyHolderId=policyHolderId,
+            name=name,
+            address=address,
+            contact=contact,
+            email=email
+        )
+        return redirect('dashboard')
+    return render(request, 'add.html')
+
+def update_policyholder(request, id):
+    try:
+        policyholder = PolicyHolder.objects.get(policyHolderId=id)
+    except PolicyHolder.DoesNotExist:
+        return HttpResponse("PolicyHolder not found", status=404)
+
+    if request.method == "POST":
+        policyholder.name = request.POST.get('name')
+        policyholder.address = request.POST.get('address')
+        policyholder.contact = request.POST.get('contact')
+        policyholder.email = request.POST.get('email')
+        policyholder.save()
+        return redirect('list_policyholders')
+
+    return render(request, 'update.html', {'policyholder': policyholder})
+
+# Fraud Prevention Team View
+
+def manage_team(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        logger.debug(f"POST data: {request.POST}")
+
+        if action == 'add':
+            try:
+                claim = Claim.objects.get(pk=request.POST.get('claimid'))
+                policy = Policy.objects.get(pk=request.POST.get('policyid'))
+                FraudPreventionTeam.objects.create(
+                    claimid=claim,
+                    policyid=policy,
+                    contactNumber=request.POST.get('contactNumber'),
+                    department=request.POST.get('department'),
+                    investigatorName=request.POST.get('investigatorName')
+                )
+                messages.success(request, 'Team member added successfully.')
+            except Exception as e:
+                logger.error(f"Error adding team member: {e}")
+                messages.error(request, f'Error adding team member: {e}')
+
+        elif action == 'update':
+            try:
+                teamid = request.POST.get('teamid')
+                member = FraudPreventionTeam.objects.get(teamid=teamid)
+                member.claimid = Claim.objects.get(pk=request.POST.get('claimid'))
+                member.policyid = Policy.objects.get(pk=request.POST.get('policyid'))
+                member.contactNumber = request.POST.get('contactNumber')
+                member.department = request.POST.get('department')
+                member.investigatorName = request.POST.get('investigatorName')
+                member.save()
+                messages.success(request, 'Team member updated successfully.')
+            except Exception as e:
+                logger.error(f"Error updating team member: {e}")
+                messages.error(request, f'Error updating team member: {e}')
+
+        elif action == 'delete':
+            try:
+                teamid = request.POST.get('teamid')
+                member = FraudPreventionTeam.objects.get(teamid=teamid)
+                member.delete()
+                messages.success(request, 'Team member removed successfully.')
+            except Exception as e:
+                logger.error(f"Error removing team member: {e}")
+                messages.error(request, f'Error removing team member: {e}')
+
+        return redirect('manage_team')
+
+    elif request.method == 'GET':
+        team_members = FraudPreventionTeam.objects.select_related('claimid', 'policyid').all()
+        return render(request, 'fraud_prevention.html', {'team_members': team_members})
+
+    return HttpResponseNotAllowed(['GET', 'POST'])
+
+# Static/Dashboard Views
+
+def add_beneficiary(request):
+    return render(request, "add_beneficiary.html")
+
+def beneficiary_dashboard(request):
+    return render(request, "beneficiary_dashboard.html")
+
+def beneficiary_verification(request):
+    return render(request, "beneficiary_verification.html")
+
+def claim_status(request):
+    return render(request, "claim_status.html")
+
+def edit_beneficiary(request):
+    return render(request, "edit_beneficiary.html")
+
+def file_claim(request):
+    return render(request, "file_claim.html")
+
+def add_insured_person(request):
+    return render(request, "add_insured_person.html")
+
+def consent_verification(request):
+    return render(request, "consent_verification.html")
+
+def insured_dashboard(request):
+    return render(request, "dashboard.html")
+
+def policy_details(request):
+    return render(request, "policy_details.html")
+
+def law_dashboard(request):
+    return render(request, "dashboard.html")
+
+def fraud_case_details(request):
+    return render(request, "fraud_case_details.html")
+
+def fraud_database_search(request):
+    return render(request, "fraud_database_search.html")
+
+def law_login(request):
+    return render(request, "login.html")
+
+def admin_dashboard(request):
+    context = {
+        'total_policies': 120,
+        'active_claims': 42,
+        'flagged_cases': 5,
+        'risk_scores': 78,
+        'notifications': [
+            "New claim filed by Policy #7789",
+            "Policy #4567 flagged for manual review",
+            "System maintenance scheduled at 10PM"
+        ],
+    }
+    return render(request, 'boitshepo/admin_dashboard.html', context)
+
+def home(request):
+    return render(request, 'boitshepo/home.html')
+
+POLICIES = [
+    {'id': 1, 'holder_name': 'John Doe', 'insured_persons': 'Jane Doe', 'risk_score': 75, 'status': 'Pending'},
+    {'id': 2, 'holder_name': 'Alice Smith', 'insured_persons': 'Bob Smith', 'risk_score': 55, 'status': 'Pending'},
+    {'id': 3, 'holder_name': 'Mark Johnson', 'insured_persons': 'Lucy Johnson', 'risk_score': 85, 'status': 'Pending'},
+]
+
+def policy_review(request):
+    query = request.GET.get('q', '')
+    filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
+    context = {'policies': filtered_policies}
+    return render(request, 'policy_review.html', context)
+
+
+# IFPWebApp/views_fraud.py
+
+
+def run_manual_fraud_check(request, policyholder_id):
+    policyholder = get_object_or_404(PolicyHolder, id=policyholder_id)
+    run_automatic_checks(policyholder)
+    messages.success(request, f"Fraud check run for {policyholder.name}")
+    return redirect('policyholder_detail', policyholder_id=policyholder.id)  # adjust to your actual view
