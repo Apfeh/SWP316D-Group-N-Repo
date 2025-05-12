@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Insured Person Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Inter', sans-serif;
+      margin-top: 20px;
+    }
+    .navbar {
+      background-color: #009f82;
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      color: white;
+    }
+    .dashboard-card {
+      background-color: white;
+      border-radius: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+    }
+    .btn-primary-custom {
+      background-color: #00b894;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+      background-color: #009f82;
+    }
+    .btn-secondary-custom {
+      background-color: #6c757d;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .btn-secondary-custom:hover {
+      background-color: #5a6268;
+    }
+    .section-header {
+      font-size: 2rem;
+      color: #333;
+      font-weight: 700;
+    }
+    .section-description {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+    .container {
+      max-width: 900px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">IFPS</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-5 pt-5">
+    <div class="dashboard-card">
+      <h2 class="section-header text-center mb-4">Welcome, Insured Person</h2>
+      <p class="section-description text-center">Access all your insurance-related services here.</p>
+
+      <div class="d-grid gap-4">
+        <!-- Action Buttons -->
+        <a href="add_insured_person.html" class="btn btn-primary-custom btn-lg">Add Insured Person</a>
+        <a href="policy_details.html" class="btn btn-secondary-custom btn-lg">View Your Policy Details</a>
+        <a href="consent_verification.html" class="btn btn-primary-custom btn-lg">Complete Consent Verification</a>
+         
+         
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

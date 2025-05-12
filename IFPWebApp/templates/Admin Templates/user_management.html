@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #003366;
+      color: white;
+      padding-top: 90px;
+      padding-left: 20px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .sidebar a:hover {
+      color: #00b894;
+    }
+
+    .navbar {
+      background-color: white;
+      padding: 1rem;
+      color: #003366;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      left: 250px;
+      width: calc(100% - 250px);
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar a {
+      color: #003366;
+      text-decoration: none;
+    }
+
+    .navbar a:hover {
+      color: #00b894;
+    }
+
+    .container {
+      margin-top: 90px;
+      margin-left: 270px;
+      margin-bottom: 80px;
+    }
+
+    .table th, .table td {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .table thead {
+      background-color: #003366;
+      color: white;
+    }
+
+    .table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .action-buttons button {
+      font-size: 1rem;
+      padding: 0.4rem 1.5rem;
+    }
+
+    .filters-container {
+      margin-bottom: 20px;
+    }
+
+     /* Top right icons */
+     .top-right-icons {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+    }
+
+    .top-right-icons a {
+      margin-left: 15px;
+      color: #003366;
+      font-size: 1.5rem;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #003366;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      left: 0;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+    <a href="{% url 'policy_review' %}">Policy Review</a>
+    <a href="{% url 'claim_review' %}">Claim Review</a>
+    <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+    <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+    <a href="{% url 'user_management' %}">User Management</a>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar d-flex align-items-center justify-content-between">
+  <form class="d-flex ms-3" role="search" style="width: 300px;">
+    <input class="form-control me-2" type="search" placeholder="Search ..." aria-label="Search">
+    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+  <div class="top-right-icons">
+    <a href="#"><i class="bi bi-person-circle"></i></a>
+    <a href="#"><i class="bi bi-bell-fill"></i></a>
+    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+  <h2>User Management</h2>
+
+  <!-- Filters Section -->
+  <div class="filters-container">
+    <label for="roleFilter">Role: </label>
+    <select id="roleFilter" class="form-select d-inline w-auto">
+      <option value="all">All</option>
+      <option value="admin">Admin</option>
+      <option value="policyholder">Policyholder</option>
+      <option value="beneficiary">Beneficiary</option>
+    </select>
+
+    <label for="statusFilter" class="ms-3">Account Status: </label>
+    <select id="statusFilter" class="form-select d-inline w-auto">
+      <option value="all">All</option>
+      <option value="active">Active</option>
+      <option value="suspended">Suspended</option>
+      <option value="flagged">Flagged</option>
+    </select>
+  </div>
+
+  <!-- User Table -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Last Login</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Dummy Data Row -->
+      <tr>
+        <td>John Doe</td>
+        <td>Admin</td>
+        <td>Active</td>
+        <td>2025-04-25</td>
+        <td class="action-buttons">
+          <!-- Actions -->
+          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
+          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
+          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Jane Smith</td>
+        <td>Policyholder</td>
+        <td>Suspended</td>
+        <td>2025-04-23</td>
+        <td class="action-buttons">
+          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
+          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
+          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Michael Johnson</td>
+        <td>Beneficiary</td>
+        <td>Active</td>
+        <td>2025-04-20</td>
+        <td class="action-buttons">
+          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
+          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
+          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<!-- Footer -->
+<div class="footer text-center py-3">
+  &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
+</div>
+
+</body>
+</html>
