@@ -27,7 +27,45 @@ def landing_page(request):
 def login(request):
     return render(request, 'login.html')
 
+from django.shortcuts import render, redirect
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
 def register(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm-password', '')
+
+        errors = []
+
+        # Validate required fields
+        if not username or not email or not password or not confirm_password:
+            errors.append("All fields are required.")
+
+        # Validate email format
+        try:
+            validate_email(email)
+        except ValidationError:
+            errors.append("Invalid email format.")
+
+        # Validate password match
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+
+        # If there are errors, return them to the template
+        if errors:
+            return render(request, 'register.html', {
+                'errors': errors,
+                'username': username,
+                'email': email
+            })
+
+        # TODO: Save user to database here
+
+        return redirect('otp')  # assumes you have a URL named 'otp'
+
     return render(request, 'register.html')
 
 
@@ -62,6 +100,387 @@ def beneficiary_delete(request, id):
         beneficiary.delete()
         return redirect('beneficiary_list')
     return render(request, 'beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
+
+import logging
+from django.shortcuts import render, redirect, reverse
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse, HttpResponse
+from django.conf import settings
+from django.utils.html import strip_tags
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from .models import Citizen, Photo
+from .verification import (
+    enhance_image_for_ocr,
+    extract_id_from_image,
+    extract_id_from_pdf,
+    generate_otp,
+    verify_faces
+)
+
+logger = logging.getLogger(__name__)
+
+# ==========================
+# BENEFICIARY VERIFICATION
+# ==========================
+
+def beneficiary_verification(request):
+    ocr_test_mode = request.GET.get('ocr_test', False)
+
+    if request.method == 'POST':
+        document = request.FILES.get('document')
+        camera_data = request.POST.get('camera_data')
+        fs = FileSystemStorage()
+
+        if ocr_test_mode:
+            extracted_text = None
+            error = None
+
+            if not document:
+                error = "No file was uploaded"
+            else:
+                try:
+                    if document.content_type.startswith('image/'):
+                        try:
+                            image = Image.open(document)
+                            extracted_text = pytesseract.image_to_string(enhance_image_for_ocr(image))
+                        except IOError as e:
+                            error = f"Invalid image file: {str(e)}"
+                    elif document.content_type == 'application/pdf':
+                        try:
+                            images = convert_from_bytes(document.read())
+                            extracted_text = ""
+                            for i, image in enumerate(images):
+                                extracted_text += f"--- Page {i+1} ---\n"
+                                extracted_text += pytesseract.image_to_string(enhance_image_for_ocr(image)) + "\n\n"
+                        except Exception as e:
+                            error = f"PDF processing error: {str(e)}"
+                    else:
+                        error = "Unsupported file type"
+
+                except Exception as e:
+                    logger.error(f"OCR Test Error: {e}", exc_info=True)
+                    error = f"Processing error: {str(e)}"
+
+            return render(request, 'Beneficiary Templates/beneficiary_verification.html', {
+                'ocr_test_mode': True,
+                'extracted_text': extracted_text,
+                'error': error,
+                'document_name': document.name if document else ''
+            })
+
+        # Regular verification
+        if not document and not camera_data:
+            messages.error(request, 'Please upload a document or take a photo')
+            return redirect('beneficiary_verification')
+
+        extracted_id = None
+        file_url = None
+
+        try:
+            if document:
+                allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+                if document.content_type not in allowed_types:
+                    messages.error(request, 'Invalid file type. Please upload a PDF or image file.')
+                    return redirect('beneficiary_verification')
+
+                if document.content_type == 'application/pdf':
+                    extracted_id = extract_id_from_pdf(document)
+                    document.seek(0)
+                else:
+                    image = Image.open(document)
+                    extracted_id = extract_id_from_image(image)
+
+                if extracted_id:
+                    safe_name = fs.get_valid_name(document.name)
+                    filename = f"id_verification/{datetime.now().strftime('%Y/%m/%d')}/{extracted_id}_{safe_name}"
+                    saved_file = fs.save(filename, document)
+                    file_url = fs.url(saved_file)
+
+            elif camera_data:
+                try:
+                    format, imgstr = camera_data.split(';base64,')
+                    image_data = base64.b64decode(imgstr)
+
+                    if len(image_data) > 5 * 1024 * 1024:
+                        messages.error(request, 'Image too large (max 5MB)')
+                        return redirect('beneficiary_verification')
+
+                    image = Image.open(io.BytesIO(image_data))
+                    extracted_id = extract_id_from_image(image)
+
+                    if extracted_id:
+                        filename = f"id_verification/{datetime.now().strftime('%Y/%m/%d')}/{extracted_id}_{datetime.now().strftime('%H%M%S')}.jpg"
+                        filepath = fs.save(filename, io.BytesIO(image_data))
+                        file_url = fs.url(filepath)
+                except Exception as e:
+                    logger.error(f"Camera image processing error: {e}", exc_info=True)
+                    messages.error(request, 'Error processing captured image')
+                    return redirect('beneficiary_verification')
+
+            if not extracted_id:
+                messages.error(request, 'Could not extract ID number. Ensure the document is clear and contains a visible 13-digit ID.')
+                return redirect('beneficiary_verification')
+
+            # Store ID in session and redirect to facial recognition
+            request.session['extracted_id'] = extracted_id
+            return redirect('facial_recognition')
+
+        except Exception as e:
+            logger.error(f"Verification error: {e}", exc_info=True)
+            messages.error(request, 'An error occurred during verification. Please try again.')
+            return redirect('beneficiary_verification')
+
+    return render(request, 'Beneficiary Templates/beneficiary_verification.html', {'ocr_test_mode': ocr_test_mode})
+
+# ==========================
+# EMAIL SENDER (SendGrid)
+# ==========================
+
+def send_sendgrid_email(subject, to_email, template_name, context):
+    """Send an email using SendGrid"""
+    try:
+        html_content = render_to_string(template_name, context)
+        plain_content = strip_tags(html_content)
+
+        message = Mail(
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to_emails=to_email,
+            subject=subject,
+            plain_text_content=plain_content,
+            html_content=html_content
+        )
+
+        sg = SendGridAPIClient(settings.EMAIL_HOST_PASSWORD)
+        response = sg.send(message)
+        logger.info(f"Email sent to {to_email}. Status: {response.status_code}")
+        return 200 <= response.status_code < 300
+
+    except Exception as e:
+        logger.error(f"SendGrid Error: {str(e)}", exc_info=True)
+        return False
+
+def send_otp_email(otp_code, recipient):
+    """Send OTP email"""
+    context = {'otp_code': otp_code, 'valid_minutes': 3}
+    return send_sendgrid_email(
+        subject='Your OTP Verification Code',
+        to_email=recipient,
+        template_name='otp.html',
+        context=context
+    )
+
+# ==========================
+# OTP VIEWS
+# ==========================
+
+def otp(request):
+    """OTP input and generation page"""
+    debug_info = {}
+
+    try:
+        if 'otp_data' not in request.session:
+            otp_code = generate_otp()
+            debug_info['generated_otp'] = otp_code
+
+            email_sent = send_otp_email(otp_code, 'kutylaalfredo@gmail.com')
+            debug_info['email_sent'] = email_sent
+
+            request.session['otp_data'] = {
+                'otp': otp_code,
+                'created_at': time.time(),
+                'attempts': 0,
+                'resend_count': 0,
+                'email_sent': email_sent,
+                'last_email': time.time() if email_sent else None
+            }
+            request.session.modified = True
+        else:
+            debug_info['existing_session'] = True
+
+        otp_data = request.session['otp_data']
+        context = {
+            'otp_display': otp_data['otp'] if settings.DEBUG else None,  # HIDE in production
+            'max_time': 180,
+            'max_resend': 2,
+            'total_timeout': 900,
+            'email_sent': otp_data.get('email_sent', False),
+            'debug_info': debug_info
+        }
+
+        return render(request, "Beneficiary Templates/otp.html", context)
+
+    except Exception as e:
+        logger.error(f"OTP View Error: {str(e)}", exc_info=True)
+        return render(request, "Beneficiary Templates/otp.html", {
+            'error': str(e),
+            'debug_info': debug_info
+        })
+
+def verify_otp(request):
+    """OTP submission handler"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method'})
+
+    try:
+        otp_data = request.session.get('otp_data')
+        if not otp_data:
+            return JsonResponse({'success': False, 'message': 'Session expired', 'is_expired': True})
+
+        user_otp = request.POST.get('otp', '').strip().upper()
+        current_time = time.time()
+
+        if current_time - otp_data['created_at'] > 180:
+            return JsonResponse({'success': False, 'message': 'OTP expired', 'is_expired': True})
+
+        if otp_data['attempts'] >= 3:
+            return JsonResponse({'success': False, 'message': 'Too many attempts', 'is_locked': True})
+
+        if user_otp == otp_data['otp']:
+            del request.session['otp_data']
+            return JsonResponse({'success': True, 'redirect_url': 'facial_recognition'})
+
+        otp_data['attempts'] += 1
+        request.session['otp_data'] = otp_data
+        request.session.modified = True
+
+        return JsonResponse({
+            'success': False,
+            'message': f"Invalid OTP. {3 - otp_data['attempts']} attempts left",
+            'remaining_attempts': 3 - otp_data['attempts']
+        })
+
+    except Exception as e:
+        logger.error(f"Verify OTP Error: {str(e)}", exc_info=True)
+        return JsonResponse({'success': False, 'message': 'Verification error'})
+
+def resend_otp(request):
+    """Resend OTP email"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method'})
+
+    try:
+        otp_data = request.session.get('otp_data')
+        if not otp_data:
+            return JsonResponse({'success': False, 'message': 'Session expired', 'is_expired': True})
+
+        current_time = time.time()
+
+        if current_time - otp_data.get('last_email', 0) < 30:
+            return JsonResponse({'success': False, 'message': 'Wait 30 seconds before resending', 'on_cooldown': True})
+
+        if otp_data.get('resend_count', 0) >= 2:
+            return JsonResponse({'success': False, 'message': 'Max resends reached', 'is_locked': True})
+
+        new_otp = generate_otp()
+        email_sent = send_otp_email(new_otp, 'kutylaalfredo@gmail.com')
+
+        otp_data.update({
+            'otp': new_otp,
+            'created_at': current_time,
+            'attempts': 0,
+            'resend_count': otp_data.get('resend_count', 0) + 1,
+            'email_sent': email_sent,
+            'last_email': current_time if email_sent else None
+        })
+
+        request.session['otp_data'] = otp_data
+        request.session.modified = True
+
+        return JsonResponse({
+            'success': True,
+            'message': 'OTP resent' if email_sent else 'Email failed',
+            'resend_count': 2 - otp_data['resend_count'],
+            'email_sent': email_sent
+        })
+
+    except Exception as e:
+        logger.error(f"Resend OTP Error: {str(e)}", exc_info=True)
+        return JsonResponse({'success': False, 'message': 'Resend error'})
+
+def email_test(request):
+    """Test SendGrid setup"""
+    try:
+        context = {'otp_code': '123456', 'valid_minutes': 5}
+        success = send_sendgrid_email(
+            subject='SendGrid Test Email',
+            to_email='kutylaalfredo@gmail.com',
+            template_name='otp.html',
+            context=context
+        )
+        return HttpResponse("Email sent successfully." if success else "Email sending failed.")
+    except Exception as e:
+        logger.error(f"SendGrid Test Error: {str(e)}", exc_info=True)
+        return HttpResponse(f"Error: {str(e)}")
+
+# ==========================
+# FACE VERIFICATION VIEWS
+# ==========================
+
+def facial_recognition(request):
+    extracted_id = request.session.get('extracted_id')
+    if not extracted_id:
+        messages.error(request, "No ID provided for verification")
+        return redirect('beneficiary_verification')
+    
+    try:
+        citizen = Citizen.objects.using('homeaffairs').get(idNumber=extracted_id)
+        stored_photo = Photo.objects.using('homeaffairs').filter(idNumber=citizen).first()
+        
+        if not stored_photo:
+            messages.error(request, "No registered photo found for this ID number.")
+            return redirect('beneficiary_verification')
+            
+        return render(request, 'Beneficiary Templates/facial_recognition.html', {
+            'extracted_id': extracted_id,
+            'citizen_name': f"{citizen.name} {citizen.surname}",
+        })
+        
+    except Citizen.DoesNotExist:
+        messages.error(request, "ID number not found in our database.")
+        return redirect('beneficiary_verification')
+
+@csrf_exempt
+def verify_face(request):
+    if request.method == 'POST':
+        extracted_id = request.POST.get('extracted_id')
+        captured_image = request.POST.get('captured_image')
+        
+        try:
+            citizen = Citizen.objects.using('homeaffairs').get(idNumber=extracted_id)
+            stored_photo = Photo.objects.using('homeaffairs').filter(idNumber=citizen).first()
+            
+            if not stored_photo:
+                return JsonResponse({'success': False, 'message': 'No registered photo found for this ID.'})
+            
+            result, message = verify_faces(stored_photo.imageData.path, captured_image)
+            
+            if result:
+                request.session['face_verified'] = True
+                request.session['verified_id'] = extracted_id
+                return JsonResponse({
+                    'success': True,
+                    'redirect': reverse('facial_recognition')
+                })
+            return JsonResponse({
+                'success': False,
+                'message': message
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error: {str(e)}'
+            })
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })
+
 
 #Claims View
 def claim(request):

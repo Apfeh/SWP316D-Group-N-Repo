@@ -118,3 +118,90 @@ class RiskAssessment(models.Model):
 def auto_check_fraud(sender, instance, created, **kwargs):
     if created:
         run_automatic_checks(instance.policyHolder)
+
+
+
+# home affairs database
+
+# models.py
+from django.db import models
+
+class Citizen(models.Model):
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+    
+    idNumber = models.CharField(max_length=20, primary_key=True)
+    name = models.CharField(max_length=100)
+    surname = models.CharField(max_length=100)
+    dateOfBirth = models.DateField()
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    homeLanguage = models.CharField(max_length=100, blank=True, null=True)
+     
+
+    def __str__(self):
+        return f"{self.name} {self.surname} ({self.idNumber})"
+    class Meta:
+        app_label = 'IFPWebApp'
+        db_table = 'citizen'  
+class Address(models.Model):
+    addressId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    streetAddress = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    postalCode = models.CharField(max_length=10)
+
+class Document(models.Model):
+    documentId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    documentType = models.CharField(max_length=100)
+    issueDate = models.DateField()
+    expiryDate = models.DateField(blank=True, null=True)
+    documentStatus = models.CharField(max_length=50)
+
+class BirthCertificate(models.Model):
+    birthCertId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    placeOfBirth = models.CharField(max_length=100)
+    birthDate = models.DateField()
+    registeredBy = models.CharField(max_length=100)
+    registrationDate = models.DateField()
+
+class DeathCertificate(models.Model):
+    deathCertId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    deathDate = models.DateField()
+    causeOfDeath = models.CharField(max_length=255)
+    placeOfDeath = models.CharField(max_length=100)
+
+class Passport(models.Model):
+    passportId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    issueDate = models.DateField()
+    expiryDate = models.DateField()
+    countryOfIssue = models.CharField(max_length=100)
+
+class Photo(models.Model):
+    photoId = models.AutoField(primary_key=True)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE, db_column='idNumber')
+    imageData = models.BinaryField()
+    uploadDate = models.DateField(auto_now_add=True)
+    class Meta:
+        app_label = 'IFPWebApp'
+        db_table = 'photo'
+class Marriage(models.Model):
+    marriageId = models.AutoField(primary_key=True)
+    marriageDate = models.DateField()
+    marriageStatus = models.CharField(max_length=50)
+    marriageType = models.CharField(max_length=50)
+
+class MarriageParticipant(models.Model):
+    participantId = models.AutoField(primary_key=True)
+    marriageId = models.ForeignKey(Marriage, on_delete=models.CASCADE)
+    citizenId = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+    marriageType = models.CharField(max_length=50)
