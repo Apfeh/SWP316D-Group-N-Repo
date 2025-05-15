@@ -17,9 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
+from IFPWebApp import views
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('IFPWebApp.urls')),
-    
-    
+    path('risk_report/', views.risk_reports, name='risk_report'),
+
 ]

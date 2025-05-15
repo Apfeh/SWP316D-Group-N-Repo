@@ -15,7 +15,7 @@ from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import PolicyHolder
-from .fraud_detection import run_automatic_checks
+
 
 
 
@@ -781,11 +781,81 @@ def policy_review(request):
     return render(request, 'policy_review.html', context)
 
 
-# IFPWebApp/views_fraud.py
+
+# reviews
 
 
-def run_manual_fraud_check(request, policyholder_id):
-    policyholder = get_object_or_404(PolicyHolder, id=policyholder_id)
-    run_automatic_checks(policyholder)
-    messages.success(request, f"Fraud check run for {policyholder.name}")
-    return redirect('policyholder_detail', policyholder_id=policyholder.id)  # adjust to your actual view
+def policy_review(request):
+    query = request.GET.get('q', '')
+    if query:
+        policies = Policy.objects.filter(policyHolder_name_icontains=query)
+    else:
+        policies = Policy.objects.all()
+    context = {'policies': policies}
+    return render(request, 'policy_review.html', context)
+
+def policy_detail(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    insured_persons = InsuredPerson.objects.filter(policy=policy)
+    context = {'selected_policy': policy, 'insured_persons': insured_persons}
+    return render(request, 'policy_detail.html', context)
+
+def approve_policy(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    policy.status = 'Approved'
+    policy.save()
+    return redirect('policy_review')
+
+def reject_policy(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    policy.status = 'Rejected'
+    policy.save()
+    return redirect('policy_review')
+
+
+
+#Risk Reports
+
+from django.shortcuts import render
+from .ai_engine import assess_policy_risk
+from .models import PolicyHolder
+
+def risk_reports(request):
+    reports = []
+    policyholders = PolicyHolder.objects.all()
+
+    # Risk distribution counters
+    high = medium = low = 0
+
+    for holder in policyholders:
+        risk_data = assess_policy_risk(holder)
+
+        if risk_data["level"] == "High":
+            high += 1
+        elif risk_data["level"] == "Medium":
+            medium += 1
+        else:
+            low += 1
+
+        reports.append({
+            "name": holder.name,
+            "num_insured": holder.insuredperson_set.count(),
+            "score": f"{risk_data['score']}% ({risk_data['level']})",
+            "patterns": ", ".join(risk_data["explanation"]),
+            "timeline": holder.activity_timeline,
+        })
+
+    total = high + medium + low or 1  # Avoid division by zero
+
+    risk_distribution = {
+        "High": round(high / total * 100, 1),
+        "Medium": round(medium / total * 100, 1),
+        "Low": round(low / total * 100, 1),
+    }
+
+    reports.sort(key=lambda x: int(x["score"].split('%')[0]), reverse=True)
+
+    return render(request, "Admin Templates/risk_reports.html", {
+        "reports": reports,
+        "risk_distribution": risk_distribution
+    })
