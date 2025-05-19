@@ -323,7 +323,7 @@ def admin_dashboard(request):
             "System maintenance scheduled at 10PM"
         ],
     }
-    return render(request, 'boitshepo/admin_dashboard.html', context)
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 # ---- Home Page ----
 def home(request):
@@ -341,14 +341,14 @@ def policy_review(request):
     query = request.GET.get('q', '')
     filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
     context = {'policies': filtered_policies}
-    return render(request, 'boitshepo/policy_review.html', context)
+    return render(request, 'Admin Templates/policy_review.html', context)
 
 def policy_detail(request, pk):
     selected_policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
     if not selected_policy:
         return redirect('policy_review')
     context = {'selected_policy': selected_policy}
-    return render(request, 'boitshepo/policy_review.html', context)
+    return render(request, 'Admin Templates/policy_review.html', context)
 
 def approve_policy(request, pk):
     policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
@@ -394,7 +394,7 @@ def claim_review(request):
             'cause_of_death': 'Natural Causes (Verified)',
         },
     ]
-    return render(request, 'boitshepo/claim_review.html', {'claims': claims})
+    return render(request, 'Admin Templates/claim_review.html', {'claims': claims})
 
 # ---- Risk Reports ----
 def Risk_reports(request):
@@ -425,7 +425,7 @@ def Risk_reports(request):
         "timeline": timeline,
     }
     
-    return render(request, "boitshepo/Risk_reports.html", context)
+    return render(request, "Admin Templates/risk_reports.html", context)#rtuii
 
 # ---- Fraud Alerts ----
 def fraud_alerts(request):
@@ -449,11 +449,11 @@ def fraud_alerts(request):
             'severity': 'Low',
         },
     ]
-    return render(request, 'boitshepo/fraud_alerts.html', {'alerts': alerts})
+    return render(request, 'Admin Templates/fraud_alerts.html', {'alerts': alerts})
 
 # ---- User Management ----
 def user_management(request):
-    return render(request, 'boitshepo/user_management.html')
+    return render(request, 'Admin Templates/user_management.html')
 
 def dashboard(request):
     context = {
@@ -763,7 +763,7 @@ def admin_dashboard(request):
             "System maintenance scheduled at 10PM"
         ],
     }
-    return render(request, 'boitshepo/admin_dashboard.html', context)
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 def home(request):
     return render(request, 'boitshepo/home.html')
