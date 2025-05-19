@@ -5,6 +5,7 @@
   <title>Risk Assessment Reports</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Base Styling */
     body {
@@ -138,6 +139,14 @@
       background-color: #f2f2f2;
     }
 
+    /*Chart*/
+    .risk-chart-canvas {
+      max-width: 800px;
+      max-height: 800px;
+      margin: 0 auto;
+      }
+
+
     /* Footer */
     .footer {
       text-align: center;
@@ -149,6 +158,7 @@
       width: 100%;
       left: 0;
     }
+
   </style>
 </head>
 
@@ -185,20 +195,14 @@
       <!-- Title -->
       <h2 class="mb-4 text-center">Risk Assessment Reports</h2>
   
-      <!-- Circle Chart -->
-      <div class="circle-chart">
-        <div class="circle-label">Risk</div>
-      </div>
-  
+    
       <!-- Risk Distribution -->
-      <h5 class="mt-4 text-center">Overall Risk Distribution</h5>
+     
       <div class="risk-summary text-center mt-3">
-        <p>
-          <span style="color:#dc3545;">High Risk: 40%</span> |
-          <span style="color:#ffc107;">Medium Risk: 30%</span> |
-          <span style="color:#28a745;">Low Risk: 30%</span>
-        </p>
+          <canvas id="riskChart" class="risk-chart-canvas"></canvas>
       </div>
+      
+
   
       <!-- Risk Table -->
       <div class="mt-5">
@@ -214,24 +218,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>John Doe</td>
-                <td>3</td>
-                <td>85%</td>
-                <td>Frequent beneficiary changes</td>
-              </tr>
-              <tr>
-                <td>Jane Smith</td>
-                <td>2</td>
-                <td>60%</td>
-                <td>Multiple claims in short time</td>
-              </tr>
-              <tr>
-                <td>Michael Brown</td>
-                <td>5</td>
-                <td>45%</td>
-                <td>No major patterns detected</td>
-              </tr>
+             
+             {% for report in reports %}
+                <tr>
+                   <td>{{ report.name }}</td>
+                   <td>{{ report.num_insured }}</td>
+                   <td>{{ report.score }}</td>
+                   <td>{{ report.patterns }}</td>
+               </tr>
+             {% endfor %}
+
             </tbody>
           </table>
         </div>
@@ -261,6 +257,52 @@
 <div class="footer">
   &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
+
+<script>
+  const ctx = document.getElementById('riskChart').getContext('2d');
+
+  const data = {
+    labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+    datasets: [{
+      label: 'Risk Distribution (%)',
+      data: [
+        {{ risk_distribution.High|default:0 }},
+        {{ risk_distribution.Medium|default:0 }},
+        {{ risk_distribution.Low|default:0 }}
+      ],
+      backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+      hoverOffset: 4
+    }]
+  };
+
+  const config = {
+    type: 'doughnut',
+    data: data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              let label = context.label || '';
+              let value = context.raw || 0;
+              return `${label}: ${value}%`;
+            }
+          }
+        },
+        title: {
+          display: true,
+          text: 'Policyholder Risk Distribution (Percentages)'
+        }
+      }
+    }
+  };
+
+  new Chart(ctx, config);
+</script>
+
+
 
 </body>
 </html>

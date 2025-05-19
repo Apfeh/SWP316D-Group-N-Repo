@@ -43,7 +43,14 @@ urlpatterns = [
     path('file-claim/', views.file_claim, name='file_claim'),
     path('claim-status/', views.claim_status, name='claim_status'),
     
-    #Letho Fraud Detection
-    path('fraud-check/<int:policyholder_id>/', views.run_manual_fraud_check, name='run_manual_fraud_check'),
+  
+   
+    
+    #Boitshepo's policy review
+    path('policy_review/', views.policy_review, name='policy_review'),
+    path('policy/<int:pk>/', views.policy_detail, name='policy_detail'),
+    path('policy/<int:pk>/approve/', views.approve_policy, name='approve_policy'),
+    path('policy/<int:pk>/reject/', views.reject_policy, name='reject_policy'),
+
     
 ]
