@@ -198,7 +198,7 @@
   <div class="top-right-icons">
     <a href="#"><i class="bi bi-person-circle"></i></a>
     <a href="#"><i class="bi bi-bell-fill"></i></a>
-    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
+    <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
 
@@ -217,26 +217,25 @@
         <h3>Active Claims</h3>
         <p>{{ active_claims }}</p>
       </div>
-      <div class="card">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <h3>Flagged Cases</h3>
-        <p>{{ flagged_cases }}</p>
-      </div>
+    
       <div class="card">
         <i class="bi bi-graph-up-arrow"></i>
         <h3>Risk Scores</h3>
-        <p>{{ risk_scores }}</p>
+        <p>{{ risk_scores.avg_score|floatformat:1 }}%</p>
       </div>
     </div>
   </section>
 
-  <section class="features notifications-section">
+   <section class="features notifications-section">
     <h2>Live Notifications</h2>
-    {% for notif in notifications %}
-    <div class="notification-item">
-      {{ notif }}
+    <div id="notifications">
+      {% for notif in notifications %}
+        <div class="notification-item">{{ notif.message }}</div>
+      {% endfor %}
+      {% if not notifications %}
+        <div class="notification-item">No notifications available.</div>
+      {% endif %}
     </div>
-    {% endfor %}
   </section>
 
   <section class="table-section">
@@ -270,6 +269,28 @@
 <div class="footer">
   &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
+  <script>
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+    
+    ws.onopen = function() {
+      console.log('WebSocket connected');
+    };
 
+    ws.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      const notificationSection = document.getElementById('notifications');
+      const div = document.createElement('div');
+      div.className = 'notification-item';
+      div.textContent = data.message;
+      notificationSection.prepend(div);
+      while (notificationSection.getElementsByClassName('notification-item').length > 5) {
+        notificationSection.removeChild(notificationSection.lastChild);
+      }
+    };
+
+    ws.onclose = function() {
+      console.log('WebSocket disconnected');
+    };
+  </script>
 </body>
 </html>

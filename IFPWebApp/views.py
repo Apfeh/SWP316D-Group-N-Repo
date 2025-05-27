@@ -4,22 +4,42 @@ from .forms import BeneficiaryForm
 from .models import Claim
 from .forms import ClaimForm
 from .models import InsuredPerson
+from .models import Notification,ActivityLog
 from django.urls import reverse
 from .models import PolicyHolder
+from .models import Admin
 from django.http import HttpResponseNotAllowed
 from django.http import HttpResponse
 from django.contrib import messages
 from .models import FraudPreventionTeam,Policy
 from django.contrib.auth.hashers import make_password
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import PolicyHolder
-from .fraud_detection import run_automatic_checks
 
 
 
 
+def login_view(request):
+    if request.method == 'POST':
+        role = request.POST.get('role')
+        email = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if role == 'admin':
+            try:
+                admin = Admin.objects.get(email=email, password=password)
+                request.session['admin_id'] = admin.id
+                return redirect('admin_dashboard')
+            except Admin.DoesNotExist:
+                return render(request, 'login.html', {'error': 'Invalid Admin credentials'})
+
+        elif role == 'policy_holder':
+            try:
+                holder = PolicyHolder.objects.get(email=email, password=password)
+                return render(request, 'Policyholder Pages/dashboard.html', {'holder': holder})
+            except PolicyHolder.DoesNotExist:
+                return render(request, 'login.html', {'error': 'Invalid Policy Holder credentials'})
+
+    return render(request, 'login.html')
 
 def landing_page(request):
     return render(request, 'landing_page.html')
@@ -308,7 +328,7 @@ def law_login(request):
     return render(request, "login.html")
 
 from django.shortcuts import render, redirect
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 # ---- Admin Dashboard View ----
 def admin_dashboard(request):
@@ -323,7 +343,7 @@ def admin_dashboard(request):
             "System maintenance scheduled at 10PM"
         ],
     }
-    return render(request, 'boitshepo/admin_dashboard.html', context)
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 # ---- Home Page ----
 def home(request):
@@ -341,14 +361,14 @@ def policy_review(request):
     query = request.GET.get('q', '')
     filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
     context = {'policies': filtered_policies}
-    return render(request, 'boitshepo/policy_review.html', context)
+    return render(request, 'Admin Templates/policy_review.html', context)
 
 def policy_detail(request, pk):
     selected_policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
     if not selected_policy:
         return redirect('policy_review')
     context = {'selected_policy': selected_policy}
-    return render(request, 'boitshepo/policy_review.html', context)
+    return render(request, 'Admin Templates/policy_review.html', context)
 
 def approve_policy(request, pk):
     policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
@@ -394,38 +414,7 @@ def claim_review(request):
             'cause_of_death': 'Natural Causes (Verified)',
         },
     ]
-    return render(request, 'boitshepo/claim_review.html', {'claims': claims})
-
-# ---- Risk Reports ----
-def Risk_reports(request):
-    risks = [
-        {"policyholder": "John Doe", "insured_persons": 2, "avg_risk_score": 85, "pattern": "Frequent Address Changes"},
-        {"policyholder": "Alice Smith", "insured_persons": 1, "avg_risk_score": 70, "pattern": "Fast Claim Frequency"},
-        {"policyholder": "Mark Johnson", "insured_persons": 3, "avg_risk_score": 92, "pattern": "Unrelated Beneficiaries"},
-        {"policyholder": "Sophia Brown", "insured_persons": 2, "avg_risk_score": 65, "pattern": "Multiple Beneficiary Changes"},
-    ]
-
-    ai_analysis = [
-        "Frequent policyholder address changes detected",
-        "Multiple claims filed within a short period",
-        "Insured persons unrelated to policyholder",
-        "Previous fraud flags from law enforcement checks",
-    ]
-
-    timeline = [
-        {"date": "Jan 2025", "event": "Policyholder address change detected"},
-        {"date": "Feb 2025", "event": "Two claims filed within 1 month"},
-        {"date": "Mar 2025", "event": "Investigation flagged by law enforcement database"},
-        {"date": "Apr 2025", "event": "Beneficiary relationship mismatch detected"},
-    ]
-
-    context = {
-        "risks": risks,
-        "ai_analysis": ai_analysis,
-        "timeline": timeline,
-    }
-    
-    return render(request, "boitshepo/Risk_reports.html", context)
+    return render(request, 'Admin Templates/claim_review.html', {'claims': claims})
 
 # ---- Fraud Alerts ----
 def fraud_alerts(request):
@@ -449,11 +438,11 @@ def fraud_alerts(request):
             'severity': 'Low',
         },
     ]
-    return render(request, 'boitshepo/fraud_alerts.html', {'alerts': alerts})
+    return render(request, 'Admin Templates/fraud_alerts.html', {'alerts': alerts})
 
 # ---- User Management ----
 def user_management(request):
-    return render(request, 'boitshepo/user_management.html')
+    return render(request, 'Admin Templates/user_management.html')
 
 def dashboard(request):
     context = {
@@ -763,7 +752,7 @@ def admin_dashboard(request):
             "System maintenance scheduled at 10PM"
         ],
     }
-    return render(request, 'boitshepo/admin_dashboard.html', context)
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 def home(request):
     return render(request, 'boitshepo/home.html')
@@ -781,11 +770,177 @@ def policy_review(request):
     return render(request, 'policy_review.html', context)
 
 
-# IFPWebApp/views_fraud.py
+
+# reviews
 
 
-def run_manual_fraud_check(request, policyholder_id):
-    policyholder = get_object_or_404(PolicyHolder, id=policyholder_id)
-    run_automatic_checks(policyholder)
-    messages.success(request, f"Fraud check run for {policyholder.name}")
-    return redirect('policyholder_detail', policyholder_id=policyholder.id)  # adjust to your actual view
+def policy_review(request):
+    query = request.GET.get('q', '')
+    if query:
+        policies = Policy.objects.filter(policyHolder_name_icontains=query)
+    else:
+        policies = Policy.objects.all()
+    context = {'policies': policies}
+    return render(request, 'policy_review.html', context)
+
+def policy_detail(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    insured_persons = InsuredPerson.objects.filter(policy=policy)
+    context = {'selected_policy': policy, 'insured_persons': insured_persons}
+    return render(request, 'policy_detail.html', context)
+
+def approve_policy(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    policy.status = 'Approved'
+    policy.save()
+    return redirect('policy_review')
+
+def reject_policy(request, pk):
+    policy = get_object_or_404(Policy, pk=pk)
+    policy.status = 'Rejected'
+    policy.save()
+    return redirect('policy_review')
+
+
+
+#Risk Reports
+
+from django.shortcuts import render
+from .ai_engine import assess_policy_risk
+from .models import PolicyHolder
+
+def risk_reports(request):
+    reports = []
+    policyholders = PolicyHolder.objects.all()
+    print("PolicyHolders Count:", policyholders.count())
+
+
+    # Risk distribution counters
+    high = medium = low = 0
+
+    for holder in policyholders:
+        risk_data = assess_policy_risk(holder)
+
+        holder.risk_score= risk_data["score"]
+        holder.save(update_fields=['risk_score'])
+
+        if risk_data["level"] == "High":
+            high += 1
+        elif risk_data["level"] == "Medium":
+            medium += 1
+        else:
+            low += 1
+
+        reports.append({
+            "name": holder.name,
+            "num_insured": holder.insuredperson_set.count(),
+            "score": f"{risk_data['score']}% ({risk_data['level']})",
+            "patterns": ", ".join(risk_data["explanation"]),
+            "timeline": holder.activity_timeline,
+        })
+
+    total = high + medium + low or 1  # Avoid division by zero
+
+    risk_distribution = {
+        "High": round(high / total * 100, 1),
+        "Medium": round(medium / total * 100, 1),
+        "Low": round(low / total * 100, 1),
+    }
+
+    reports.sort(key=lambda x: int(x["score"].split('%')[0]), reverse=True)
+
+    return render(request, "Admin Templates/risk_reports.html", {
+        "reports": reports,
+        "risk_distribution": risk_distribution
+    })
+
+
+
+
+def logout_view(request):
+    # Clear the session (or any login state)
+    request.session.flush()
+    return redirect('login') # Redirect to login page after logout
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Policy, Claim  # Replace with actual model names
+from django.db.models import Avg
+
+#@login_required
+def admin_dashboard(request):
+    if 'admin_id' not in request.session:
+        return redirect('login')
+
+    total_policies = Policy.objects.count()
+    active_claims = Claim.objects.filter(status='active').count()
+    risk_scores = PolicyHolder.objects.aggregate(avg_score=Avg('risk_score'))
+    notifications = Notification.objects.all()[:5]
+    activity_logs = ActivityLog.objects.all()[:10]  # Assuming ActivityLog exists
+
+    context = {
+        'total_policies': total_policies,
+        'active_claims': active_claims,
+        'risk_scores': risk_scores,
+        'notifications': notifications,
+        'activity_logs': activity_logs,
+    }
+
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
+
+def fraud_alerts(request):
+    alerts = []
+
+    # 1. High risk policyholders
+    high_risk_holders = PolicyHolder.objects.filter(risk_score__gte=80)
+    for holder in high_risk_holders:
+        alerts.append({
+            'alert_type': f'High Risk Score for {holder.name}',
+            'severity': 'High',
+            'reported_date': date.today(),
+            'status': 'Under Review'
+        })
+
+    # 2. Suspicious claims: multiple claims in short time
+    recent_claims = Claim.objects.filter(dateFiled__gte=date.today() - timedelta(days=60))
+    claim_counts = {}
+    for claim in recent_claims:
+        holder_id = claim.policyHolderId.id_number
+        claim_counts[holder_id] = claim_counts.get(holder_id, 0) + 1
+
+    for holder_id, count in claim_counts.items():
+        if count >= 3:
+            holder = PolicyHolder.objects.get(id_number=holder_id)
+            alerts.append({
+                'alert_type': f'{count} Claims in 60 Days - {holder.name}',
+                'severity': 'Medium',
+                'reported_date': date.today(),
+                'status': 'Pending'
+            })
+
+    # 3. Multiple beneficiaries on one policy
+    for policy in Policy.objects.all():
+        ben_count = Beneficiary.objects.filter(policy=policy).count()
+        if ben_count >= 3:
+            alerts.append({
+                'alert_type': f'Policy {policy.policyId} has {ben_count} beneficiaries',
+                'severity': 'Low',
+                'reported_date': date.today(),
+                'status': 'Pending'
+            })
+
+    # Risk level distribution for chart
+    total = len(alerts)
+    high = len([a for a in alerts if a['severity'] == 'High'])
+    medium = len([a for a in alerts if a['severity'] == 'Medium'])
+    low = len([a for a in alerts if a['severity'] == 'Low'])
+
+    def percent(part): return round((part / total) * 100, 1) if total > 0 else 0
+
+    context = {
+        'alerts': alerts,
+        'high_risk_percent': percent(high),
+        'medium_risk_percent': percent(medium),
+        'low_risk_percent': percent(low)
+    }
+    return render(request, 'Admin Templates/fraud_alerts.html', context)
