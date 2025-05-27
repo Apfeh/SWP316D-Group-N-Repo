@@ -1,9 +1,18 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .fraud_detection import run_automatic_checks
 
 
+
+
+
+class Admin(models.Model):
+    id = models.AutoField(primary_key=True)
+    email = models.CharField(max_length=100, unique=True)
+    password = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'ifpwebapp_admin'
 
 
 
@@ -13,8 +22,15 @@ class PolicyHolder(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     contact = models.CharField(max_length=20)
-    email = models.EmailField(unique=True)  # Used as username
-    password = models.CharField(max_length=128)
+    email = models.CharField(max_length=100, unique=True)
+    password = models.CharField(max_length=100)
+    # risk 
+    beneficiary_changes = models.IntegerField(default=0)
+    claims_last_year = models.IntegerField(default=0)
+    incomplete_documents = models.BooleanField(default=False)
+    activity_timeline = models.JSONField(default=list)
+    risk_score = models.FloatField(default=0.0)
+
 
     class Meta:
         db_table = 'policyholder'
@@ -25,7 +41,7 @@ class Policy(models.Model):#remeber to remove this
     policyHolder = models.ForeignKey(PolicyHolder, to_field="id_number", on_delete=models.CASCADE)
     policyType = models.CharField(max_length=100)
     premiumAmount = models.DecimalField(max_digits=10, decimal_places=2)
-    startDate = models.DateField()
+    start_date = models.DateField()
     endDate = models.DateField()
 
 
@@ -66,6 +82,7 @@ class InsuredPerson(models.Model):
     name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     relationship_to_policy_holder = models.CharField(max_length=100)
+    holder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'insuredperson'
@@ -84,37 +101,55 @@ class FraudPreventionTeam(models.Model):
         db_table = 'fraudpreventionteam'
 
 
-from django.utils import timezone
+#officer
+class Officer(models.Model):
+    officerID = models.AutoField(primary_key=True)
+    claim = models.ForeignKey(Claim, on_delete=models.CASCADE)
+    contactNumber = models.CharField(max_length=15)
+    department = models.CharField(max_length=50)
+    officerName = models.CharField(max_length=100)
 
-# Suspicious activities detected by the system
-class SuspiciousActivity(models.Model):
-    policyHolder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
-    description = models.TextField()
-    detected_at = models.DateTimeField(default=timezone.now)
-    resolved = models.BooleanField(default=False)
+    def _str_(self):
+        return self.officerName
+
+class Case(models.Model):
+    caseID = models.AutoField(primary_key=True)
+    officer = models.ForeignKey(Officer, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20)
+
+    def _str_(self):
+        return f"Case {self.caseID} - {self.status}"
+    
+    #risk assessment api
+class Notification(models.Model):
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    policy = models.ForeignKey('Policy', on_delete=models.SET_NULL, null=True, blank=True)
+    claim = models.ForeignKey('Claim', on_delete=models.SET_NULL, null=True, blank=True)
+    policy_holder = models.ForeignKey('PolicyHolder', on_delete=models.SET_NULL, null=True, blank=True)
+    beneficiary = models.ForeignKey('Beneficiary', on_delete=models.SET_NULL, null=True, blank=True)
+    insured_person = models.ForeignKey('InsuredPerson', on_delete=models.SET_NULL, null=True, blank=True)
+    fraud_team = models.ForeignKey('FraudPreventionTeam', on_delete=models.SET_NULL, null=True, blank=True)
+    officer = models.ForeignKey('Officer', on_delete=models.SET_NULL, null=True, blank=True)
+    case = models.ForeignKey('Case', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        db_table = 'suspicious_activity'
+        db_table = 'notification'
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"SuspiciousActivity for {self.policyHolder.name} at {self.detected_at}"
+        return self.message
 
-
-# Risk score for a policyholder after assessment
-class RiskAssessment(models.Model):
-    policyHolder = models.ForeignKey(PolicyHolder, on_delete=models.CASCADE)
-    risk_score = models.IntegerField()
-    requires_manual_approval = models.BooleanField(default=False)
-    assessed_at = models.DateTimeField(default=timezone.now)
+class ActivityLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.CharField(max_length=100)
+    action = models.CharField(max_length=100)
+    details = models.TextField()
 
     class Meta:
-        db_table = 'risk_assessment'
+        db_table = 'activity_log'
+        ordering = ['-timestamp']
 
     def __str__(self):
-        return f"RiskAssessment: {self.policyHolder.name} = {self.risk_score}"
-
-
-@receiver(post_save, sender=Policy)
-def auto_check_fraud(sender, instance, created, **kwargs):
-    if created:
-        run_automatic_checks(instance.policyHolder)
+        return f"{self.user} - {self.action}"
