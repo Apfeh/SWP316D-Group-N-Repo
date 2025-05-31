@@ -188,10 +188,10 @@
             <tbody>
                 {% for claim in claims %}
                 <tr>
-                    <td>{{ claim.id }}</td>
-                    <td>{{ claim.policy_id }}</td>
+                    <td>{{ claim.claimId}}</td>
+                    <td>{{ claim.policyId}}</td>
                     <td class="status-{{ claim.status|lower }}">{{ claim.status }}</td>
-                    <td>{{ claim.details }}</td>
+                    <td>{{ claim.claimAmount }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

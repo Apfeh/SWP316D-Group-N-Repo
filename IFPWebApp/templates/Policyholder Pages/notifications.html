@@ -1,0 +1,189 @@
+<!-- templates/Policyholder Pages/notifications.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications • FraudShield</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        :root {
+            --primary-blue: #0077b6;
+            --secondary-green: #00b894;
+            --light-gray: #f4f7fa;
+            --dark-gray: #333;
+            --white: #ffffff;
+            --accent-yellow: #ffd166;
+        }
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        nav a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: var(--secondary-green);
+        }
+        .container {
+            padding: 4rem 2rem;
+            background-color: var(--light-gray);
+            margin-top: 5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h2 {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .notification-list {
+            list-style: none;
+        }
+        .notification-item {
+            background-color: var(--white);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .notification-item p {
+            margin-bottom: 0.5rem;
+        }
+        .no-notifications {
+            text-align: center;
+            color: var(--dark-gray);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">IFPS</div>
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'policy_status' %}">Policy Status</a>
+            <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
+            <a href="{% url 'file_claim' %}">File Claim</a>
+            <a href="{% url 'claim_status' %}">Claim Status</a>
+            <a href="{% url 'notifications' %}">Notifications ({{ pending_claims.count }})</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </nav>
+    </header>
+   <div class="card fade-in">
+    <h2>Notifications</h2>
+    
+    <!-- Policy Notifications -->
+    <div class="notification-section">
+        <h3>Policy Approvals</h3>
+        {% if notifications %}
+            <ul class="notification-list">
+                {% for notification in notifications %}
+                    <li class="notification-item {% if not notification.read %}unread{% endif %}">
+                        <p class="notification-message">{{ notification.message }}</p>
+                        <p class="notification-time">{{ notification.created_at|timesince }} ago</p>
+                        {% if notification.related_policy %}
+                            <a href="{% url 'policy_status' %}" class="view-link">View Policy</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-notifications">No new policy notifications.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Claim Notifications -->
+    <div class="notification-section">
+        <h3>Pending Claims</h3>
+        {% if pending_claims %}
+            <ul class="notification-list">
+                {% for claim in pending_claims %}
+                    <li class="notification-item">
+                        <p><strong>Pending Claim for Policy {{ claim.policy.policyId }}</strong></p>
+                        <p>Beneficiary: {{ claim.beneficiary.name }}</p>
+                        <p>Amount: {{ claim.claimAmount }}</p>
+                        <p>Status: {{ claim.status }}</p>
+                        <p>View details on <a href="{% url 'claim_status' %}">Claim Status</a></p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-notifications">No pending claims.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add notification styles -->
+<style>
+    .notification-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .notification-item {
+        background-color: #f9f9f9;
+        border-left: 4px solid #0077b6;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+    }
+    
+    .notification-item.unread {
+        background-color: #e8f4f8;
+        border-left-color: #00b894;
+    }
+    
+    .notification-message {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .notification-time {
+        font-size: 0.85rem;
+        color: #777;
+    }
+    
+    .view-link {
+        display: inline-block;
+        background-color: #0077b6;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+</style>
+</body>
+</html>

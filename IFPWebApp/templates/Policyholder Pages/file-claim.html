@@ -7,20 +7,18 @@
     <title>FraudShield • File Claim</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Integrated Styles */
+        /* Integrated Styles (unchanged) */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--light-gray);
             color: var(--dark-gray);
             line-height: 1.6;
         }
-
         :root {
             --primary-blue: #0077b6;
             --secondary-green: #00b894;
@@ -29,7 +27,6 @@
             --white: #ffffff;
             --accent-yellow: #ffd166;
         }
-
         header {
             position: fixed;
             top: 0;
@@ -42,18 +39,15 @@
             align-items: center;
             z-index: 1000;
         }
-
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary-blue);
         }
-
         nav {
             display: flex;
             align-items: center;
         }
-
         nav a {
             color: var(--dark-gray);
             text-decoration: none;
@@ -61,18 +55,15 @@
             font-size: 1rem;
             transition: color 0.3s ease;
         }
-
         nav a:hover {
             color: var(--secondary-green);
         }
-
         nav a.active {
             background-color: var(--secondary-green);
             color: var(--white);
             padding: 0.5rem 1rem;
             border-radius: 5px;
         }
-
         .cta-button {
             background-color: var(--secondary-green);
             color: var(--white);
@@ -83,11 +74,9 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
         .cta-button:hover {
             background-color: #009e7f;
         }
-
         .form-container {
             background-color: var(--white);
             padding: 2rem;
@@ -96,24 +85,20 @@
             margin: 6rem auto 2rem;
             max-width: 800px;
         }
-
         .form-container h2 {
             font-size: 2rem;
             color: var(--primary-blue);
             margin-bottom: 1.5rem;
         }
-
         .form-group {
             margin-bottom: 1rem;
         }
-
         .form-group label {
             display: block;
             font-size: 1rem;
             color: var(--dark-gray);
             margin-bottom: 0.5rem;
         }
-
         .form-group input, .form-group select {
             width: 100%;
             padding: 0.75rem;
@@ -121,31 +106,25 @@
             border-radius: 5px;
             font-size: 1rem;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .fade-in {
             animation: fadeIn 0.5s ease;
         }
-
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
                 padding: 1rem;
             }
-
             nav {
                 margin-top: 1rem;
             }
-
             nav a {
                 margin-left: 1rem;
                 font-size: 0.9rem;
             }
-
             .form-container {
                 margin: 5rem 1rem 1rem;
                 padding: 1.5rem;
@@ -171,17 +150,25 @@
     <!-- File Claim Form -->
     <section class="form-container fade-in">
         <h2>File a Claim</h2>
-        <form method="post">
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="policy-id">Policy ID</label>
-                <select id="policy-id" name="policy_id" required>
-                    <option value="">Select Policy</option>
-                    {% for policy in policy_options %}
-                    <option value="{{ policy.id }}">{{ policy.id }} - {{ policy.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+          
+    <div class="form-group">
+        <label for="policy-id">Policy</label>
+        <select id="policy-id" name="policy_id" required>
+            <option value="">Select Policy</option>
+            {% for policy in policy_options %}
+            <option value="{{ policy.policyId }}">
+                Policy {{ policy.policyId }} - {{ policy.policyType }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
             <div class="form-group">
                 <label for="death-certificate">Death Certificate</label>
                 <input type="file" id="death-certificate" name="death_certificate" accept=".pdf,.jpg,.png" required>

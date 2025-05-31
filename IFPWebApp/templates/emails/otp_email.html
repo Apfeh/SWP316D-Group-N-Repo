@@ -1,0 +1,30 @@
+<!-- templates/emails/otp_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your OTP Verification Code</title>
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2c3e50;">OTP Verification Code</h2>
+        <p>Hello,</p>
+        <p>Your one-time verification code is:</p>
+        
+        <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; 
+                    padding: 12px; margin: 20px 0; font-size: 24px; 
+                    font-weight: bold; color: #2c3e50;">
+            {{ otp_code }}
+        </div>
+        
+        <p>This code will expire in {{ valid_minutes }} minutes.</p>
+        <p>If you didn't request this code, please ignore this email or contact support.</p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <p style="font-size: 12px; color: #7f8c8d;">
+            For any questions, contact <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+        </p>
+    </div>
+</body>
+</html>
