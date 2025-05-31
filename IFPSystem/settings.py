@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'IFPWebApp'
+    'IFPWebApp',
+    
 ]
 ASGI_APPLICATION = 'IFPWebApp.asgi.application'
 
@@ -63,7 +64,7 @@ ROOT_URLCONF = 'IFPSystem.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],   
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,15 +85,38 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fraudshielddb',
-        'USER':'Lethokuhle',
-        'PASSWORD':'lethokuhle123',
+        'NAME':'newdb',
+        'USER':'root',
+        'PASSWORD' :'myr00tp@ssw0rd',
         'HOST':'localhost',
-        'PORT':'3306',      
+        'PORT':'3306',
+   },
+    'homeaffairs': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'homeaffairsdb',
+        'USER': 'root',
+        'PASSWORD': 'myr00tp@ssw0rd',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
+# settings.py
+DATABASE_ROUTERS = ['IFPWebApp.routers.HomeAffairsRouter']
+
+#
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ipfs.verify.now@gmail.com'  
+EMAIL_HOST_PASSWORD = 'nllrclkqvhyparjf' 
 
 
+#Use sessions
+# Session Configuration (using database)
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_AGE = 1800  # 30 minutes session timeout
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -130,9 +154,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'landing_page'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-LOGIN_URL = '/login/'
-
