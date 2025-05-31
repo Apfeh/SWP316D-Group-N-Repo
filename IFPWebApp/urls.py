@@ -3,16 +3,16 @@ from . import views
 
 urlpatterns = [
     # Main Dashboard
-    path('', views.landing_page, name='landing_page'),
-    path('login/', views.login, name='login'),
+    path('', views.fraud_alerts, name='fraud_alerts'),
+    path('login/', views.login_view, name='login'),
     path('register/', views.register, name='register'),
 
     # Boitshepo's Admin Pages
-    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('claim-review/', views.claim_review, name='claim_review'),
     path('fraud-alerts/', views.fraud_alerts, name='fraud_alerts'),
     path('policy-review/', views.policy_review, name='policy_review'),
-    path('risk-reports/', views.Risk_reports, name='Risk_reports'),
+    path('risk-reports/', views.risk_reports, name='Risk_reports'),
     path('user-management/', views.user_management, name='user_management'),
 
     # Dalphy's Beneficiary Pages

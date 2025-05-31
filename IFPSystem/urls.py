@@ -20,6 +20,16 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('IFPWebApp.urls')),
+<<<<<<< Updated upstream
     
     
+=======
+    path('risk_report/', views.risk_reports, name='risk_report'),
+    path('login/', views.login_view, name='login'),
+    path('', views.login_view),  # Optional: default route to login
+    path('logout/', views.logout_view, name='logout'),
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+>>>>>>> Stashed changes
 ]
+
+

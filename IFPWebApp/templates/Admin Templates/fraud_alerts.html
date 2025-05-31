@@ -129,17 +129,17 @@
 
     .high-risk {
       background-color: #ff4d4d;
-      width: 85%; /* Adjust based on the actual data */
+      /* width is set inline via template variable */
     }
 
     .medium-risk {
       background-color: #ffa500;
-      width: 60%; /* Adjust based on the actual data */
+      /* width is set inline via template variable */
     }
 
     .low-risk {
       background-color: #28a745; /* Green color for Low Risk */
-      width: 40%; /* Adjust based on the actual data */
+      /* width is set inline via template variable */
     }
 
     /* Footer */
@@ -160,8 +160,8 @@
 <!-- Sidebar -->
 <div class="sidebar">
   <a href="{% url 'admin_dashboard' %}">Dashboard</a>
-  <a href="{% url 'policy_review' %}">Policy Review</a>
-  <a href="{% url 'claim_review' %}">Claim Review</a>
+ <!-- <a href="{% url 'policy_review' %}">Policy Review</a>\-->
+  <!--<a href="{% url 'claim_review' %}">Claim Review</a>-->
   <a href="{% url 'Risk_reports' %}">Risk Reports</a>
   <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
   <a href="{% url 'user_management' %}">User Management</a>
@@ -178,7 +178,7 @@
   <div class="top-right-icons">
     <a href="#"><i class="bi bi-person-circle"></i></a>
     <a href="#"><i class="bi bi-bell-fill"></i></a>
-    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
+    <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
 
@@ -187,26 +187,26 @@
   <h2>Fraud Alerts</h2>
     
   <!-- Fraud Alert Chart -->
-  <div class="chart-container">
-    <div class="chart-label">Suspicious Activity: High Risk</div>
-    <div class="chart-bar high-risk" style="width: 85%;">
-      <span>85%</span>
-    </div>
+<div class="chart-container">
+  <div class="chart-label">Suspicious Activity: High Risk</div>
+  <div class="chart-bar high-risk" style="width: {{ high_risk_percent }}%;">
+    <span>{{ high_risk_percent }}%</span>
   </div>
+</div>
 
-  <div class="chart-container">
-    <div class="chart-label">Suspicious Activity: Medium Risk</div>
-    <div class="chart-bar medium-risk" style="width: 60%;">
-      <span>60%</span>
-    </div>
+<div class="chart-container">
+  <div class="chart-label">Suspicious Activity: Medium Risk</div>
+  <div class="chart-bar medium-risk" style="width: {{ medium_risk_percent }}%;">
+    <span>{{ medium_risk_percent }}%</span>
   </div>
+</div>
 
-  <div class="chart-container">
-    <div class="chart-label">Suspicious Activity: Low Risk</div>
-    <div class="chart-bar low-risk" style="width: 40%;">
-      <span>40%</span>
-    </div>
+<div class="chart-container">
+  <div class="chart-label">Suspicious Activity: Low Risk</div>
+  <div class="chart-bar low-risk" style="width: {{ low_risk_percent }}%;">
+    <span>{{ low_risk_percent }}%</span>
   </div>
+</div>
 
   <!-- Fraud Alerts Table -->
   <table class="table table-bordered">
@@ -219,25 +219,28 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>Multiple Policies on Unrelated Individuals</td>
-        <td><div class="alert-bar" style="width: 90%; background-color: red;"></div> High</td>
-        <td>2025-04-25</td>
-        <td>Under Review</td>
-      </tr>
-      <tr>
-        <td>Multiple Deaths Linked to Same Policyholder</td>
-        <td><div class="alert-bar" style="width: 75%; background-color: orange;"></div> Medium</td>
-        <td>2025-04-24</td>
-        <td>Resolved</td>
-      </tr>
-      <tr>
-        <td>Suspicious Claim Submitted</td>
-        <td><div class="alert-bar" style="width: 90%; background-color: red;"></div> High</td>
-        <td>2025-04-22</td>
-        <td>Pending</td>
-      </tr>
-    </tbody>
+  {% for alert in alerts %}
+    <tr>
+      <td>{{ alert.alert_type }}</td>
+      <td>
+        <div class="alert-bar"
+          {% if alert.severity == 'High' %}
+            style="width:90%; background-color:red;"
+          {% elif alert.severity == 'Medium' %}
+            style="width:70%; background-color:orange;"
+          {% else %}
+            style="width:40%; background-color:green;"
+          {% endif %}
+        ></div> {{ alert.severity }}
+      </td>
+      <td>{{ alert.reported_date }}</td>
+      <td>{{ alert.status }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">No fraud alerts detected.</td></tr>
+  {% endfor %}
+</tbody>
+
   </table>
 
   
