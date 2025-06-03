@@ -63,6 +63,14 @@ urlpatterns = [
     #Letho Fraud Detection
     path('fraud-check/<int:policyholder_id>/', views.run_manual_fraud_check, name='run_manual_fraud_check'),
     path('get-citizen/', views.get_citizen, name='get_citizen'),
-  path('approve-insured/<uuid:token>/', views.approve_insured_person, name='approve_insured')
+    path('approve-insured/<uuid:token>/', views.approve_insured_person, name='approve_insured'),
+
+  #claim review
+      path('claims/', views.claim_review, name='claim_review'),
+      path('update-claim-status/<int:claim_id>/', views.update_claim_status, name='update_claim_status'),
+    #Policy review
+      path('update-policy-status/<int:policy_id>/', views.update_policy_status, name='update_policy_status'),
+
+  
     
 ]

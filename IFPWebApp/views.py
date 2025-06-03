@@ -1353,3 +1353,142 @@ def claim_review(request):
 
 def user_management(request):
     return render(request, 'Admin Templates/user_management.html')
+
+#Claim review
+
+from django.shortcuts import render
+from .models import PolicyHolder, Claim
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+
+def claim_review(request):
+    query = request.GET.get('search')
+    status = request.GET.get('status')
+    insured_name = request.GET.get('insured_name')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    claims = Claim.objects.all()
+
+    if query:
+        holders = PolicyHolder.objects.filter(id_number__icontains=query)
+        claims = claims.filter(policyHolderId__in=holders)
+
+    if status:
+        claims = claims.filter(status__iexact=status)
+
+    if insured_name:
+        claims = claims.filter(insured_person__name__icontains=insured_name)
+
+    if start_date:
+        claims = claims.filter(claim_date__gte=start_date)
+    if end_date:
+        claims = claims.filter(claim_date__lte=end_date)
+
+    # AJAX support for dynamic table refresh
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('admin Templates/claim_rows.html', {'claims': claims})
+        return JsonResponse({'html': html})
+
+    return render(request, 'admin Templates/claim_review.html', {
+         'claims': claims,
+         'query': query or '',
+         'status': status or '',
+         'insured_name': insured_name or '',
+         'start_date': start_date or '',
+         'end_date': end_date or '',
+})
+
+#Policy Review 
+from django.db.models import Q
+
+
+def policy_review(request):
+    query = request.GET.get('q', '')
+    insured_name = request.GET.get('insured_name', '')
+    policy_status = request.GET.get('policy_status', '')
+    risk_score = request.GET.get('risk_score', '')
+
+    policies = Policy.objects.all()
+
+    if query:
+        policies = policies.filter(
+            Q(policyId__icontains=query) |
+            Q(policyHolder__name__icontains=query) |
+            Q(policyHolder__id_number__icontains=query) |
+            Q(policyType__icontains=query) |
+            Q(premiumAmount__icontains=query)
+        )
+
+    if insured_name:
+       policies = policies.filter(insuredperson__name__icontains=insured_name).distinct()
+
+    if policy_status:
+        policies = policies.filter(policy_status__iexact=policy_status)
+
+     
+       # Add dynamic risk score and filter if needed
+    enriched_policies = []
+    for policy in policies:
+        holder = policy.policyHolder
+        risk = assess_policy_risk(holder)
+        risk_level = risk['level']
+        insured_people = InsuredPerson.objects.filter(policy_id=policy)
+        insured_names = ", ".join([person.name for person in insured_people])
+        if risk_score and risk_score.lower() != risk_level.lower():
+                 continue
+    
+  
+        enriched_policies.append({
+            'policy': policy,
+            'holder_name': holder.name,
+            'risk_score': f"{risk['score']}% ({risk_level})",
+            'risk_level': risk_level,
+            'explanation': ", ".join(risk['explanation']),
+            'insured_names': insured_names,  # 👈 Include this line  
+   
+            
+          })
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+       html = render_to_string('admin Templates/policy_rows.html', {'policies': enriched_policies})
+       return JsonResponse({'html': html})
+
+    context = {
+        'policies': enriched_policies,  # not the raw queryset
+        'query': query,
+        'insured_name': insured_name,
+        'policy_status': policy_status,
+        'risk_score': risk_score,
+        
+    }
+    return render(request, 'Admin Templates/policy_review.html', context)
+
+from django.shortcuts import redirect, get_object_or_404
+from .models import Claim  # adjust if in another app
+
+def update_claim_status(request, claim_id):
+    if request.method == "POST":
+        claim = get_object_or_404(Claim, pk=claim_id)
+        new_status = request.POST.get('action')
+
+        if new_status in ['Approved', 'Rejected', 'Investigating']:
+            claim.status = new_status
+            claim.save()
+
+    return redirect('claim_review')  # Redirect back to claim review page
+
+from django.shortcuts import redirect, get_object_or_404
+from .models import Policy  # adjust if in another app
+
+def update_policy_status(request, policy_id):
+    if request.method == "POST":
+        policy = get_object_or_404(Policy, pk=policy_id)
+        new_status = request.POST.get('action')  # Expecting 'Approved' or 'Rejected'
+
+        if new_status in ['Active', 'Cancelled']:
+            policy.policy_status = new_status
+            policy.save()
+
+    return redirect('policy_review')  # Adjust to match your URL name

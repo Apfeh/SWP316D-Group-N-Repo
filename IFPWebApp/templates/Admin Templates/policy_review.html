@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,234 +6,7 @@
   <title>Policy Review</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-  <style>
-    /* Base Styling */
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f8f9fa;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100vh;
-      width: 250px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background-color: #003366;
-      color: white;
-      padding-top: 90px;
-      padding-left: 20px;
-    }
-
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-      font-weight: bold;
-    }
-
-    .sidebar a:hover {
-      color: #00b894;
-    }
-
-    /* Navbar */
-    .navbar {
-      background-color: white;
-      padding: 1rem;
-      color: #003366;
-      font-weight: bold;
-      position: fixed;
-      top: 0;
-      left: 250px;
-      width: calc(100% - 250px);
-      z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar a {
-      color: #003366;
-      text-decoration: none;
-    }
-
-    .navbar a:hover {
-      color: #00b894;
-    }
-
-    /* Top right icons */
-    .top-right-icons {
-      position: absolute;
-      top: 50%;
-      right: 20px;
-      transform: translateY(-50%);
-    }
-
-    .top-right-icons a {
-      margin-left: 15px;
-      color: #003366;
-      font-size: 1.5rem;
-    }
-
-    /* Main Content */
-    .container {
-      margin-top: 80px;
-      margin-left: 270px;
-      margin-bottom: 80px; /* So footer doesn't overlap */
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-    }
-
-    h2 {
-      font-size: 2.5rem;
-      margin-bottom: 1.5rem;
-      color: #003366;
-    }
-
-    /* Table Styling */
-    .table {
-      width: 100%;
-      margin-bottom: 2rem;
-    }
-
-    .table th, .table td {
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .table thead {
-      background-color: #003366;
-      color: white;
-    }
-
-    .table tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-
-    /* Modal Styling */
-    .modal-backdrop {
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-    }
-
-    input[type="checkbox"]:checked ~ .modal-backdrop {
-      display: block;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: white;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 50%;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      z-index: 1050;
-    }
-
-    input[type="checkbox"]:checked ~ .modal {
-      display: block;
-    }
-
-    .modal-header {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-    }
-
-    .modal-body p {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .modal-btn {
-      padding: 0.6rem 2rem;
-      border-radius: 4px;
-      font-size: 1.1rem;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-approve {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .btn-reject {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    .close-modal {
-      background-color: #6c757d;
-      color: white;
-    }
-
-    /* Footer */
-    .footer {
-      text-align: center;
-      padding: 1rem;
-      background-color: #003366;
-      color: white;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      left: 0;
-    }
-
-    /* Dropdown */
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background-color: white;
-      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-      min-width: 200px;
-      border-radius: 5px;
-      overflow: hidden;
-      z-index: 1001;
-    }
-
-    .dropdown:hover .dropdown-menu {
-      display: block;
-    }
-
-    .dropdown-menu a {
-      display: block;
-      padding: 10px 20px;
-      text-decoration: none;
-      color: #003366;
-      font-weight: normal;
-    }
-
-    .dropdown-menu a:hover {
-      background-color: #f1f1f1;
-      color: #00b894;
-    }
-
-    input[type="checkbox"] {
-      display: none;
-    }
-
-    .modal-trigger {
-      cursor: pointer;
-      color: #007bff;
-    }
-
-  </style>
+  <link rel="stylesheet" href="{% static 'admin.css' %}">
 </head>
 <body>
 
@@ -243,21 +17,61 @@
   <a href="{% url 'claim_review' %}">Claim Review</a>
   <a href="{% url 'Risk_reports' %}">Risk Reports</a>
   <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
-  <a href="#">User Management</a>
+  <a href="{% url 'user_management' %}">User Management</a>
 </div>
 
 <!-- Navbar -->
 <nav class="navbar d-flex align-items-center justify-content-between">
   <!-- Search Bar -->
-  <form class="d-flex ms-3" role="search" style="width: 300px;">
-    <input class="form-control me-2" type="search" placeholder="Search ..." aria-label="Search">
-    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
-  </form>
+<form class="d-flex flex-wrap gap-2 align-items-end" role="search" method="get">
+  <!-- ID Number Search -->
+  <div class="search-field">
+    <label for="search" class="form-label small-label">Policy Holder ID</label>
+    <input class="form-control form-control-sm" type="search" name="q" placeholder="e.g. 9201..." value="{{ query }}">
+  </div>
+
+  <!-- Insured Person Name -->
+  <div class="search-field">
+    <label for="insured_name" class="form-label small-label">Insured Name</label>
+    <input class="form-control form-control-sm" type="text" name="insured_name" placeholder="e.g. John Doe" value="{{ insured_name }}">
+  </div>
+
+  <!-- Policy Status Dropdown -->
+  <div class="search-field">
+    <label for="policy_status" class="form-label small-label">Policy Status</label>
+    <select class="form-select form-select-sm" name="policy_status">
+      <option value="">All</option>
+      <option value="Active" {% if policy_status == "Active" %}selected{% endif %}>Active</option>
+      <option value="Pending" {% if policy_status == "Pending" %}selected{% endif %}>Pending</option>
+      <option value="Cancelled" {% if policy_status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+      <option value="Expired" {% if policy_status == "Expired" %}selected{% endif %}>Expired</option>
+    </select>
+  </div>
+
+  <!-- Risk Score Dropdown -->
+  <div class="search-field">
+    <label for="risk_score" class="form-label small-label">Risk Score</label>
+    <select class="form-select form-select-sm" name="risk_score">
+      <option value="">All</option>
+      <option value="Low" {% if risk_score == "Low" %}selected{% endif %}>Low</option>
+      <option value="Medium" {% if risk_score == "Medium" %}selected{% endif %}>Medium</option>
+      <option value="High" {% if risk_score == "High" %}selected{% endif %}>High</option>
+    </select>
+  </div>
+
+  <!-- Search Button -->
+  <div class="search-field">
+    <button class="btn btn-outline-primary btn-sm mt-2" type="submit">
+      <i class="bi bi-search"></i> Search
+    </button>
+  </div>
+</form>
+
 
   <div class="top-right-icons">
     <a href="#"><i class="bi bi-person-circle"></i></a>
     <a href="#"><i class="bi bi-bell-fill"></i></a>
-    <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i></a>
+    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
 
@@ -278,29 +92,29 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="policies-table-body">
+  {% if policies %}
+    {% for entry in policies %}
       <tr>
-        <td>1</td>
-        <td>John Doe</td>
-        <td>Jane Doe</td>
-        <td>High</td>
-        <td>Pending</td>
+        <td>{{ entry.policy.policyId }}</td>
+        <td>{{ entry.holder_name }}</td>
+        <td>{{ entry.insured_names}}</td> 
+        <td>{{ entry.risk_score }}</td>
+        <td>{{ entry.policy.policy_status }}</td> 
         <td class="action-btns">
-          <a class="modal-trigger" onclick="document.getElementById('review-modal-checkbox').checked = true;">Review</a>
+          <a class="modal-trigger" onclick="openReviewModal('{{ entry.policy.policyId }}')">Review</a>
+
         </td>
       </tr>
-      <tr>
-        <td>2</td>
-        <td>Alice Smith</td>
-        <td>Bob Smith</td>
-        <td>Medium</td>
-        <td>Pending</td>
-        <td class="action-btns">
-          <a class="modal-trigger" onclick="document.getElementById('review-modal-checkbox').checked = true;">Review</a>
-        </td>
-      </tr>
-      <!-- Add more rows dynamically if needed -->
-    </tbody>
+    {% endfor %}
+  {% else %}
+    <tr>
+      <td colspan="6" class="text-center">No policies found for "{{ query }}"</td>
+    </tr>
+  {% endif %}
+</tbody>
+
+
   </table>
 </div>
 
@@ -318,9 +132,13 @@
     <p><strong>Documents:</strong> (Files will appear here later)</p>
   </div>
   <div class="modal-footer">
-    <button class="modal-btn btn-approve">Approve</button>
-    <button class="modal-btn btn-reject">Reject</button>
-    <button class="close-modal" onclick="document.getElementById('review-modal-checkbox').checked = false;">Close</button>
+      <form id="review-form" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" id="action-input">
+      <button type="submit" class="modal-btn btn-approve" onclick="setAction('Active')">Approve</button>
+      <button type="submit" class="modal-btn btn-reject" onclick="setAction('Cancelled')">Reject</button>
+      <button type="button" class="close-modal" onclick="document.getElementById('review-modal-checkbox').checked = false;">Close</button>
+    </form>
   </div>
 </div>
 
@@ -328,6 +146,37 @@
 <div class="footer">
   &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
+<script>
+  document.querySelector('form[role="search"]').addEventListener('submit', function(e) {
+    e.preventDefault(); // stop full reload
+
+    const form = e.target;
+    const url = form.action || window.location.href;
+    const params = new URLSearchParams(new FormData(form));
+
+    fetch(url + '?' + params.toString(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.querySelector('#policies-table-body').innerHTML = data.html;
+    })
+    .catch(console.error);
+  });
+
+
+    function openReviewModal(policyId) {
+    const form = document.getElementById('review-form');
+    form.action = `/update-policy-status/${policyId}/`;
+    document.getElementById('review-modal-checkbox').checked = true;
+  }
+
+  function setAction(action) {
+    document.getElementById('action-input').value = action;
+  }
+  
+  
+</script>
 
 </body>
 </html>
