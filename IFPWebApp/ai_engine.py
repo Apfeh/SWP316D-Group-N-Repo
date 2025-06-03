@@ -36,7 +36,7 @@ def assess_policy_risk(holder):
 
    
 
-    recent_policies = Policy.objects.filter(policyHolder=holder, start_date__gte=timezone.now() - timedelta(days=365)).count()
+    recent_policies = Policy.objects.filter(policyHolder=holder, startDate__gte=timezone.now() - timedelta(days=365)).count()
     if recent_policies > 0:
         score += 10
         reasons.append("Recently issued policy")

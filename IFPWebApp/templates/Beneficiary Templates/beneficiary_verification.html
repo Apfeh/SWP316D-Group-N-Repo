@@ -1,66 +1,666 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beneficiary Verification</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  </script>
   <style>
     body {
       background-color: #f4f7fa;
       font-family: 'Inter', sans-serif;
     }
-
     .navbar {
       background-color: #009f82;
     }
-
     .form-section {
       background-color: white;
       padding: 2rem;
       border-radius: 1rem;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
     }
-
     .btn-primary-custom {
       background-color: #00b894;
       border: none;
+      padding: 10px 20px;
     }
-
     .btn-primary-custom:hover {
       background-color: #009f82;
     }
+    .preview-img {
+      max-width: 100%;
+      max-height: 300px;
+      margin-top: 1rem;
+      display: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .preview-pdf {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #555;
+      display: none;
+    }
+    .camera-container {
+      margin-top: 1rem;
+      display: none;
+    }
+    #cameraPreview {
+      width: 100%;
+      max-height: 300px;
+      background-color: #eee;
+      border-radius: 0.5rem;
+    }
+    .camera-buttons {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 10px;
+    }
+    .upload-options {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 10px;
+    }
+    .option-btn {
+      padding: 8px 16px;
+    }
+    .option-btn.active {
+      background-color: #00b894;
+      color: white;
+    }
+    
+    /* Loading Modal Styles */
+    #loadingModal .modal-content {
+      background: transparent;
+      border: none;
+    }
+    #loadingModal .modal-body {
+      padding: 3rem;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1.5rem;
+      border: 0.35rem solid rgba(0, 184, 148, 0.2);
+      border-top-color: #00b894;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loading-text {
+      color: #009f82;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Enhanced Error/Success Styles */
+    .error-message {
+      position: relative;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #ffebee;
+      color: #d32f2f;
+      border-left: 4px solid #d32f2f;
+      display: flex;
+      align-items: center;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .success-message {
+      position: relative;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+      display: flex;
+      align-items: center;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .error-message svg, .success-message svg {
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .error-message .close-btn, .success-message .close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+    
+    .input-error {
+      border-color: #d32f2f !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23d32f2f'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23d32f2f' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .input-success {
+      border-color: #2e7d32 !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%232e7d32' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .shake-animation {
+      animation: shake 0.5s;
+    }
+    
+    .extraction-loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      margin: 10px 0;
+      color: #0d47a1;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    .alert {
+      animation-duration: 0.5s;
+      animation-fill-mode: both;
+     
+    }
+    
+    .alert svg {
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    
+    .ocr-feedback {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #fff8e1;
+      border-left: 4px solid #ffc107;
+      color: #5d4037;
+      display: flex;
+      align-items: center;
+    }
+    
+    .ocr-feedback svg {
+      margin-right: 10px;
+      color: #ffa000;
+    }
   </style>
-
+</head>
+<body>
   <nav class="navbar navbar-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#"">Verification</a>
+      <a class="navbar-brand" href="#">Verification</a>
     </div>
   </nav>
 
   <div class="container mt-4">
-    <h2>Verify Your Identity</h2>
-    <p>Please upload your documents to complete the verification process.</p>
+    <div class="form-section">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center">
+            {% if message.tags == 'success' %}
+              <svg class="bi flex-shrink-0 me-2" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </svg>
+            {% else %}
+              <svg class="bi flex-shrink-0 me-2" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+              </svg>
+            {% endif %}
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'beneficiary_verification' %}">
-      {% csrf_token %}
-      
-      <div class="mb-3">
-        <label for="id_number" class="form-label">ID Number</label>
-        <input type="text" class="form-control" id="id_number" name="id_number" required>
-      </div>
+      <h2 class="mb-3">Verify Your Identity</h2>
+      <p class="mb-4">Please upload your ID document or take a photo to complete verification.</p>
 
-      <div class="mb-3">
-        <label for="document" class="form-label">Upload ID Document</label>
-        <input class="form-control" type="file" id="document" name="document" required>
-      </div>
+      <form method="POST" enctype="multipart/form-data" action="{% url 'beneficiary_verification' %}" id="verificationForm">
+        {% csrf_token %}
 
-      <button type="submit" class="btn btn-primary-custom" >Submit Verification</button>
-    </form>
+        <div class="mb-4">
+          <label class="form-label">Verification Method</label>
+          <div class="upload-options">
+            <button type="button" class="btn btn-outline-secondary option-btn active" id="uploadBtn">
+              Upload File
+            </button>
+            <button type="button" class="btn btn-outline-secondary option-btn" id="cameraBtn">
+              Use Camera
+            </button>
+          </div>
+
+          <!-- File Upload Section -->
+          <div id="fileUploadSection">
+            <label for="document" class="form-label">Upload ID Document (PDF or Image)</label>
+            <input class="form-control" type="file" id="document" name="document" accept="image/*,application/pdf" required>
+            <img id="previewImage" class="preview-img" alt="Image preview">
+            <div id="previewPDF" class="preview-pdf">PDF selected: <span id="pdfName"></span></div>
+          </div>
+
+          <!-- Camera Section -->
+          <div id="cameraSection" class="camera-container">
+            <div class="mb-2">Take a photo of your ID:</div>
+            <video id="cameraPreview" autoplay playsinline></video>
+            <div class="camera-buttons">
+              <button type="button" class="btn btn-primary-custom" id="captureBtn">Capture</button>
+              <button type="button" class="btn btn-secondary" id="retakeBtn" style="display:none;">Retake</button>
+            </div>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="cameraCapture" class="preview-img" alt="Camera capture">
+            <input type="hidden" id="cameraData" name="camera_data">
+          </div>
+          
+          <!-- OCR Feedback Area -->
+          <div id="ocrFeedback" style="display: none;"></div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary-custom btn-lg">Submit Verification</button>
+        </div>
+      </form>
+    </div>
   </div>
 
+  <!-- Loading Modal -->
+  <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Verifying your information...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize elements
+    const fileInput = document.getElementById('document');
+    const previewImage = document.getElementById('previewImage');
+    const previewPDF = document.getElementById('previewPDF');
+    const pdfName = document.getElementById('pdfName');
+    const verificationForm = document.getElementById('verificationForm');
+    const ocrFeedback = document.getElementById('ocrFeedback');
+
+    // Camera elements
+    const cameraElements = {
+      uploadBtn: document.getElementById('uploadBtn'),
+      cameraBtn: document.getElementById('cameraBtn'),
+      fileUploadSection: document.getElementById('fileUploadSection'),
+      cameraSection: document.getElementById('cameraSection'),
+      cameraPreview: document.getElementById('cameraPreview'),
+      captureBtn: document.getElementById('captureBtn'),
+      retakeBtn: document.getElementById('retakeBtn'),
+      canvas: document.getElementById('canvas'),
+      cameraCapture: document.getElementById('cameraCapture'),
+      cameraData: document.getElementById('cameraData')
+    };
+
+    let cameraStream = null;
+
+    // Error/Success Messages
+    function showError(message, element) {
+      const errorElem = document.createElement('div');
+      errorElem.className = 'error-message';
+      errorElem.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        </svg>
+        <span>${message}</span>
+        <button class="close-btn" aria-label="Close">×</button>
+      `;
+      
+      element.parentNode.insertBefore(errorElem, element.nextSibling);
+      element.classList.add('shake-animation');
+      setTimeout(() => element.classList.remove('shake-animation'), 500);
+
+      errorElem.querySelector('.close-btn').addEventListener('click', () => {
+        errorElem.remove();
+        element.classList.remove('input-error');
+      });
+    }
+
+    function showSuccess(message, element) {
+      const successElem = document.createElement('div');
+      successElem.className = 'success-message';
+      successElem.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+        <span>${message}</span>
+      `;
+      
+      element.parentNode.insertBefore(successElem, element.nextSibling);
+    }
+
+    function showOCRFeedback(message, isSuccess) {
+      ocrFeedback.style.display = 'block';
+      ocrFeedback.className = isSuccess ? 'success-message' : 'error-message';
+      ocrFeedback.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="${isSuccess ? 'M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z' : 'M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z'}"/>
+        </svg>
+        <span>${message}</span>
+      `;
+    }
+
+    // File Handling
+    fileInput.addEventListener('change', handleFileUpload);
+
+    async function handleFileUpload() {
+      const file = this.files[0];
+      previewImage.style.display = 'none';
+      previewPDF.style.display = 'none';
+      ocrFeedback.style.display = 'none';
+
+      if (!file) return;
+
+      try {
+        if (file.type === 'application/pdf') {
+          await renderPdfPreview(file);
+        } else if (file.type.startsWith('image/')) {
+          await renderImagePreview(file);
+        } else {
+          throw new Error('Invalid file type');
+        }
+        simulateIDExtraction();
+      } catch (error) {
+        showOCRFeedback(error.message || 'Error processing file', false);
+      }
+    }
+
+    async function renderPdfPreview(file) {
+      const reader = new FileReader();
+      const pdfData = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+
+      const pdf = await pdfjsLib.getDocument(pdfData).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.0 });
+      
+      const canvas = document.createElement('canvas');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      await page.render({
+        canvasContext: canvas.getContext('2d'),
+        viewport
+      }).promise;
+
+      previewImage.src = canvas.toDataURL();
+      previewImage.style.display = 'block';
+      previewPDF.style.display = 'block';
+      pdfName.textContent = file.name;
+    }
+
+    function renderImagePreview(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          previewImage.style.display = 'block';
+          resolve();
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Enhanced Camera Permission Handling
+    async function checkCameraPermission() {
+      try {
+        if (navigator.permissions) {
+          const permission = await navigator.permissions.query({ name: 'camera' });
+          return permission.state;
+        }
+        return 'prompt';
+      } catch (error) {
+        console.warn('Permission query failed:', error);
+        return 'prompt';
+      }
+    }
+
+    async function requestCameraPermission() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true,
+          audio: false
+        });
+        stream.getTracks().forEach(track => track.stop());
+        return 'granted';
+      } catch (error) {
+        console.error('Permission request failed:', error);
+        return 'denied';
+      }
+    }
+
+    // Camera Handling
+    cameraElements.cameraBtn.addEventListener('click', async function() {
+      try {
+        await toggleVerificationMethod('camera');
+      } catch (error) {
+        console.error('Camera activation error:', error);
+        showOCRFeedback('Camera access failed. Please check permissions or upload a file.', false);
+        toggleVerificationMethod('upload');
+      }
+    });
+
+    cameraElements.uploadBtn.addEventListener('click', () => {
+      toggleVerificationMethod('upload');
+    });
+
+    async function toggleVerificationMethod(method) {
+      cameraElements.fileUploadSection.style.display = method === 'upload' ? 'block' : 'none';
+      cameraElements.cameraSection.style.display = method === 'camera' ? 'block' : 'none';
+      cameraElements.uploadBtn.classList.toggle('active', method === 'upload');
+      cameraElements.cameraBtn.classList.toggle('active', method === 'camera');
+      
+      if (method === 'camera') {
+        try {
+          // Show loading state
+          cameraElements.cameraPreview.style.display = 'none';
+          cameraElements.captureBtn.disabled = true;
+          showOCRFeedback('Initializing camera...', true);
+          
+          await startCamera();
+          
+          // Hide loading state
+          ocrFeedback.style.display = 'none';
+          cameraElements.cameraPreview.style.display = 'block';
+          cameraElements.captureBtn.disabled = false;
+        } catch (error) {
+          console.error('Camera startup failed:', error);
+          showOCRFeedback('Could not start camera. Please upload a file instead.', false);
+          toggleVerificationMethod('upload');
+        }
+      } else {
+        stopCameraStream();
+      }
+    }
+
+    async function startCamera() {
+      // Check existing permission state
+      const cameraPermission = await checkCameraPermission();
+      
+      if (cameraPermission !== 'granted') {
+        // Explicitly request permission if not granted
+        const permissionResult = await requestCameraPermission();
+        if (permissionResult !== 'granted') {
+          throw new Error('Camera permission denied');
+        }
+      }
+      
+      // Stop any existing stream
+      stopCameraStream();
+      
+      try {
+        // Start camera with optimal settings for document capture
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment', // Use rear camera for documents
+            width: { ideal: 1920 },   // Higher resolution for better OCR
+            height: { ideal: 1080 },
+            focusMode: 'continuous'   // Better for documents
+          }
+        });
+        
+        cameraElements.cameraPreview.srcObject = cameraStream;
+        cameraElements.cameraPreview.style.display = 'block';
+        cameraElements.cameraCapture.style.display = 'none';
+        cameraElements.captureBtn.style.display = 'block';
+        cameraElements.retakeBtn.style.display = 'none';
+        
+      } catch (error) {
+        console.error('Camera access error:', error);
+        
+        // Try again with less restrictive constraints if first attempt fails
+        try {
+          cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: true // Basic video constraints
+          });
+          
+          cameraElements.cameraPreview.srcObject = cameraStream;
+          cameraElements.cameraPreview.style.display = 'block';
+          cameraElements.cameraCapture.style.display = 'none';
+          cameraElements.captureBtn.style.display = 'block';
+          cameraElements.retakeBtn.style.display = 'none';
+          
+        } catch (fallbackError) {
+          console.error('Fallback camera access failed:', fallbackError);
+          throw new Error('Could not access camera: ' + error.message);
+        }
+      }
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      if (cameraElements.cameraPreview.srcObject) {
+        cameraElements.cameraPreview.srcObject = null;
+      }
+    }
+
+    cameraElements.captureBtn.addEventListener('click', capturePhoto);
+    cameraElements.retakeBtn.addEventListener('click', retakePhoto);
+
+    function capturePhoto() {
+      const { cameraPreview, canvas, cameraCapture } = cameraElements;
+      canvas.width = cameraPreview.videoWidth;
+      canvas.height = cameraPreview.videoHeight;
+      
+      canvas.getContext('2d').drawImage(cameraPreview, 0, 0);
+      cameraCapture.src = canvas.toDataURL('image/jpeg');
+      cameraElements.cameraData.value = cameraCapture.src;
+      
+      cameraPreview.style.display = 'none';
+      cameraCapture.style.display = 'block';
+      cameraElements.captureBtn.style.display = 'none';
+      cameraElements.retakeBtn.style.display = 'block';
+      
+      stopCameraStream();
+      simulateIDExtraction();
+    }
+
+    function retakePhoto() {
+      cameraElements.cameraData.value = '';
+      startCamera();
+    }
+
+    // Form Submission
+    verificationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!validateForm()) return;
+
+      const loadingModal = new bootstrap.Modal('#loadingModal');
+      try {
+        loadingModal.show();
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        verificationForm.submit();
+      } catch (error) {
+        showOCRFeedback('Verification failed. Please try again.', false);
+        loadingModal.hide();
+      }
+    });
+
+    function validateForm() {
+      const hasDocument = fileInput.files.length > 0 || cameraElements.cameraData.value;
+
+      if (!hasDocument) {
+        showOCRFeedback('Please provide a document for verification', false);
+        return false;
+      }
+
+      return true;
+    }
+
+    // Simulate ID Extraction
+    function simulateIDExtraction() {
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'extraction-loading';
+      loadingIndicator.innerHTML = `
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Extracting ID from document...</span>
+      `;
+      verificationForm.insertBefore(loadingIndicator, verificationForm.lastElementChild);
+      
+      setTimeout(() => {
+        loadingIndicator.remove();
+        const ocrFailed = Math.random() < 0.2;
+        
+        if (ocrFailed) {
+          showOCRFeedback('Could not extract ID number from the document. Please ensure the image is clear and try again.', false);
+        } else {
+          showOCRFeedback('Document has been succesfully read!', true);
+        }
+      }, 2000);
+    }
+
+    window.addEventListener('beforeunload', stopCameraStream);
+  });
+</script>
 </body>
 </html>
-

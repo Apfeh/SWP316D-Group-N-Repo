@@ -1,104 +1,44 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Beneficiary
-from .forms import BeneficiaryForm
+
 from .models import Claim
-from .forms import ClaimForm
+
 from .models import InsuredPerson
-from .models import Notification,ActivityLog
 from django.urls import reverse
 from .models import PolicyHolder
-from .models import Admin
 from django.http import HttpResponseNotAllowed
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import FraudPreventionTeam,Policy
+from .models import Policy
 from django.contrib.auth.hashers import make_password
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import PolicyHolder
+from .fraud_detection import run_automatic_checks
 
 
 
 
-def login_view(request):
-    if request.method == 'POST':
-        role = request.POST.get('role')
-        email = request.POST.get('username')
-        password = request.POST.get('password')
-
-        if role == 'admin':
-            try:
-                admin = Admin.objects.get(email=email, password=password)
-                request.session['admin_id'] = admin.id
-                return redirect('admin_dashboard')
-            except Admin.DoesNotExist:
-                return render(request, 'login.html', {'error': 'Invalid Admin credentials'})
-
-        elif role == 'policy_holder':
-            try:
-                holder = PolicyHolder.objects.get(email=email, password=password)
-                return render(request, 'Policyholder Pages/dashboard.html', {'holder': holder})
-            except PolicyHolder.DoesNotExist:
-                return render(request, 'login.html', {'error': 'Invalid Policy Holder credentials'})
-
-    return render(request, 'login.html')
 
 def landing_page(request):
     return render(request, 'landing_page.html')
 
 def login(request):
-    return render(request, 'login.html')
+    return render(request, 'registration/login.html')
 
 def register(request):
     return render(request, 'register.html')
-
+from django.contrib.auth.decorators import login_required
+@login_required
+def logout(request):
+    return render(request, 'landing_page.html')
 
 def beneficiary_list(request):
     beneficiaries = Beneficiary.objects.all()
     return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries})
 
-def beneficiary_create(request):
-    if request.method == 'POST':
-        form = BeneficiaryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('beneficiary_list')
-    else:
-        form = BeneficiaryForm()
-    return render(request, 'beneficiary_form.html', {'form': form})
 
-def beneficiary_update(request, id):
-    beneficiary = get_object_or_404(Beneficiary, pk=id)
-    if request.method == 'POST':
-        form = BeneficiaryForm(request.POST, instance=beneficiary)
-        if form.is_valid():
-            form.save()
-            return redirect('beneficiary_list')
-    else:
-        form = BeneficiaryForm(instance=beneficiary)
-    return render(request, 'beneficiary_form.html', {'form': form})
-
-def beneficiary_delete(request, id):
-    beneficiary = get_object_or_404(Beneficiary, pk=id)
-    if request.method == 'POST':
-        beneficiary.delete()
-        return redirect('beneficiary_list')
-    return render(request, 'beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
-
-#Claims View
-def claim(request):
-    if request.method == 'POST':
-        form = ClaimForm(request.POST)
-        if form.is_valid():
-            claim_instance = form.save(commit=False)
-            claim_instance.status = 'pending'
-            claim_instance.save()
-            form = ClaimForm()
-    else:
-        form = ClaimForm()
-    
-    claims = Claim.objects.all().order_by('-dateFiled')
-    for c in claims:
-        print(f"Claim: {c.claimId}, {c.policyId}, {c.status}, {c.dateFiled}")  # Debug print
-    return render(request, 'claim.html', {'form': form, 'claims': claims})
 
 #InsuredPerson view
 def index(request):
@@ -114,7 +54,7 @@ def delete_insured_person(request, id):
 
 #Policy Holder
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    return render(request, 'Policyholder Pages/dashboard.html')
 
 # List all PolicyHolders
 def list_policyholders(request):
@@ -143,8 +83,7 @@ def add_policyholder(request):
     return render(request, 'add.html')
 
 # Update a PolicyHolder
-def dashboard(request):
-    return render(request, 'dashboard.html')
+
 
 # List all PolicyHolders
 def list_policyholders(request):
@@ -191,90 +130,6 @@ def update_policyholder(request, id):
     return render(request, 'update.html', {'policyholder': policyholder})
 
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponseNotAllowed
-from django.contrib import messages
-from .models import FraudPreventionTeam, Claim, Policy
-import logging
-
-# Set up logging
-logger = logging.getLogger(__name__)
-
-def manage_team(request):
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        logger.debug(f"POST data: {request.POST}")  # Log POST data for debugging
-
-        if action == 'add':
-            try:
-                claim = Claim.objects.get(pk=request.POST.get('claimid'))
-                policy = Policy.objects.get(pk=request.POST.get('policyid'))
-                FraudPreventionTeam.objects.create(
-                    claimid=claim,
-                    policyid=policy,
-                    contactNumber=request.POST.get('contactNumber'),
-                    department=request.POST.get('department'),
-                    investigatorName=request.POST.get('investigatorName')
-                )
-                messages.success(request, 'Team member added successfully.')
-            except Claim.DoesNotExist:
-                messages.error(request, 'Claim not found.')
-            except Policy.DoesNotExist:
-                messages.error(request, 'Policy not found.')
-            except Exception as e:
-                logger.error(f"Error adding team member: {e}")
-                messages.error(request, f'Error adding team member: {e}')
-
-        elif action == 'update':
-            try:
-                teamid = request.POST.get('teamid')
-                member = FraudPreventionTeam.objects.get(teamid=teamid)
-                claim = Claim.objects.get(pk=request.POST.get('claimid'))
-                policy = Policy.objects.get(pk=request.POST.get('policyid'))
-                member.claimid = claim
-                member.policyid = policy
-                member.contactNumber = request.POST.get('contactNumber')
-                member.department = request.POST.get('department')
-                member.investigatorName = request.POST.get('investigatorName')
-                member.save()
-                messages.success(request, 'Team member updated successfully.')
-            except FraudPreventionTeam.DoesNotExist:
-                messages.error(request, 'Team member not found.')
-            except Claim.DoesNotExist:
-                messages.error(request, 'Claim not found.')
-            except Policy.DoesNotExist:
-                messages.error(request, 'Policy not found.')
-            except Exception as e:
-                logger.error(f"Error updating team member: {e}")
-                messages.error(request, f'Error updating team member: {e}')
-
-        elif action == 'delete':
-            try:
-                teamid = request.POST.get('teamid')
-                if not teamid:
-                    raise ValueError("Team ID is missing.")
-                member = FraudPreventionTeam.objects.get(teamid=teamid)
-                member.delete()
-                messages.success(request, 'Team member removed successfully.')
-            except FraudPreventionTeam.DoesNotExist:
-                messages.error(request, f'Team member with ID {teamid} not found.')
-            except ValueError as ve:
-                messages.error(request, str(ve))
-            except Exception as e:
-                logger.error(f"Error removing team member with ID {teamid}: {e}")
-                messages.error(request, f'Error removing team member: {e}')
-
-        return redirect('manage_team')
-
-    elif request.method == 'GET':
-        team_members = FraudPreventionTeam.objects.select_related('claimid', 'policyid').all()
-        return render(request, 'fraud_prevention.html', {'team_members': team_members})
-
-    return HttpResponseNotAllowed(['GET', 'POST'])
-
-# Main dashboard
-def dashboard(request):
-    return render(request, 'dashboard.html')
 
 
 # Dalphy's Beneficiary Pages
@@ -327,263 +182,16 @@ def fraud_database_search(request):
 def law_login(request):
     return render(request, "login.html")
 
-from django.shortcuts import render, redirect
-from datetime import date, datetime, timedelta
-
-# ---- Admin Dashboard View ----
-def admin_dashboard(request):
-    context = {
-        'total_policies': 120,
-        'active_claims': 42,
-        'flagged_cases': 5,
-        'risk_scores': 78,
-        'notifications': [
-            "New claim filed by Policy #7789",
-            "Policy #4567 flagged for manual review",
-            "System maintenance scheduled at 10PM"
-        ],
-    }
-    return render(request, 'Admin Templates/admin_dashboard.html', context)
-
-# ---- Home Page ----
-def home(request):
-    return render(request, 'boitshepo/home.html')
-
-# ---- Dummy Policies ----
-POLICIES = [
-    {'id': 1, 'holder_name': 'John Doe', 'insured_persons': 'Jane Doe', 'risk_score': 75, 'status': 'Pending'},
-    {'id': 2, 'holder_name': 'Alice Smith', 'insured_persons': 'Bob Smith', 'risk_score': 55, 'status': 'Pending'},
-    {'id': 3, 'holder_name': 'Mark Johnson', 'insured_persons': 'Lucy Johnson', 'risk_score': 85, 'status': 'Pending'},
-]
-
-# ---- Policy Review ----
-def policy_review(request):
-    query = request.GET.get('q', '')
-    filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
-    context = {'policies': filtered_policies}
-    return render(request, 'Admin Templates/policy_review.html', context)
-
-def policy_detail(request, pk):
-    selected_policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
-    if not selected_policy:
-        return redirect('policy_review')
-    context = {'selected_policy': selected_policy}
-    return render(request, 'Admin Templates/policy_review.html', context)
-
-def approve_policy(request, pk):
-    policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
-    if policy:
-        policy['status'] = 'Approved'
-    return redirect('policy_review')
-
-def reject_policy(request, pk):
-    policy = next((policy for policy in POLICIES if policy['id'] == pk), None)
-    if policy:
-        policy['status'] = 'Rejected'
-    return redirect('policy_review')
-
-# ---- Claim Review ----
-def claim_review(request):
-    claims = [
-        {
-            'claim_id': 'CLM001',
-            'policyholder': 'John Doe',
-            'beneficiary': 'Jane Doe',
-            'risk_score': 'High',
-            'status': 'Pending',
-            'death_certificate_url': '/static/images/death_certificate1.jpg',
-            'timeline': [
-                {'event': 'Policy Issued', 'date': '2023-01-01'},
-                {'event': 'Insured Died', 'date': '2024-03-15'},
-                {'event': 'Claim Filed', 'date': '2024-03-20'},
-            ],
-            'cause_of_death': 'Cardiac Arrest (Verified)',
-        },
-        {
-            'claim_id': 'CLM002',
-            'policyholder': 'Sarah Smith',
-            'beneficiary': 'Mark Smith',
-            'risk_score': 'Medium',
-            'status': 'Pending',
-            'death_certificate_url': '/static/images/death_certificate2.jpg',
-            'timeline': [
-                {'event': 'Policy Issued', 'date': '2022-06-12'},
-                {'event': 'Insured Died', 'date': '2023-12-25'},
-                {'event': 'Claim Filed', 'date': '2024-01-05'},
-            ],
-            'cause_of_death': 'Natural Causes (Verified)',
-        },
-    ]
-    return render(request, 'Admin Templates/claim_review.html', {'claims': claims})
-
-# ---- Fraud Alerts ----
-def fraud_alerts(request):
-    alerts = [
-        {
-            'timestamp': '2025-04-26 12:34:56',
-            'user': 'John Doe',
-            'type': 'Anomaly Detected',
-            'severity': 'Critical',
-        },
-        {
-            'timestamp': '2025-04-26 13:22:10',
-            'user': 'Jane Smith',
-            'type': 'Death Pattern Match',
-            'severity': 'Medium',
-        },
-        {
-            'timestamp': '2025-04-26 14:45:30',
-            'user': 'Alice Johnson',
-            'type': 'Unusual Claim Spike',
-            'severity': 'Low',
-        },
-    ]
-    return render(request, 'Admin Templates/fraud_alerts.html', {'alerts': alerts})
-
-# ---- User Management ----
-def user_management(request):
-    return render(request, 'Admin Templates/user_management.html')
-
-def dashboard(request):
-    context = {
-        'active_policies': 3,
-        'pending_claims': 1,
-        'notifications': 2,
-    }
-    return render(request, 'Policyholder Pages/dashboard.html', context)
-
-def add_policy(request):
-    if request.method == 'POST':
-        # Placeholder: Process form data (e.g., save to database)
-        messages.success(request, 'Policy submitted successfully!')
-        return redirect('policy_status')
-    return render(request, 'Policyholder Pages/add-policy.html')
-
-def policy_status(request):
-    # Fake policy data
-    policies = [
-        {'id': 'POL001', 'insured_name': 'John Doe', 'status': 'Pending', 'details': 'Awaiting insured consent'},
-        {'id': 'POL002', 'insured_name': 'Jane Smith', 'status': 'Approved', 'details': 'Policy active'},
-        {'id': 'POL003', 'insured_name': 'Mary Johnson', 'status': 'Rejected', 'details': 'Invalid documents'},
-    ]
-    context = {'policies': policies}
-    return render(request, 'Policyholder Pages/policy-status.html', context)
-
-def manage_beneficiaries(request):
-    # Fake beneficiary data
-    beneficiaries = [
-        {'policy_id': 'POL001', 'name': 'Sarah Lee', 'contact': 'sarah@example.com'},
-    ]
-    # Fake policy options for form
-    policy_options = [
-        {'id': 'POL001', 'name': 'John Doe'},
-        {'id': 'POL002', 'name': 'Jane Smith'},
-    ]
-    if request.method == 'POST':
-        # Placeholder: Process beneficiary form data
-        messages.success(request, 'Beneficiary added successfully!')
-        return redirect('manage_beneficiaries')
-    context = {'beneficiaries': beneficiaries, 'policy_options': policy_options}
-    return render(request, 'Policyholder Pages/manage-beneficiaries.html', context)
-
-def file_claim(request):
-    # Fake policy options for form
-    policy_options = [
-        {'id': 'POL001', 'name': 'John Doe'},
-        {'id': 'POL002', 'name': 'Jane Smith'},
-    ]
-    if request.method == 'POST':
-        # Placeholder: Process claim form data
-        messages.success(request, 'Claim submitted successfully!')
-        return redirect('claim_status')
-    context = {'policy_options': policy_options}
-    return render(request, 'Policyholder Pages/file-claim.html', context)
-
-def claim_status(request):
-    # Fake claim data
-    claims = [
-        {'id': 'CLM001', 'policy_id': 'POL001', 'status': 'Pending', 'details': 'Under investigation'},
-        {'id': 'CLM002', 'policy_id': 'POL002', 'status': 'Approved', 'details': 'Payout processed'},
-        {'id': 'CLM003', 'policy_id': 'POL003', 'status': 'Rejected', 'details': 'Suspicious activity detected'},
-    ]
-    context = {'claims': claims}
-    return render(request, 'Policyholder Pages/claim-status.html', context)
-
-def index(request):
-    # Placeholder: Redirect to landing page or handle logout
-    return redirect('dashboard')  # Temporary redirect for testing
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.http import HttpResponseNotAllowed, HttpResponse
-from django.contrib import messages
-from .models import Beneficiary, Claim, InsuredPerson, PolicyHolder, FraudPreventionTeam, Policy
-from .forms import BeneficiaryForm, ClaimForm
-import logging
-from datetime import datetime
-
-# Set up logging
-logger = logging.getLogger(__name__)
 
 # Landing and Authentication
 
 def landing_page(request):
-    return render(request, 'landing_page.html')
+     request.session.flush()
+     return render(request, 'landing_page.html')
 
 def login(request):
-    return render(request, 'login.html')
+    return render(request, 'registration/login.html')
 
-def register(request):
-    return render(request, 'register.html')
-
-# Beneficiary Views
-
-def beneficiary_list(request):
-    beneficiaries = Beneficiary.objects.all()
-    return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries})
-
-def beneficiary_create(request):
-    if request.method == 'POST':
-        form = BeneficiaryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('beneficiary_list')
-    else:
-        form = BeneficiaryForm()
-    return render(request, 'beneficiary_form.html', {'form': form})
-
-def beneficiary_update(request, id):
-    beneficiary = get_object_or_404(Beneficiary, pk=id)
-    if request.method == 'POST':
-        form = BeneficiaryForm(request.POST, instance=beneficiary)
-        if form.is_valid():
-            form.save()
-            return redirect('beneficiary_list')
-    else:
-        form = BeneficiaryForm(instance=beneficiary)
-    return render(request, 'beneficiary_form.html', {'form': form})
-
-def beneficiary_delete(request, id):
-    beneficiary = get_object_or_404(Beneficiary, pk=id)
-    if request.method == 'POST':
-        beneficiary.delete()
-        return redirect('beneficiary_list')
-    return render(request, 'beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
-
-# Claims View
-
-def claim(request):
-    if request.method == 'POST':
-        form = ClaimForm(request.POST)
-        if form.is_valid():
-            claim_instance = form.save(commit=False)
-            claim_instance.status = 'pending'
-            claim_instance.save()
-            form = ClaimForm()
-    else:
-        form = ClaimForm()
-
-    claims = Claim.objects.all().order_by('-dateFiled')
-    return render(request, 'claim.html', {'form': form, 'claims': claims})
 
 # Insured Person Views
 
@@ -600,8 +208,6 @@ def delete_insured_person(request, id):
 
 # PolicyHolder Views
 
-def dashboard(request):
-    return render(request, 'dashboard.html')
 
 def list_policyholders(request):
     policyholders = PolicyHolder.objects.all()
@@ -640,61 +246,7 @@ def update_policyholder(request, id):
 
     return render(request, 'update.html', {'policyholder': policyholder})
 
-# Fraud Prevention Team View
 
-def manage_team(request):
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        logger.debug(f"POST data: {request.POST}")
-
-        if action == 'add':
-            try:
-                claim = Claim.objects.get(pk=request.POST.get('claimid'))
-                policy = Policy.objects.get(pk=request.POST.get('policyid'))
-                FraudPreventionTeam.objects.create(
-                    claimid=claim,
-                    policyid=policy,
-                    contactNumber=request.POST.get('contactNumber'),
-                    department=request.POST.get('department'),
-                    investigatorName=request.POST.get('investigatorName')
-                )
-                messages.success(request, 'Team member added successfully.')
-            except Exception as e:
-                logger.error(f"Error adding team member: {e}")
-                messages.error(request, f'Error adding team member: {e}')
-
-        elif action == 'update':
-            try:
-                teamid = request.POST.get('teamid')
-                member = FraudPreventionTeam.objects.get(teamid=teamid)
-                member.claimid = Claim.objects.get(pk=request.POST.get('claimid'))
-                member.policyid = Policy.objects.get(pk=request.POST.get('policyid'))
-                member.contactNumber = request.POST.get('contactNumber')
-                member.department = request.POST.get('department')
-                member.investigatorName = request.POST.get('investigatorName')
-                member.save()
-                messages.success(request, 'Team member updated successfully.')
-            except Exception as e:
-                logger.error(f"Error updating team member: {e}")
-                messages.error(request, f'Error updating team member: {e}')
-
-        elif action == 'delete':
-            try:
-                teamid = request.POST.get('teamid')
-                member = FraudPreventionTeam.objects.get(teamid=teamid)
-                member.delete()
-                messages.success(request, 'Team member removed successfully.')
-            except Exception as e:
-                logger.error(f"Error removing team member: {e}")
-                messages.error(request, f'Error removing team member: {e}')
-
-        return redirect('manage_team')
-
-    elif request.method == 'GET':
-        team_members = FraudPreventionTeam.objects.select_related('claimid', 'policyid').all()
-        return render(request, 'fraud_prevention.html', {'team_members': team_members})
-
-    return HttpResponseNotAllowed(['GET', 'POST'])
 
 # Static/Dashboard Views
 
@@ -740,19 +292,6 @@ def fraud_database_search(request):
 def law_login(request):
     return render(request, "login.html")
 
-def admin_dashboard(request):
-    context = {
-        'total_policies': 120,
-        'active_claims': 42,
-        'flagged_cases': 5,
-        'risk_scores': 78,
-        'notifications': [
-            "New claim filed by Policy #7789",
-            "Policy #4567 flagged for manual review",
-            "System maintenance scheduled at 10PM"
-        ],
-    }
-    return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 def home(request):
     return render(request, 'boitshepo/home.html')
@@ -767,53 +306,863 @@ def policy_review(request):
     query = request.GET.get('q', '')
     filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
     context = {'policies': filtered_policies}
-    return render(request, 'policy_review.html', context)
+    return render(request, 'Admin Templates/policy_review.html', context)
 
 
+# IFPWebApp/views_fraud.py
 
-# reviews
+
+def run_manual_fraud_check(request, policyholder_id):
+    policyholder = get_object_or_404(PolicyHolder, id=policyholder_id)
+    run_automatic_checks(policyholder)
+    messages.success(request, f"Fraud check run for {policyholder.name}")
+    return redirect('policyholder_detail', policyholder_id=policyholder.id)  # adjust to your actual view
 
 
-def policy_review(request):
-    query = request.GET.get('q', '')
-    if query:
-        policies = Policy.objects.filter(policyHolder_name_icontains=query)
+#======================================================================================================================================
+# IFPWebApp/views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Policy, PolicyHolder, InsuredPerson, Beneficiary, Claim
+from django.core.files.storage import FileSystemStorage
+from .forms import CustomRegistrationForm
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
+def register(request):
+  
+    if request.method == 'POST':
+        form = CustomRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, '')
+            return redirect('send_otp')
+        else:
+            logger.debug(f"Form errors: {form.errors}")
+            messages.error(request, 'Registration failed. Please check the form.')
     else:
-        policies = Policy.objects.all()
+        form = CustomRegistrationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+def landing_page(request):
+    return render(request, 'landing_page.html')
+
+@login_required
+def log_register(request):
+    messages.warning(request, 'You are already logged in. Redirected to dashboard.')
+    return redirect('dashboard')
+
+@login_required
+def dashboard(request):
+    logger.debug(f"User email: {request.user.email}")
+    try:
+        # Change from email= to user__email=
+        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
+        logger.debug(f"Found PolicyHolder: {policy_holder.id_number}")
+        #active_policies = Policy.objects.filter(policy_holder=policy_holder).count()
+        active_policies = Policy.objects.filter(policyHolder=policy_holder).count()
+        pending_claims = Claim.objects.filter(policyId__policyHolder=policy_holder, status='Pending').count()
+
+
+        
+        notifications = pending_claims
+        name = policy_holder.name  # Ensure this field exists in PolicyHolder
+        
+    except PolicyHolder.DoesNotExist:
+        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
+        active_policies = 0
+        pending_claims = 0
+        notifications = 0
+        name = "User"
+        messages.error(request, 'No policyholder profile found. Please contact support.')
+    
+    context = {
+        'active_policies': active_policies,
+        'pending_claims': pending_claims,
+        'notifications': notifications,
+        'name': name,
+    }
+    return render(request, 'Policyholder Pages/dashboard.html', context)
+
+
+
+
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Citizen, Policy, InsuredPerson, PolicyHolder, ApprovalRequest
+import uuid
+from datetime import date, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+@login_required
+def get_citizen(request):
+    id_number = request.GET.get('id_number')
+    try:
+        citizen = Citizen.objects.get(idNumber=id_number)
+        return JsonResponse({
+            'name': citizen.name,
+            'surname': citizen.surname,
+            'dateOfBirth': citizen.dateOfBirth.strftime('%Y-%m-%d'),
+        })
+    except Citizen.DoesNotExist:
+        return JsonResponse({'error': 'Citizen not found in national database'}, status=404)
+
+
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import PolicyHolder, Citizen, Policy, InsuredPerson, ApprovalRequest, Notification, Claim
+import uuid
+import logging
+from datetime import timedelta
+import json
+
+logger = logging.getLogger(__name__)
+
+@login_required
+def add_policy(request):
+    logger.debug(f"User email: {request.user.email}")
+    try:
+        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
+        logger.debug(f"Found PolicyHolder: {policy_holder.user.email}")
+    except PolicyHolder.DoesNotExist:
+        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
+        messages.error(request, 'No policyholder profile found. Please contact support.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        insured_id = request.POST.get('insured_id')
+        is_underage = request.POST.get('is_underage') == 'on'
+        parent_id = request.POST.get('parent_id') if is_underage else None
+        contact_email = request.POST.get('contact_email')
+        contact_phone = request.POST.get('contact_phone')
+        relationship = request.POST.get('relationship')
+        policy_type = request.POST.get('policy_type')
+        confirmed_status = request.POST.get('confirmed_status')
+        parent_confirmed_status = request.POST.get('parent_confirmed_status')
+        relationship_docs = request.FILES.get('relationship_docs')
+        
+        # Validate confirmations
+        if confirmed_status != '1':
+            messages.error(request, 'Please confirm insured person details')
+            return redirect('add_policy')
+            
+        if is_underage and parent_confirmed_status != '1':
+            messages.error(request, 'Please confirm parent details')
+            return redirect('add_policy')
+        
+        try:
+            insured_citizen = Citizen.objects.get(idNumber=insured_id)
+        except Citizen.DoesNotExist:
+            messages.error(request, 'Insured person not found in national database')
+            return redirect('add_policy')
+        
+        # Store document if provided
+        doc_path = None
+        if relationship_docs:
+            fs = FileSystemStorage()
+            filename = fs.save(relationship_docs.name, relationship_docs)
+            doc_path = fs.url(filename)
+        
+        # Prepare policy data for approval request
+        policy_data = {
+            'policy_holder_id': policy_holder.id_number,
+            'policy_type': policy_type,
+            'insured_name': f"{insured_citizen.name} {insured_citizen.surname}",
+            'insured_dob': insured_citizen.dateOfBirth.isoformat(),
+            'relationship': relationship,
+            'id_number': insured_id,
+            'parent_id_number': parent_id,
+            'contact_email': contact_email,
+            'contact_phone': contact_phone,
+            'document_path': doc_path,
+            'is_underage': is_underage,
+        }
+        
+        # Create approval request (policy not created yet)
+        expires_at = timezone.now() + timedelta(days=7)
+        approval_request = ApprovalRequest(
+            policy_data=json.dumps(policy_data),
+            expires_at=expires_at
+        )
+        approval_request.save()
+        
+        # Send approval email
+        approval_url = request.build_absolute_uri(
+            f'/approve-insured/{approval_request.token}/'
+        )
+        
+        if is_underage:
+            try:
+                parent_citizen = Citizen.objects.get(idNumber=parent_id)
+                recipient_name = f"{parent_citizen.name} {parent_citizen.surname}"
+            except Citizen.DoesNotExist:
+                recipient_name = "Parent/Guardian"
+        else:
+            recipient_name = f"{insured_citizen.name} {insured_citizen.surname}"
+        
+        subject = "Action Required: Approval for Insurance Coverage"
+        message = f"""
+        Dear {recipient_name},
+        
+        {policy_holder.name} has added you as an insured person for a new policy.
+        
+        Insured Person Details:
+        - Name: {insured_citizen.name} {insured_citizen.surname}
+        - ID Number: {insured_id}
+        - Date of Birth: {insured_citizen.dateOfBirth}
+        - Relationship: {relationship}
+        
+        To approve this coverage, please click the link below and enter your ID number:
+        {approval_url}
+        
+        This link expires in 7 days.
+        
+        If you did not authorize this, please ignore this email or contact our support team.
+        
+        Regards,
+        FraudShield Team
+        """
+        
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [contact_email],
+            fail_silently=False,
+        )
+        
+        # Create notification for policyholder
+        Notification.objects.create(
+            user=request.user,
+            message=f"Approval request sent to {recipient_name} for policy creation",
+            notification_type='approval_sent',
+            related_policy=None
+        )
+        
+        approval_request.notification_sent = True
+        approval_request.save()
+        
+        messages.success(request, 'Approval request sent to insured person. Policy will be created after approval.')
+        return redirect('dashboard')
+
+    return render(request, 'Policyholder Pages/add-policy.html')
+
+def approve_insured_person(request, token):
+    try:
+        approval_request = ApprovalRequest.objects.get(token=token)
+        
+        # Check if approval request has expired
+        if timezone.now() > approval_request.expires_at:
+            approval_request.status = 'expired'
+            approval_request.save()
+            return render(request, 'approval_error.html', {
+                'message': 'This approval link has expired'
+            })
+            
+    except ApprovalRequest.DoesNotExist:
+        return render(request, 'approval_error.html', {
+            'message': 'Invalid approval link'
+        })
+    
+    if request.method == 'POST':
+        entered_id = request.POST.get('id_number')
+        policy_data = json.loads(approval_request.policy_data)
+        
+        # Check if entered ID matches insured person or parent
+        if (entered_id == policy_data['id_number'] or 
+            (policy_data['is_underage'] and entered_id == policy_data['parent_id_number'])):
+            
+            # Create the actual policy now that it's approved
+            policy_holder = PolicyHolder.objects.get(id_number=policy_data['policy_holder_id'])
+            
+            policy = Policy(
+                policyHolder=policy_holder,
+                policyType=policy_data['policy_type'],
+                premiumAmount=0.00,
+                startDate=timezone.now().date(),
+                endDate=timezone.now().date() + timedelta(days=365),
+                status='active',
+                expiration_date=timezone.now() + timedelta(days=7)
+            )
+            policy.save()
+            
+            # Create insured person
+            insured_person = InsuredPerson(
+                policy_id=policy,
+                name=policy_data['insured_name'],
+                date_of_birth=policy_data['insured_dob'],
+                relationship_to_policy_holder=policy_data['relationship'],
+                holder=policy_holder,
+                id_number=policy_data['id_number'],
+                parent_id_number=policy_data['parent_id_number'],
+                contact_email=policy_data['contact_email'],
+                contact_phone=policy_data['contact_phone']
+            )
+            insured_person.save()
+            
+            # Update approval request
+            approval_request.insured_person = insured_person
+            approval_request.status = 'approved'
+            approval_request.save()
+            
+            # Create notification for policyholder
+            Notification.objects.create(
+                user=policy_holder.user,
+                message=f"Policy #{policy.policyId} has been approved by {insured_person.name}",
+                notification_type='approval_received',
+                related_policy=policy
+            )
+            
+            return render(request, 'approval_success.html')
+        else:
+            return render(request, 'approval_page.html', {
+                'error': 'ID number does not match',
+                'token': token
+            })
+    
+    return render(request, 'approval_page.html', {'token': token})
+@login_required
+def notifications(request):
+    # Get pending claims
+    try:
+        policy_holder = PolicyHolder.objects.get(email=request.user.email)
+        pending_claims = Claim.objects.filter(
+            policyId__policyHolder=policy_holder,
+            status='Pending'
+        )
+    except PolicyHolder.DoesNotExist:
+        pending_claims = []
+    
+    # Get user notifications
+    # First: Mark all unread notifications as read
+    unread_notifications = Notification.objects.filter(
+        user=request.user,
+        read=False
+    )
+    unread_notifications.update(read=True)
+    
+    # Then: Get the last 10 notifications for display
+    user_notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:10]
+    
+    context = {
+        'pending_claims': pending_claims,
+        'notifications': user_notifications
+    }
+    return render(request, 'Policyholder Pages/notifications.html', context)
+@login_required
+def policy_status(request):
+    logger.debug(f"User email: {request.user.email}")
+    try:
+        policy_holder = PolicyHolder.objects.get(email=request.user.email)
+        policies = Policy.objects.filter(policyHolder=policy_holder)
+    except PolicyHolder.DoesNotExist:
+        messages.error(request, 'No policyholder profile found.')
+        return redirect('dashboard')
+    
+    # Calculate days remaining for pending policies
+    for policy in policies:
+        if policy.status == 'pending':
+            policy.days_remaining = (policy.expiration_date - timezone.now()).days
+    
     context = {'policies': policies}
-    return render(request, 'policy_review.html', context)
+    return render(request, 'Policyholder Pages/policy-status.html', context)
 
-def policy_detail(request, pk):
-    policy = get_object_or_404(Policy, pk=pk)
-    insured_persons = InsuredPerson.objects.filter(policy=policy)
-    context = {'selected_policy': policy, 'insured_persons': insured_persons}
-    return render(request, 'policy_detail.html', context)
+from django.core.mail import send_mail
+from django.urls import reverse
+from uuid import uuid4
+from .models import PendingBeneficiary
 
-def approve_policy(request, pk):
-    policy = get_object_or_404(Policy, pk=pk)
-    policy.status = 'Approved'
-    policy.save()
-    return redirect('policy_review')
+@login_required
+def manage_beneficiaries(request):
+    try:
+        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
+    except PolicyHolder.DoesNotExist:
+        messages.error(request, 'No policyholder profile found.')
+        return redirect('dashboard')
 
-def reject_policy(request, pk):
-    policy = get_object_or_404(Policy, pk=pk)
-    policy.status = 'Rejected'
-    policy.save()
-    return redirect('policy_review')
+    if request.method == 'POST':
+        policy_id = request.POST.get('policy_id')
+        beneficiary_name = request.POST.get('beneficiary_name')
+        beneficiary_email = request.POST.get('beneficiary_contact')
+        relationship = request.POST.get('relationship')
+
+        try:
+            policy = Policy.objects.get(policyId=policy_id, policyHolder=policy_holder)
+            token = uuid4().hex
+            
+            # Create pending beneficiary
+            PendingBeneficiary.objects.create(
+                policy=policy,
+                name=beneficiary_name,
+                email=beneficiary_email,
+                relationship=relationship,
+                token=token
+            )
+            
+            # Send approval email
+            approval_url = request.build_absolute_uri(
+                reverse('approve_beneficiary', kwargs={'token': token})
+            )
+            decline_url = request.build_absolute_uri(
+                reverse('decline_beneficiary', kwargs={'token': token})
+            )
+            
+            send_mail(
+                
+    subject='Action Required: Beneficiary Approval Request',
+    message=f'Please approve or decline being added as a beneficiary:\n\n'
+            f'Approve: {approval_url}\nDecline: {decline_url}',
+    from_email=settings.EMAIL_HOST_USER,
+    recipient_list=[beneficiary_email],
+    html_message=f'''
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333;">
+            <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h2 style="color: #2F2B43;">Beneficiary Approval Request</h2>
+                <p>Dear Beneficiary,</p>
+                <p>You have been nominated to be added as a beneficiary. Please confirm your choice by clicking one of the buttons below:</p>
+
+                <div style="margin: 20px 0;">
+                    <a href="{approval_url}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                        Approve
+                    </a>
+                    <a href="{decline_url}" style="display: inline-block; background-color: #f44336; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                        Decline
+                    </a>
+                </div>
+
+                <p>If you were not expecting this email, you may ignore it.</p>
+                <p style="font-size: 12px; color: #777;">This message was sent automatically. Please do not reply.</p>
+            </div>
+        </div>
+    ''',
+    fail_silently=False
+
+            )
+            
+            messages.success(request, 'Approval request sent to beneficiary.')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+        
+        return redirect('manage_beneficiaries')
+
+    # GET request handling remains similar
+    pending = PendingBeneficiary.objects.filter(policy__policyHolder=policy_holder)
+    beneficiaries = Beneficiary.objects.filter(policy__policyHolder=policy_holder)
+    
+    return render(request, 'Policyholder Pages\manage-beneficiaries.html', {
+        'policy_options': Policy.objects.filter(policyHolder=policy_holder),
+        'beneficiaries': beneficiaries,
+        'pending_beneficiaries': pending
+    })
+
+def approve_beneficiary(request, token):
+    try:
+        pending = PendingBeneficiary.objects.get(token=token)
+        # Create actual beneficiary
+        Beneficiary.objects.create(
+            policy=pending.policy,
+            name=pending.name,
+            contactNumber=pending.email,
+            relationshipToInsured=pending.relationship
+        )
+        pending.delete()
+        return render(request, 'approval_response.html', {'approved': True})
+    except PendingBeneficiary.DoesNotExist:
+        return render(request, 'approval_response.html', {'invalid': True})
+
+def decline_beneficiary(request, token):
+    try:
+        pending = PendingBeneficiary.objects.get(token=token)
+        pending.delete()
+        return render(request, 'approval_response.html', {'approved': False})
+    except PendingBeneficiary.DoesNotExist:
+        return render(request, 'approval_response.html', {'invalid': True})
+
+@login_required
+def file_claim(request):
+    logger.debug(f"User email: {request.user.email}")
+    try:
+        policy_holder = PolicyHolder.objects.get(email=request.user.email)
+        logger.debug(f"Found PolicyHolder: {policy_holder.user.email}")
+    except PolicyHolder.DoesNotExist:
+        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
+        messages.error(request, 'No policyholder profile found. Please contact support.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        policy_id = request.POST.get('policy_id')
+        death_certificate = request.FILES.get('death_certificate')
+        cause_of_death = request.POST.get('cause_of_death')
+
+        try:
+            policy = Policy.objects.get(policyId=policy_id, policyHolder=policy_holder)
+            beneficiary = Beneficiary.objects.filter(policy=policy).first()
+            if not beneficiary:
+                messages.error(request, 'No beneficiary found for this policy.')
+                return redirect('file_claim')
+
+            claim = Claim(
+                policyId=policy,  # or whatever your field is named
+                beneficiaryId=beneficiary,
+                policyHolderId = policy_holder,
+                
+                claimAmount=0.00,
+                status='Pending'
+            )
+            claim.save()
+
+            if death_certificate:
+                fs = FileSystemStorage()
+                filename = fs.save(death_certificate.name, death_certificate)
+
+            messages.success(request, 'Claim filed successfully!')
+            return redirect('claim_status')
+        except Policy.DoesNotExist:
+            messages.error(request, 'Selected policy not found.')
+            return redirect('file_claim')
+
+    policy_options = Policy.objects.filter(policyHolder=policy_holder)
+    logger.debug(f"Found {policy_options.count()} policy options for PolicyHolder: {policy_holder.user.email}")
+    context = {
+        'policy_options': policy_options,
+    }
+    return render(request, 'Policyholder Pages/file-claim.html', context)
+
+@login_required
+def claim_status(request):
+    logger.debug(f"User email: {request.user.email}")
+    try:
+        policy_holder = PolicyHolder.objects.get(email=request.user.email)
+        logger.debug(f"Found PolicyHolder: {policy_holder.user.email}")
+        claims = Claim.objects.filter(policyHolderId=policy_holder)
+
+        logger.debug(f"Found {claims.count()} claims for PolicyHolder: {policy_holder.user.email}")
+    except PolicyHolder.DoesNotExist:
+        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
+        messages.error(request, 'No policyholder profile found. Please contact support.')
+        return redirect('dashboard')
+    context = {
+        'claims': claims,
+    }
+    return render(request, 'Policyholder Pages/claim-status.html', context)
+
+import base64
+import io
+import logging
+import time
+from django.shortcuts import render, redirect, reverse
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse, HttpResponse
+from django.conf import settings
+from django.utils.html import strip_tags
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+
+from .models import Citizen, Photo
+import pytesseract
+import cv2
+import numpy as np
+from pdf2image import convert_from_bytes
+from datetime import date, datetime, timedelta
+from PIL import Image, ImageEnhance
 
 
+logger = logging.getLogger(__name__)
 
-#Risk Reports
+# ==========================
+# BENEFICIARY VERIFICATION
+# ==========================
+
+
+# verification/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from .models import OTP
+from django.contrib import messages
+
+
+import random
+from datetime import datetime, timedelta
+
+
+def send_otp(request):
+    if request.method == 'POST':
+        email = request.user.email  # Fixed recipient email
+        
+        # Clear existing OTPs
+        OTP.objects.filter(email=email).delete()
+        
+        # Generate 6-digit OTP
+        otp_code = str(random.randint(100000, 999999))
+        
+        # Set expiration time (3 minutes from now)
+        expires_at = timezone.now() + timedelta(minutes=3)
+        
+        # Create new OTP
+        otp = OTP.objects.create(
+            email=email,
+            otp=otp_code,
+            expires_at=expires_at
+        )
+        
+        # Send email
+        subject = 'Your Verification OTP'
+        message = f'Your OTP is {otp.otp}. It expires in 3 minutes.'
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        messages.success(request, 'OTP sent successfully!')
+        return redirect('verify_otp')
+    
+    return render(request, 'verification/send_otp.html')
+from datetime import timedelta
+
+import random
+
+def send_otp(request):
+    if request.method == 'POST':
+        email = request.user.email   # Or get from request.POST
+        
+        # Clear existing OTPs for this email
+        OTP.objects.filter(email=email).delete()
+        
+        # Generate 6-digit OTP
+        otp_code = str(random.randint(100000, 999999))
+        
+        # Create new OTP with expiration (3 minutes from now)
+        otp = OTP.objects.create(
+            email=email,
+            otp=otp_code,
+            expires_at=timezone.now() + timedelta(minutes=3),
+            attempts=0,
+            is_verified=False
+        )
+        
+        # Send email
+        subject = 'Your Verification OTP'
+        message = f'Your OTP is {otp.otp}. It expires in 3 minutes.'
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        messages.success(request, 'OTP sent successfully!')
+        return redirect('verify_otp')
+    
+    return render(request, 'verification/send_otp.html')
+
+def verify_otp(request):
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        email = request.user.email  # Or get from session/request
+        
+        try:
+            otp = OTP.objects.get(email=email, is_verified=False)
+            
+            # Check if OTP is expired using the model method
+            if otp.is_expired():
+                messages.error(request, 'OTP has expired. Please request a new one.')
+                return redirect('send_otp')
+            
+            if entered_otp == otp.otp:
+                otp.is_verified = True
+                otp.save()
+                return redirect('beneficiary_verification')
+            
+            messages.error(request, 'Invalid OTP. Please try again.')
+            
+        except OTP.DoesNotExist:
+            messages.error(request, 'OTP not found. Please request a new one.')
+            return redirect('send_otp')
+    #original is return render(request, 'verification/verify_otp.html')
+    return render(request, 'Policyholder Pages\dashboard.html')
+
+def resend_otp(request):
+    email = request.user.email  # Or get from session/request
+    try:
+        otp = OTP.objects.get(email=email)
+        if otp.attempts >= 3:
+            messages.error(request, 'Maximum resend attempts reached.')
+            return redirect('send_otp')
+        
+        otp.attempts += 1
+        otp.save()
+        
+        # Optionally generate new OTP and update expiration
+        otp.otp = str(random.randint(100000, 999999))
+        otp.expires_at = timezone.now() + timedelta(minutes=3)
+        otp.save()
+        
+        # Resend email
+        subject = 'Your New Verification OTP'
+        message = f'Your new OTP is {otp.otp}. It expires in 3 minutes.'
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        
+        messages.success(request, 'New OTP sent successfully!')
+        return redirect('verify_otp')
+    
+    except OTP.DoesNotExist:
+        return redirect('send_otp')
+    
+
+
+#verification for login
+# verification/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from .models import OTP
+from django.contrib import messages
+
+
+@login_required
+def send_otp1(request):
+    if request.method == 'POST':
+        email = request.user.email
+        # Clear existing OTPS
+        OTP.objects.filter(email=email).delete()
+        
+        # Create new OTP
+        otp = OTP.objects.create(email=email)
+        
+        # Send email
+        subject = 'Your Verification OTP'
+        message = f'Your OTP is {otp.otp}. It expires in 3 minutes.'
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        messages.success(request, 'OTP sent successfully!')
+        return redirect('verify_otp')
+    
+    return render(request, 'verification/send_otp.html')
+
+def verify_otp1(request):
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        email = 'kutylaalfredo62@gmail.com'
+        
+        try:
+            otp = OTP.objects.get(email=email, is_verified=False)
+            if otp.is_expired():
+                messages.error(request, 'OTP has expired. Please request a new one.')
+                return redirect('send_otp')
+            
+            if entered_otp == otp.otp:
+                otp.is_verified = True
+                otp.save()
+                return redirect('dashboard')
+            
+            messages.error(request, 'Invalid OTP. Please try again.')
+            
+        except OTP.DoesNotExist:
+            messages.error(request, 'OTP not found. Please request a new one.')
+            return redirect('send_otp')
+    
+    return render(request, 'verification/verify_otp.html')
+
+def resend_otp1(request):
+    email = 'kutylaalfredo62@gmail.com'
+    try:
+        otp = OTP.objects.get(email=email)
+        if otp.attempts >= 3:
+            messages.error(request, 'Maximum resend attempts reached.')
+            return redirect('send_otp')
+        
+        otp.attempts += 1
+        otp.save()
+        return redirect('send_otp')
+    
+    except OTP.DoesNotExist:
+        return redirect('send_otp')
+
+@login_required
+def delete_beneficiary(request, beneficiary_id):
+    try:
+        beneficiary = Beneficiary.objects.get(
+            id=beneficiary_id,
+            policy__policyHolder__email=request.user.email
+        )
+        beneficiary.delete()
+        messages.success(request, 'Beneficiary removed successfully')
+    except Beneficiary.DoesNotExist:
+        messages.error(request, 'Beneficiary not found')
+    return redirect('manage_beneficiaries')
+
+
+# views.py
+
+# FACE RECOGNITION (BYPASSED)
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.contrib import messages
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Citizen, Photo
+import tempfile
+import os
+import logging
+import io
+from django.db import transaction
+from IFPWebApp.models import Citizen, Address
+from .models import PolicyHolder
+from datetime import datetime
+import logging
+import time
+import random
+# views.py
+from django.db import transaction
+from django.http import JsonResponse
+from django.urls import reverse
+from IFPWebApp.models import Citizen
+from .models import PolicyHolder
+import time
+import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .ai_engine import assess_policy_risk
-from .models import PolicyHolder
+from .models import PolicyHolder, Admin
 
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
     print("PolicyHolders Count:", policyholders.count())
-
 
     # Risk distribution counters
     high = medium = low = 0
@@ -821,7 +1170,7 @@ def risk_reports(request):
     for holder in policyholders:
         risk_data = assess_policy_risk(holder)
 
-        holder.risk_score= risk_data["score"]
+        holder.risk_score = risk_data["score"]
         holder.save(update_fields=['risk_score'])
 
         if risk_data["level"] == "High":
@@ -847,6 +1196,7 @@ def risk_reports(request):
         "Low": round(low / total * 100, 1),
     }
 
+    # Extract numeric score for sorting
     reports.sort(key=lambda x: int(x["score"].split('%')[0]), reverse=True)
 
     return render(request, "Admin Templates/risk_reports.html", {
@@ -854,17 +1204,9 @@ def risk_reports(request):
         "risk_distribution": risk_distribution
     })
 
-
-
-
-def logout_view(request):
-    # Clear the session (or any login state)
-    request.session.flush()
-    return redirect('login') # Redirect to login page after logout
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import Policy, Claim  # Replace with actual model names
+from .models import Policy, Claim, Admin_notification,ActivityLog  # Replace with actual model names
 from django.db.models import Avg
 
 #@login_required
@@ -875,7 +1217,7 @@ def admin_dashboard(request):
     total_policies = Policy.objects.count()
     active_claims = Claim.objects.filter(status='active').count()
     risk_scores = PolicyHolder.objects.aggregate(avg_score=Avg('risk_score'))
-    notifications = Notification.objects.all()[:5]
+    notifications = Admin_notification.objects.all()[:5]
     activity_logs = ActivityLog.objects.all()[:10]  # Assuming ActivityLog exists
 
     context = {
@@ -944,3 +1286,209 @@ def fraud_alerts(request):
         'low_risk_percent': percent(low)
     }
     return render(request, 'Admin Templates/fraud_alerts.html', context)
+
+from django.contrib.auth import authenticate, login
+
+from django.contrib.auth import authenticate, login
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        # First try admin login
+        try:
+            admin = Admin.objects.get(email=username, password=password)
+            request.session['admin_id'] = admin.id
+            return redirect('admin_dashboard')
+        except Admin.DoesNotExist:
+            pass
+        
+        # Then try regular user authentication
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            try:
+                # Check policyholder association
+                request.user.policyholder
+                return redirect('dashboard')
+            except PolicyHolder.DoesNotExist:
+                messages.error(request, 'No policyholder profile found')
+        else:
+            messages.error(request, 'Invalid credentials')
+    return render(request, 'registration\login.html')
+
+def claim_review(request):
+    claims = [
+        {
+            'claim_id': 'CLM001',
+            'policyholder': 'John Doe',
+            'beneficiary': 'Jane Doe',
+            'risk_score': 'High',
+            'status': 'Pending',
+            'death_certificate_url': '/static/images/death_certificate1.jpg',
+            'timeline': [
+                {'event': 'Policy Issued', 'date': '2023-01-01'},
+                {'event': 'Insured Died', 'date': '2024-03-15'},
+                {'event': 'Claim Filed', 'date': '2024-03-20'},
+            ],
+            'cause_of_death': 'Cardiac Arrest (Verified)',
+        },
+        {
+            'claim_id': 'CLM002',
+            'policyholder': 'Sarah Smith',
+            'beneficiary': 'Mark Smith',
+            'risk_score': 'Medium',
+            'status': 'Pending',
+            'death_certificate_url': '/static/images/death_certificate2.jpg',
+            'timeline': [
+                {'event': 'Policy Issued', 'date': '2022-06-12'},
+                {'event': 'Insured Died', 'date': '2023-12-25'},
+                {'event': 'Claim Filed', 'date': '2024-01-05'},
+            ],
+            'cause_of_death': 'Natural Causes (Verified)',
+        },
+    ]
+    return render(request, 'Admin Templates/claim_review.html', {'claims': claims})
+
+def user_management(request):
+    return render(request, 'Admin Templates/user_management.html')
+
+#Claim review
+
+from django.shortcuts import render
+from .models import PolicyHolder, Claim
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+
+def claim_review(request):
+    query = request.GET.get('search')
+    status = request.GET.get('status')
+    insured_name = request.GET.get('insured_name')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    claims = Claim.objects.all()
+
+    if query:
+        holders = PolicyHolder.objects.filter(id_number__icontains=query)
+        claims = claims.filter(policyHolderId__in=holders)
+
+    if status:
+        claims = claims.filter(status__iexact=status)
+
+    if insured_name:
+        claims = claims.filter(insured_person__name__icontains=insured_name)
+
+    if start_date:
+        claims = claims.filter(claim_date__gte=start_date)
+    if end_date:
+        claims = claims.filter(claim_date__lte=end_date)
+
+    # AJAX support for dynamic table refresh
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('admin Templates/claim_rows.html', {'claims': claims})
+        return JsonResponse({'html': html})
+
+    return render(request, 'admin Templates/claim_review.html', {
+         'claims': claims,
+         'query': query or '',
+         'status': status or '',
+         'insured_name': insured_name or '',
+         'start_date': start_date or '',
+         'end_date': end_date or '',
+})
+
+#Policy Review 
+from django.db.models import Q
+
+
+def policy_review(request):
+    query = request.GET.get('q', '')
+    insured_name = request.GET.get('insured_name', '')
+    policy_status = request.GET.get('policy_status', '')
+    risk_score = request.GET.get('risk_score', '')
+
+    policies = Policy.objects.all()
+
+    if query:
+        policies = policies.filter(
+            Q(policyId__icontains=query) |
+            Q(policyHolder__name__icontains=query) |
+            Q(policyHolder__id_number__icontains=query) |
+            Q(policyType__icontains=query) |
+            Q(premiumAmount__icontains=query)
+        )
+
+    if insured_name:
+       policies = policies.filter(insuredperson__name__icontains=insured_name).distinct()
+
+    if policy_status:
+        policies = policies.filter(policy_status__iexact=policy_status)
+
+     
+       # Add dynamic risk score and filter if needed
+    enriched_policies = []
+    for policy in policies:
+        holder = policy.policyHolder
+        risk = assess_policy_risk(holder)
+        risk_level = risk['level']
+        insured_people = InsuredPerson.objects.filter(policy_id=policy)
+        insured_names = ", ".join([person.name for person in insured_people])
+        if risk_score and risk_score.lower() != risk_level.lower():
+                 continue
+    
+  
+        enriched_policies.append({
+            'policy': policy,
+            'holder_name': holder.name,
+            'risk_score': f"{risk['score']}% ({risk_level})",
+            'risk_level': risk_level,
+            'explanation': ", ".join(risk['explanation']),
+            'insured_names': insured_names,  # 👈 Include this line  
+   
+            
+          })
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+       html = render_to_string('admin Templates/policy_rows.html', {'policies': enriched_policies})
+       return JsonResponse({'html': html})
+
+    context = {
+        'policies': enriched_policies,  # not the raw queryset
+        'query': query,
+        'insured_name': insured_name,
+        'policy_status': policy_status,
+        'risk_score': risk_score,
+        
+    }
+    return render(request, 'Admin Templates/policy_review.html', context)
+
+from django.shortcuts import redirect, get_object_or_404
+from .models import Claim  # adjust if in another app
+
+def update_claim_status(request, claim_id):
+    if request.method == "POST":
+        claim = get_object_or_404(Claim, pk=claim_id)
+        new_status = request.POST.get('action')
+
+        if new_status in ['Approved', 'Rejected', 'Investigating']:
+            claim.status = new_status
+            claim.save()
+
+    return redirect('claim_review')  # Redirect back to claim review page
+
+from django.shortcuts import redirect, get_object_or_404
+from .models import Policy  # adjust if in another app
+
+def update_policy_status(request, policy_id):
+    if request.method == "POST":
+        policy = get_object_or_404(Policy, pk=policy_id)
+        new_status = request.POST.get('action')  # Expecting 'Approved' or 'Rejected'
+
+        if new_status in ['Active', 'Cancelled']:
+            policy.policy_status = new_status
+            policy.save()
+
+    return redirect('policy_review')  # Adjust to match your URL name

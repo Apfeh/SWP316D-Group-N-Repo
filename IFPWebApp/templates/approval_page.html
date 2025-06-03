@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Approve Coverage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use the same styles as the main app */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 6rem auto 2rem;
+            max-width: 500px;
+        }
+
+        .form-container h2 {
+            font-size: 1.8rem;
+            color: #0077b6;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .cta-button {
+            background-color: #00b894;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 5rem 1rem 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="form-container">
+        <h2>Approve Insurance Coverage</h2>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="token" value="{{ token }}">
+            <div class="form-group">
+                <label for="id_number">Enter your ID Number to approve</label>
+                <input type="text" id="id_number" name="id_number" required>
+            </div>
+            <button type="submit" class="cta-button">Approve Coverage</button>
+        </form>
+    </section>
+</body>
+</html>

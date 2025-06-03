@@ -49,12 +49,12 @@
             color: var(--primary-blue);
         }
 
-        nav {
+         nav {
             display: flex;
             align-items: center;
         }
 
-        nav a {
+       .nav, nav a {
             color: var(--dark-gray);
             text-decoration: none;
             margin-left: 2rem;
@@ -62,11 +62,11 @@
             transition: color 0.3s ease;
         }
 
-        nav a:hover {
+         .nav, nav a:hover {
             color: var(--secondary-green);
         }
 
-        nav a.active {
+        .nav, nav a.active {
             background-color: var(--secondary-green);
             color: var(--white);
             padding: 0.5rem 1rem;
@@ -115,6 +115,7 @@
             padding: 1.5rem;
             border-radius: 5px;
             text-align: center;
+            position: relative;
         }
 
         .form-link {
@@ -127,6 +128,17 @@
 
         .form-link:hover {
             text-decoration: underline;
+        }
+
+        .notification-badge {
+            background-color: #ff0000;
+            color: var(--white);
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
         }
 
         @keyframes fadeIn {
@@ -171,14 +183,26 @@
             <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
             <a href="{% url 'file_claim' %}">File Claim</a>
             <a href="{% url 'claim_status' %}">Claim Status</a>
-            <a href="{% url 'landing_page' %}">Logout</a>
+            <a href="{% url 'notifications' %}">Notifications
+                {% if notifications %}
+                    <span class="notification-badge">{{ notifications }}</span>
+                {% endif %}
+            </a>         
+   <a href="{% url 'landing_page' %}">Logout</a>
+
+
         </nav>
     </header>
 
     <!-- Dashboard -->
     <section class="card fade-in">
-        <h2>Welcome to Your Dashboard</h2>
+        <h2>Welcome, {{ name }}</h2>
         <p>Manage your insurance policies, beneficiaries, and claims with ease.</p>
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
         <div class="dashboard-grid">
             <div class="dashboard-item">
                 <h3>Active Policies</h3>
@@ -193,7 +217,7 @@
             <div class="dashboard-item">
                 <h3>Notifications</h3>
                 <p>{{ notifications }} New Alerts</p>
-                <a href="#" class="form-link">View Notifications</a>
+                <a href="{% url 'notifications' %}" class="form-link">View Notifications</a>
             </div>
         </div>
     </section>

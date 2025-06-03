@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send OTP</title>
+</head>
+<body style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+    <div style="text-align: center;">
+        <h1 style="color: #2c3e50;">Email Verification</h1>
+        
+        
+
+        <form method="post" style="margin-top: 30px;">
+            {% csrf_token %}
+            <p style="margin-bottom: 25px; color: #7f8c8d;">
+                Click the button below to send OTP to your email
+            </p>
+            <button type="submit" 
+                    style="padding: 12px 30px;
+                           background-color: #3498db;
+                           color: white;
+                           border: none;
+                           border-radius: 4px;
+                           cursor: pointer;
+                           font-size: 16px;">
+                Send OTP
+            </button>
+        </form>
+    </div>
+</body>
+</html>
