@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Risk Assessment Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* Base Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #003366;
+      color: white;
+      padding-top: 90px;
+      padding-left: 20px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .sidebar a:hover {
+      color: #00b894;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: white;
+      padding: 1rem;
+      color: #003366;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      left: 250px;
+      width: calc(100% - 250px);
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar a {
+      color: #003366;
+      text-decoration: none;
+    }
+
+    .navbar a:hover {
+      color: #00b894;
+    }
+
+    /* Top right icons */
+    .top-right-icons {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+    }
+
+    .top-right-icons a {
+      margin-left: 15px;
+      color: #003366;
+      font-size: 1.5rem;
+    }
+
+    /* Main Content */
+    .container {
+      margin-top: 80px;
+      margin-left: 270px;
+      margin-bottom: 80px; /* Footer space */
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: #003366;
+    }
+
+    /* Download Buttons Section */
+    .download-section {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #dee2e6;
+    }
+
+    .download-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .download-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 150px;
+      justify-content: center;
+    }
+
+    .download-csv {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .download-csv:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .download-pdf {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .download-pdf:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .circle-chart {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      margin: 0 auto;
+      background: conic-gradient(
+        #dc3545 0% 40%, 
+        #ffc107 40% 70%, 
+        #28a745 70% 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .circle-label {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      position: absolute;
+    }
+
+    /* Table Styling */
+    .table {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    .table th, .table td {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .table thead {
+      background-color: #003366;
+      color: white;
+    }
+
+    .table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    /*Chart*/
+    .risk-chart-canvas {
+      max-width: 800px;
+      max-height: 800px;
+      margin: 0 auto;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #003366;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      left: 0;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #003366;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: none;
+    }
+
+    /* Report content for PDF */
+    .report-content {
+      background-color: white;
+      padding: 20px;
+    }
+
+    .report-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #003366;
+    }
+
+    .report-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+  <a href="#">User Management</a>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar d-flex align-items-center justify-content-between">
+  <form class="d-flex ms-3" role="search" style="width: 300px;">
+    <input class="form-control me-2" type="search" placeholder="Search ..." aria-label="Search">
+    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+
+  <div class="top-right-icons">
+    <a href="#"><i class="bi bi-person-circle"></i></a>
+    <a href="#"><i class="bi bi-bell-fill"></i></a>
+    <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="container">
+    <div class="report-content" id="reportContent">
+      <!-- Report Header -->
+      <div class="report-header">
+        <h2 class="mb-4 text-center">Risk Assessment Reports</h2>
+        <div class="report-meta">
+          <div>Generated on: <span id="currentDate"></span></div>
+          <div>Total Reports: <span id="totalReports"></span></div>
+        </div>
+      </div>
+
+      <!-- Download Section -->
+      <div class="download-section">
+        <h5 class="text-center mb-3">Export Reports</h5>
+        <div class="download-buttons">
+          <button class="download-btn download-csv" onclick="downloadCSV()">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span class="btn-text">Download CSV</span>
+            <div class="loading spinner"></div>
+          </button>
+          <button class="download-btn download-pdf" onclick="downloadPDF()">
+            <i class="bi bi-file-earmark-pdf"></i>
+            <span class="btn-text">Download PDF</span>
+            <div class="loading spinner"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Risk Distribution Chart -->
+      <div class="risk-summary text-center mt-4">
+        <h4 class="mb-3">Risk Distribution Overview</h4>
+        <canvas id="riskChart" class="risk-chart-canvas"></canvas>
+      </div>
+
+      <!-- Risk Table -->
+      <div class="mt-5">
+        <h4>Detailed Risk Assessment</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover mt-3" id="riskTable">
+            <thead>
+              <tr>
+                <th>Policyholder</th>
+                <th>Number of Insured Persons</th>
+                <th>Average Risk Score</th>
+                <th>Risk Level</th>
+                <th>Suspicious Patterns</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Sample data - replace with Django template tags -->
+              <tr>
+                <td>John Doe</td>
+                <td>3</td>
+                <td>8.5</td>
+                <td><span class="badge bg-danger">High</span></td>
+                <td>Frequent beneficiary changes, suspicious claims</td>
+              </tr>
+              <tr>
+                <td>Jane Smith</td>
+                <td>2</td>
+                <td>6.2</td>
+                <td><span class="badge bg-warning">Medium</span></td>
+                <td>Multiple policies, unusual patterns</td>
+              </tr>
+              <tr>
+                <td>Mike Johnson</td>
+                <td>1</td>
+                <td>3.1</td>
+                <td><span class="badge bg-success">Low</span></td>
+                <td>None detected</td>
+              </tr>
+              <tr>
+                <td>Sarah Williams</td>
+                <td>4</td>
+                <td>7.8</td>
+                <td><span class="badge bg-danger">High</span></td>
+                <td>Large policy amounts, recent changes</td>
+              </tr>
+              <tr>
+                <td>David Brown</td>
+                <td>2</td>
+                <td>4.5</td>
+                <td><span class="badge bg-success">Low</span></td>
+                <td>Standard profile</td>
+              </tr>
+              
+              <!-- Django template loop -->
+              {% for report in reports %}
+                <tr>
+                   <td>{{ report.name }}</td>
+                   <td>{{ report.num_insured }}</td>
+                   <td>{{ report.score }}</td>
+                   <td>
+                     {% if report.score >= 7 %}
+                       <span class="badge bg-danger">High</span>
+                     {% elif report.score >= 4 %}
+                       <span class="badge bg-warning">Medium</span>
+                     {% else %}
+                       <span class="badge bg-success">Low</span>
+                     {% endif %}
+                   </td>
+                   <td>{{ report.patterns }}</td>
+               </tr>
+             {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
+</div>
+
+<script>
+  // Initialize page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set current date
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+    
+    // Count total reports
+    const tableRows = document.querySelectorAll('#riskTable tbody tr').length;
+    document.getElementById('totalReports').textContent = tableRows;
+    
+    // Initialize chart
+    initializeChart();
+  });
+
+  // Initialize Risk Chart
+  function initializeChart() {
+    const ctx = document.getElementById('riskChart').getContext('2d');
+
+    const data = {
+      labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+      datasets: [{
+        label: 'Risk Distribution (%)',
+        data: [
+          40, // {{ risk_distribution.High|default:"40" }}
+          30, // {{ risk_distribution.Medium|default:"30" }}
+          30  // {{ risk_distribution.Low|default:"30" }}
+        ],
+        backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+        hoverOffset: 4
+      }]
+    };
+
+    const config = {
+      type: 'doughnut',
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                let value = context.raw || 0;
+                return `${label}: ${value}%`;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Policyholder Risk Distribution (Percentages)'
+          }
+        }
+      }
+    };
+
+    new Chart(ctx, config);
+  }
+
+  // CSV Download Function
+  function downloadCSV() {
+    const button = document.querySelector('.download-csv');
+    const btnText = button.querySelector('.btn-text');
+    const spinner = button.querySelector('.loading');
+    
+    // Show loading state
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    button.disabled = true;
+
+    try {
+      const table = document.getElementById('riskTable');
+      let csv = [];
+      
+      // Add headers
+      const headers = [];
+      const headerCells = table.querySelectorAll('thead th');
+      headerCells.forEach(cell => {
+        headers.push('"' + cell.textContent.trim() + '"');
+      });
+      csv.push(headers.join(','));
+      
+      // Add data rows
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const rowData = [];
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+          // Clean cell text (remove badges, extra spaces)
+          let cellText = cell.textContent.trim();
+          // Handle risk level badges
+          if (cell.querySelector('.badge')) {
+            cellText = cell.querySelector('.badge').textContent.trim();
+          }
+          rowData.push('"' + cellText + '"');
+        });
+        csv.push(rowData.join(','));
+      });
+      
+      // Create and download file
+      const csvContent = csv.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Risk_Assessment_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Show success message
+      showMessage('CSV file downloaded successfully!', 'success');
+      
+    } catch (error) {
+      console.error('Error generating CSV:', error);
+      showMessage('Error generating CSV file. Please try again.', 'error');
+    } finally {
+      // Reset button state
+      setTimeout(() => {
+        btnText.style.display = 'inline';
+        spinner.style.display = 'none';
+        button.disabled = false;
+      }, 1000);
+    }
+  }
+
+  // PDF Download Function
+  function downloadPDF() {
+    const button = document.querySelector('.download-pdf');
+    const btnText = button.querySelector('.btn-text');
+    const spinner = button.querySelector('.loading');
+    
+    // Show loading state
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    button.disabled = true;
+
+    try {
+      // Check if jsPDF is available
+      if (typeof window.jsPDF === 'undefined') {
+        throw new Error('jsPDF library not loaded');
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(0, 51, 102);
+      doc.text('Risk Assessment Report', 105, 20, { align: 'center' });
+      
+      // Add a line under the title
+      doc.setDrawColor(0, 51, 102);
+      doc.setLineWidth(0.5);
+      doc.line(20, 25, 190, 25);
+      
+      // Add metadata
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
+      doc.text(`Total Reports: ${document.querySelectorAll('#riskTable tbody tr').length}`, 20, 42);
+      
+      // Add risk summary
+      doc.setFontSize(12);
+      doc.setTextColor(0, 51, 102);
+      doc.text('Risk Distribution Summary:', 20, 55);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text('• High Risk: 40% of policyholders', 25, 62);
+      doc.text('• Medium Risk: 30% of policyholders', 25, 68);
+      doc.text('• Low Risk: 30% of policyholders', 25, 74);
+      
+      // Prepare table data
+      const table = document.getElementById('riskTable');
+      const headers = [];
+      const data = [];
+      
+      // Extract headers
+      table.querySelectorAll('thead th').forEach(th => {
+        headers.push(th.textContent.trim());
+      });
+      
+      // Extract data
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const rowData = [];
+        row.querySelectorAll('td').forEach(td => {
+          let cellText = td.textContent.trim();
+          if (td.querySelector('.badge')) {
+            cellText = td.querySelector('.badge').textContent.trim();
+          }
+          rowData.push(cellText);
+        });
+        data.push(rowData);
+      });
+      
+      // Check if autoTable is available
+      if (typeof doc.autoTable === 'function') {
+        // Use autoTable if available
+        doc.autoTable({
+          head: [headers],
+          body: data,
+          startY: 85,
+          styles: {
+            fontSize: 8,
+            cellPadding: 3,
+          },
+          headStyles: {
+            fillColor: [0, 51, 102],
+            textColor: 255,
+            fontSize: 9,
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [245, 245, 245]
+          },
+          margin: { top: 85, left: 15, right: 15 }
+        });
+      } else {
+        // Fallback: Create table manually
+        let yPosition = 85;
+        const pageHeight = 280;
+        const leftMargin = 20;
+        const colWidth = 35;
+        
+        // Draw headers
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.setFillColor(0, 51, 102);
+        doc.rect(leftMargin, yPosition, colWidth * headers.length, 8, 'F');
+        
+        headers.forEach((header, index) => {
+          doc.text(header, leftMargin + (index * colWidth) + 2, yPosition + 6);
+        });
+        
+        yPosition += 10;
+        
+        // Draw data rows
+        doc.setTextColor(0, 0, 0);
+        data.forEach((row, rowIndex) => {
+          if (yPosition > pageHeight - 20) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          
+          // Alternate row colors
+          if (rowIndex % 2 === 0) {
+            doc.setFillColor(245, 245, 245);
+            doc.rect(leftMargin, yPosition, colWidth * row.length, 8, 'F');
+          }
+          
+          row.forEach((cell, cellIndex) => {
+            const text = cell.length > 15 ? cell.substring(0, 15) + '...' : cell;
+            doc.text(text, leftMargin + (cellIndex * colWidth) + 2, yPosition + 6);
+          });
+          
+          yPosition += 10;
+        });
+      }
+      
+      // Add footer to all pages
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Page ${i} of ${pageCount}`, 200, 290, { align: 'right' });
+        doc.text('© 2025 Insurance Fraud Prevention System', 105, 290, { align: 'center' });
+      }
+      
+      // Download PDF
+      const fileName = `Risk_Assessment_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      // Show success message
+      showMessage('PDF file downloaded successfully!', 'success');
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showMessage(`Error generating PDF: ${error.message}. Please try again.`, 'error');
+    } finally {
+      // Reset button state
+      setTimeout(() => {
+        btnText.style.display = 'inline';
+        spinner.style.display = 'none';
+        button.disabled = false;
+      }, 1500);
+    }
+  }
+
+  // Show success/error messages
+  function showMessage(message, type) {
+    // Create message element
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    messageDiv.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+    messageDiv.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      if (messageDiv.parentNode) {
+        messageDiv.remove();
+      }
+    }, 3000);
+  }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
