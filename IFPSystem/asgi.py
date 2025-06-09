@@ -5,7 +5,7 @@ from channels.auth import AuthMiddlewareStack
 from IFPSystem import routing
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'IFPSystem.settings')
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),

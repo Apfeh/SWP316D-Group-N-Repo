@@ -1,5 +1,7 @@
 from django.urls import path
 from IFPWebApp import views
+from .views import UpdateInsuredStatus
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     # Main Dashboard
@@ -71,6 +73,15 @@ urlpatterns = [
     #Policy review
       path('update-policy-status/<int:policy_id>/', views.update_policy_status, name='update_policy_status'),
 
+     path('policyholder/<str:id_number>/details/', views.policyholder_details, name='policyholder_details'),
+    path('policyholder/<str:id_number>/insured-list/', views.insured_persons_list, name='insured_persons_list'),  # AJAX for modal
+    path('insured/<int:insured_id>/details/', views.insured_person_detail, name='insured_person_detail'),
+    path('policyholder/<str:id_number>/patterns/', views.suspicious_patterns, name='suspicious_patterns'),
+    path('policyholder/<str:id_number>/policies/', views.policyholder_policies, name='policyholder_policies'),
+    path('policyholder/<str:id_number>/beneficiaries/', views.policyholder_beneficiaries, name='policyholder_beneficiaries'),
+    path('policyholder/<str:id_number>/insured/', views.policyholder_insured, name='policyholder_insured'),  # Page view
+    path('policyholder/<str:id_number>/claims/', views.policyholder_claims, name='policyholder_claims'),
   
-    
+    path('insured/<int:pk>/update-status/', UpdateInsuredStatus.as_view(), name='update-insured-status'),
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 ]

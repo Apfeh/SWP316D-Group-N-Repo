@@ -1,0 +1,188 @@
+
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #003366;
+      color: white;
+      padding-top: 90px;
+      padding-left: 20px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .sidebar a:hover {
+      color: #00b894;
+    }
+    .navbar {
+      background-color: white;
+      padding: 1rem;
+      color: #003366;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      left: 250px;
+      width: calc(100% - 250px);
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .navbar a {
+      color: #003366;
+      text-decoration: none;
+    }
+    .navbar a:hover {
+      color: #00b894;
+    }
+   .top-right-icons {
+  position: absolute; 
+  top: 65%;
+  right: 0px; /* or increase beyond 20px, like 40px */
+  transform: translateY(-50%);
+}
+
+    .top-right-icons a {
+      margin-left: 5px;
+      color: #003366;
+      font-size: 1.5rem;
+      
+    }
+    .container {
+      margin-top: 80px;
+      margin-left: 270px;
+      margin-bottom: 80px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: #003366;
+    }
+    .table {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    .table th, .table td {
+      text-align: center;
+      padding: 1rem;
+    }
+    .table thead {
+      background-color: #003366;
+      color: white;
+    }
+    .table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+    input[type="checkbox"]:checked ~ .modal-backdrop {
+      display: block;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 50%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+    input[type="checkbox"]:checked ~ .modal {
+      display: block;
+    }
+    .modal-header {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    .modal-body p {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+    }
+    .modal-btn {
+      padding: 0.6rem 2rem;
+      border-radius: 4px;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    .btn-investigate {
+      background-color: #ffc107;
+      color: white;
+    }
+    .close-modal {
+      background-color: #6c757d;
+      color: white;
+    }
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #003366;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      left: 0;
+    }
+    input[type="checkbox"] {
+      display: none;
+    }
+    .modal-trigger {
+      cursor: pointer;
+      color: #007bff;
+    }
+    .search-field {
+  max-width: 180px;
+  margin-right: 5px;
+}
+
+.small-label {
+  font-size: 0.8rem;
+  margin-bottom: 0.2rem;
+}
+
+.form-control-sm, .form-select-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+  

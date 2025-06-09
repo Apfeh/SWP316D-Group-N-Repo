@@ -21,6 +21,7 @@ from .fraud_detection import run_automatic_checks
 
 
 
+
 def landing_page(request):
     return render(request, 'landing_page.html')
 
@@ -1156,17 +1157,18 @@ from django.shortcuts import render
 from .ai_engine import assess_policy_risk
 from .models import PolicyHolder, Admin
 
+
+logger = logging.getLogger(__name__)
+
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
-    print("PolicyHolders Count:", policyholders.count())
+    logger.info(f"PolicyHolders Count: {policyholders.count()}")
 
-    # Risk distribution counters
     high = medium = low = 0
 
     for holder in policyholders:
         risk_data = assess_policy_risk(holder)
-
         holder.risk_score = risk_data["score"]
         holder.save(update_fields=['risk_score'])
 
@@ -1178,6 +1180,7 @@ def risk_reports(request):
             low += 1
 
         reports.append({
+            "id_number": holder.id_number,
             "name": holder.name,
             "num_insured": holder.insuredperson_set.count(),
             "score": f"{risk_data['score']}% ({risk_data['level']})",
@@ -1185,15 +1188,13 @@ def risk_reports(request):
             "timeline": holder.activity_timeline,
         })
 
-    total = high + medium + low or 1  # Avoid division by zero
-
+    total = high + medium + low or 1
     risk_distribution = {
         "High": round(high / total * 100, 1),
         "Medium": round(medium / total * 100, 1),
         "Low": round(low / total * 100, 1),
     }
 
-    # Extract numeric score for sorting
     reports.sort(key=lambda x: int(x["score"].split('%')[0]), reverse=True)
 
     return render(request, "Admin Templates/risk_reports.html", {
@@ -1206,7 +1207,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Policy, Claim, Admin_notification,ActivityLog  # Replace with actual model names
 from django.db.models import Avg
 
-#@login_required
+
 def admin_dashboard(request):
     if 'admin_id' not in request.session:
         return redirect('login')
@@ -1489,3 +1490,189 @@ def update_policy_status(request, policy_id):
             policy.save()
 
     return redirect('policy_review')  # Adjust to match your URL name
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import PolicyHolder, Policy, Beneficiary, InsuredPerson, Claim
+import logging
+
+
+
+
+
+def policyholder_details(request, id_number):
+    try:
+        logger.info(f"Fetching details for id_number: {id_number}")
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        data = {
+            'name': policyholder.name or 'N/A',
+            'id_number': policyholder.id_number,
+            'risk_score': policyholder.risk_score if policyholder.risk_score is not None else 'N/A',
+            'num_insured': policyholder.insuredperson_set.count(),
+            'phone_number': policyholder.phone_number or 'N/A',
+            'email': policyholder.email or 'N/A',
+            'beneficiary_changes': policyholder.beneficiary_changes or 0,
+            'claims_last_year': policyholder.claims_last_year or 0,
+            'incomplete_documents': 'Yes' if policyholder.incomplete_documents else 'No',
+        }
+        logger.info(f"Policyholder details: {data}")
+        return JsonResponse(data)
+    except PolicyHolder.DoesNotExist:
+        logger.error(f"PolicyHolder not found for id_number: {id_number}")
+        return JsonResponse({'error': 'Policyholder not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error in policyholder_details for id_number {id_number}: {str(e)}")
+        return JsonResponse({'error': 'Failed to load details'}, status=500)
+
+
+def insured_persons_list(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        insured_persons = InsuredPerson.objects.filter(holder=policyholder)
+        logger.info(f"Found {insured_persons.count()} insured persons for id_number {id_number}")
+        data = {
+            'insured_persons': [
+                {
+                    'id': person.id,
+                    'name': person.name,
+                    'relationship_to_policy_holder': person.relationship_to_policy_holder,
+                    'id_number': person.id_number,
+                } for person in insured_persons
+            ]
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        logger.error(f"Error in insured_persons_list for id_number {id_number}: {e}")
+        return JsonResponse({'error': 'Failed to load insured persons'}, status=500)
+
+
+def insured_person_detail(request, insured_id):
+    try:
+        person = get_object_or_404(InsuredPerson, id=insured_id)
+        data = {
+            'name': person.name,
+            'date_of_birth': person.date_of_birth.strftime('%Y-%m-%d') if person.date_of_birth else 'N/A',
+            'relationship_to_policy_holder': person.relationship_to_policy_holder,
+            'id_number': person.id_number,
+            'contact_email': person.contact_email or 'N/A',
+            'contact_phone': person.contact_phone or 'N/A',
+            'parent_id_number': person.parent_id_number or 'N/A',
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        logger.error(f"Error in insured_person_detail for insured_id {insured_id}: {e}")
+        return JsonResponse({'error': 'Failed to load insured person details'}, status=500)
+
+
+def suspicious_patterns(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        data = {
+            'timeline': policyholder.activity_timeline or []
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        logger.error(f"Error in suspicious_patterns for id_number {id_number}: {e}")
+        return JsonResponse({'error': 'Failed to load timeline'}, status=500)
+
+
+def policyholder_policies(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        policies = Policy.objects.filter(policyHolder=policyholder)
+        logger.info(f"Found {policies.count()} policies for id_number {id_number}")
+        return render(request, 'Admin Templates/policyholder_policies.html', {'policyholder': policyholder, 'policies': policies})
+    except Exception as e:
+        logger.error(f"Error in policyholder_policies for id_number {id_number}: {e}")
+        return render(request, 'Admin Templates/error.html', {'error': 'Failed to load policies'}, status=500)
+
+
+def policyholder_beneficiaries(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        beneficiaries = Beneficiary.objects.filter(policy__policyHolder=policyholder)
+        logger.info(f"Found {beneficiaries.count()} beneficiaries for id_number {id_number}")
+        return render(request, 'Admin Templates/policyholder_beneficiaries.html', {'policyholder': policyholder, 'beneficiaries': beneficiaries})
+    except Exception as e:
+        logger.error(f"Error in policyholder_beneficiaries for id_number {id_number}: {e}")
+        return render(request, 'Admin Templates/error.html', {'error': 'Failed to load beneficiaries'}, status=500)
+
+
+def policyholder_insured(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        insured_persons = InsuredPerson.objects.filter(holder=policyholder)
+        logger.info(f"Found {insured_persons.count()} insured persons for id_number {id_number}")
+        return render(request, 'Admin Templates/policyholder_insured.html', {'policyholder': policyholder, 'insured_persons': insured_persons})
+    except Exception as e:
+        logger.error(f"Error in policyholder_insured for id_number {id_number}: {e}")
+        return render(request, 'Admin Templates/error.html', {'error': 'Failed to load insured persons'}, status=500)
+
+
+def policyholder_claims(request, id_number):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
+        claims = Claim.objects.filter(policyHolderId=policyholder)
+        logger.info(f"Found {claims.count()} claims for id_number {id_number}")
+        return render(request, 'Admin Templates/policyholder_claims.html', {'policyholder': policyholder, 'claims': claims})
+    except Exception as e:
+        logger.error(f"Error in policyholder_claims for id_number {id_number}: {e}")
+        return render(request, 'Admin Templates/error.html', {'error': 'Failed to load claims'}, status=500)
+    
+
+from rest_framework import permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import InsuredPerson, Beneficiary, ActivityLog
+from .serializers import InsuredPersonSerializer
+from twilio.rest import Client
+from django.conf import settings
+
+class UpdateInsuredStatus(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            insured = InsuredPerson.objects.get(pk=pk)
+        except InsuredPerson.DoesNotExist:
+            return Response({'error': 'Insured person not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if insured.status == 'deceased':
+            return Response({'message': 'Insured person is already deceased'}, status=status.HTTP_400_BAD_REQUEST)
+
+        insured.status = 'deceased'
+        insured.save()
+
+        # Notify beneficiaries and log the action
+        self.notify_beneficiaries(insured)
+        self.log_activity(request.user, insured)
+
+        return Response({'message': 'Status updated to deceased'}, status=status.HTTP_200_OK)
+
+    def notify_beneficiaries(self, insured):
+        policy = insured.policy_id
+        beneficiaries = Beneficiary.objects.filter(policy=policy)
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        for beneficiary in beneficiaries:
+            message = "The insured person has been declared deceased. You can now file a claim."
+            client.messages.create(
+                body=message,
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=beneficiary.contactNumber  # Must be in format like '+1234567890'
+            )
+
+    def log_activity(self, user, insured):
+        """Log the status update in ActivityLog."""
+        ActivityLog.objects.create(
+            user=user.username,
+            action='Updated insured person status',
+            details=f'Set status to deceased for insured person {insured.id}'
+        )
+
+
+
+        

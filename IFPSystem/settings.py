@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'channels',
     'IFPWebApp',
+    'rest_framework',
+    'rest_framework.authtoken',
+
+
     
 ]
 ASGI_APPLICATION = 'IFPWebApp.asgi.application'
@@ -75,6 +79,37 @@ TEMPLATES = [
         },
     },
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        # Other authentication classes
+    ],
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+
+# In project/settings.py
+TWILIO_ACCOUNT_SID = 'ACbcbaf86226e05eaaa9c8c50a576daf06'
+TWILIO_AUTH_TOKEN = 'bacfca137ac605bb867c35ba5352e14c'
+TWILIO_PHONE_NUMBER = '+18108184639'  # e.g., '+1234567890'
 
 WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 

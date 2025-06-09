@@ -138,6 +138,16 @@ class InsuredPerson(models.Model):
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=15, blank=True, null=True)
 
+    STATUS_CHOICES = [
+        ('alive', 'Alive'),
+        ('deceased', 'Deceased'),
+    ]
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='alive'
+    )
+
     class Meta:
         db_table = 'insuredperson'
 
