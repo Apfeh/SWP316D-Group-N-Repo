@@ -349,9 +349,6 @@ def register(request):
         form = CustomRegistrationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-def landing_page(request):
-    return render(request, 'landing_page.html')
-
 @login_required
 def log_register(request):
     messages.warning(request, 'You are already logged in. Redirected to dashboard.')
