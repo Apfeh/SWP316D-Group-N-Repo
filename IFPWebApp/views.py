@@ -303,13 +303,6 @@ POLICIES = [
     {'id': 3, 'holder_name': 'Mark Johnson', 'insured_persons': 'Lucy Johnson', 'risk_score': 85, 'status': 'Pending'},
 ]
 
-def policy_review(request):
-    query = request.GET.get('q', '')
-    filtered_policies = [policy for policy in POLICIES if query.lower() in policy['holder_name'].lower()]
-    context = {'policies': filtered_policies}
-    return render(request, 'Admin Templates/policy_review.html', context)
-
-
 # IFPWebApp/views_fraud.py
 
 

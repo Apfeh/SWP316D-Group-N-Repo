@@ -71,7 +71,11 @@ urlpatterns = [
       path('claims/', views.claim_review, name='claim_review'),
       path('update-claim-status/<int:claim_id>/', views.update_claim_status, name='update_claim_status'),
     #Policy review
-      path('update-policy-status/<int:policy_id>/', views.update_policy_status, name='update_policy_status'),
+    path('policy_review/', views.policy_review, name='policy_review'),
+    #path('policy/<int:pk>/', views.policy_detail, name='policy_detail'),
+    #path('policy/<int:pk>/approve/', views.approve_policy, name='approve_policy'),
+    #path('policy/<int:pk>/reject/', views.reject_policy, name='reject_policy'),
+    path('update-policy-status/<int:policy_id>/', views.update_policy_status, name='update_policy_status'),
 
      path('policyholder/<str:id_number>/details/', views.policyholder_details, name='policyholder_details'),
     path('policyholder/<str:id_number>/insured-list/', views.insured_persons_list, name='insured_persons_list'),  # AJAX for modal
