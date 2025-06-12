@@ -966,3 +966,5 @@ PolicyHolders Count: 1
 PolicyHolders Count: 1
 Fetching details for id_number: 8001015009087
 Policyholder details: {'name': 'John Doe', 'id_number': '8001015009087', 'risk_score': 10.0, 'num_insured': 1, 'phone_number': '+27765535458', 'email': 'apfeswahoramarumo1@gmail.com', 'beneficiary_changes': 0, 'claims_last_year': 0, 'incomplete_documents': 'No'}
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
