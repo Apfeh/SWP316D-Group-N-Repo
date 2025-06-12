@@ -968,3 +968,27 @@ Fetching details for id_number: 8001015009087
 Policyholder details: {'name': 'John Doe', 'id_number': '8001015009087', 'risk_score': 10.0, 'num_insured': 1, 'phone_number': '+27765535458', 'email': 'apfeswahoramarumo1@gmail.com', 'beneficiary_changes': 0, 'claims_last_year': 0, 'incomplete_documents': 'No'}
 C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
 Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Killed 0 pending application instances
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Killed 0 pending application instances
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader

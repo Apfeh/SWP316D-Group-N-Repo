@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 class IFPSystemAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'IFPSystem'
+    name = 'IFPWebApp'
 
     def ready(self):
-        import IFPSystem.signals
+        import IFPWebApp.signals

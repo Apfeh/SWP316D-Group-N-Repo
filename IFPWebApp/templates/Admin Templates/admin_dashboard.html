@@ -146,6 +146,9 @@
       border-radius: 5px;
       margin-bottom: 1rem;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .table-section {
@@ -180,14 +183,18 @@
       margin-left: 15px;
       font-size: 1.4rem;
     }
+
     .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
     }
   </style>
 </head>
 <body>
+
+<!-- CSRF Token -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{% csrf_token %}">
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -201,12 +208,11 @@
 
 <!-- Top Navbar -->
 <nav class="navbar">
-  <!-- Search Bar -->
   <div class="logo">IFPS</div>
   <div class="top-right-icons">
     <a href="#"><i class="bi bi-person-circle"></i></a>
     <a href="#"><i class="bi bi-bell-fill"></i></a>
-    <a href={% url 'landing_page' %}><i class="bi bi-box-arrow-right"></i></a>
+    <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
 
@@ -240,11 +246,14 @@
 
   <section class="features notifications-section">
     <h2>Live Notifications</h2>
-    {% for notif in notifications %}
-    <div class="notification-item">
-      {{ notif }}
+    <div id="notifications">
+      {% for notif in notifications %}
+      <div class="notification-item" id="notif-{{ notif.id }}">
+        <span>{{ notif.message }} ({{ notif.created_at }})</span>
+        <button class="btn btn-sm btn-light" onclick="markRead({{ notif.id }})">Mark Read</button>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </section>
 
   <section class="table-section">
@@ -278,6 +287,51 @@
 <div class="footer">
   © 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
+
+<!-- WebSocket JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+    socket.onopen = () => console.log('WebSocket connected');
+    socket.onerror = (error) => console.error('WebSocket error:', error);
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Notification:', data);
+      const notificationDiv = document.getElementById('notifications');
+      const div = document.createElement('div');
+      div.className = 'notification-item';
+      div.id = `notif-${data.id}`;
+      div.innerHTML = `
+        <span>${data.message} (${data.created_at})</span>
+        <button class="btn btn-sm btn-light" onclick="markRead(${data.id})">Mark Read</button>
+      `;
+      notificationDiv.prepend(div);
+    };
+  });
+
+  function markRead(notificationId) {
+    fetch(`/mark-notification-read/${notificationId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          console.log('Notification marked as read');
+          const notifElement = document.getElementById(`notif-${notificationId}`);
+          if (notifElement) {
+            notifElement.remove(); // Remove from DOM
+          }
+        } else {
+          console.error('Error:', data.message);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+</script>
 
 </body>
 </html>

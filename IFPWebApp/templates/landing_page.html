@@ -26,7 +26,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 96%;
             background-color: var(--white);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
@@ -93,6 +93,7 @@
             padding: 1rem 2rem;
             border: none;
             border-radius: 5px;
+            text-decoration: none;
             font-size: 1.2rem;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
@@ -218,15 +219,13 @@
             <a href="#contact">Contact</a>
             <a href="{% url 'login' %}" class="login-button">Login</a>
             <a href="{% url 'register' %}">Register</a>
-           
-            <a href=""></a>
         </div>
     </nav>
 
     <section class="hero">
         <h1>Protect Your Insurance with FraudShield</h1>
         <p>Advanced AI-powered solutions to detect and prevent insurance fraud in real-time, saving you time and money.</p>
-        <button class="cta-button">Get Started</button>
+        <a href="{% url 'register' %}" class="cta-button">Get Started</a>
     </section>
 
     <section id="features" class="features">

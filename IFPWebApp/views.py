@@ -1208,8 +1208,9 @@ def admin_dashboard(request):
     total_policies = Policy.objects.count()
     active_claims = Claim.objects.filter(status='active').count()
     risk_scores = PolicyHolder.objects.aggregate(avg_score=Avg('risk_score'))
-    notifications = Admin_notification.objects.all()[:5]
-    activity_logs = ActivityLog.objects.all()[:10]  # Assuming ActivityLog exists
+    # Fetch unread notifications, latest first
+    notifications = Admin_notification.objects.filter(is_read=False).order_by('-created_at')[:5]
+    activity_logs = ActivityLog.objects.all().order_by('-timestamp')[:10]  # Ensure ordering
 
     context = {
         'total_policies': total_policies,

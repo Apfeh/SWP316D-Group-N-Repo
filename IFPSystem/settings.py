@@ -45,6 +45,12 @@ INSTALLED_APPS = [
 
     
 ]
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 ASGI_APPLICATION = 'IFPWebApp.asgi.application'
 
 CHANNEL_LAYERS = {
@@ -107,7 +113,9 @@ LOGGING = {
 
 
 # In project/settings.py
-
+TWILIO_ACCOUNT_SID = 'ACbcbaf86226e05eaaa9c8c50a576daf06'
+TWILIO_AUTH_TOKEN = 'bacfca137ac605bb867c35ba5352e14c'
+TWILIO_PHONE_NUMBER = '+18108184639'  # e.g., '+1234567890'
 
 WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 
@@ -133,6 +141,7 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
 # settings.py
 DATABASE_ROUTERS = ['IFPWebApp.routers.HomeAffairsRouter']
 
