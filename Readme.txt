@@ -1,2 +1,1 @@
-Hello guys welcome to the SWP316D Project here we will develop and make a great App.
-Here's to many more
+This project contains an engine that will check whether the insured person is deceased via the Home Affairs database. If the insured person is declared deceased on the Home Affairs database, the engine will send an email to the corresponding beneficiary so they can claim the money.
