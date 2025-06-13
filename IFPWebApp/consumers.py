@@ -1,3 +1,4 @@
+# IFPWebApp/consumers.py
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
@@ -12,8 +13,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         print("WebSocket disconnected")  # Debug
 
     async def send_notification(self, event):
-        print(f"Sending notification: {event['message']}")  # Debug
+        print(f"Sending notification: {event['message']} (ID: {event['id']})")  # Debug
         await self.send(text_data=json.dumps({
             'message': event['message'],
-            'created_at': event['created_at']
+            'created_at': event['created_at'],
+            'id': event['id']
         }))

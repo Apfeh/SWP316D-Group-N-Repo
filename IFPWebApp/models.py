@@ -107,6 +107,7 @@ class Beneficiary(models.Model):
     contactNumber = models.CharField(max_length=100)
     relationshipToInsured = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
+    email = models.CharField(max_length=255) #create this column using sql
     class Meta:
         db_table = 'beneficiary'
 

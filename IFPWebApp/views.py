@@ -1202,24 +1202,21 @@ from django.db.models import Avg
 
 
 def admin_dashboard(request):
-    if 'admin_id' not in request.session:
-        return redirect('login')
-
     total_policies = Policy.objects.count()
-    active_claims = Claim.objects.filter(status='active').count()
+    active_claims = Claim.objects.filter(status='Pending').count()
     risk_scores = PolicyHolder.objects.aggregate(avg_score=Avg('risk_score'))
-    # Fetch unread notifications, latest first
-    notifications = Admin_notification.objects.filter(is_read=False).order_by('-created_at')[:5]
-    activity_logs = ActivityLog.objects.all().order_by('-timestamp')[:10]  # Ensure ordering
+    flagged_cases = Claim.objects.filter(status='Flagged').count()  # Adjust as needed
+    notifications = Admin_notification.objects.order_by('-created_at')[:5]  # 5 newest notifications
+    activity_logs = ActivityLog.objects.order_by('-timestamp')[:10]  # Top 10 logs
 
     context = {
         'total_policies': total_policies,
         'active_claims': active_claims,
         'risk_scores': risk_scores,
+        'flagged_cases': flagged_cases,
         'notifications': notifications,
         'activity_logs': activity_logs,
     }
-
     return render(request, 'Admin Templates/admin_dashboard.html', context)
 
 def fraud_alerts(request):

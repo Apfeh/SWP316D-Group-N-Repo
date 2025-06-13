@@ -9,5 +9,5 @@ pip install mysqlclient
 pip install pytesseract
 pip install opencv-python
 pip install pdf2image
-
+pip install websocket
 
