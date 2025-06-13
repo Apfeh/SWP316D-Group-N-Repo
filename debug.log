@@ -992,3 +992,561 @@ Listening on TCP address 0.0.0.0:8000
 Killed 0 pending application instances
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Not Found: /verify-face/
+Not Found: /register-face/
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /register/
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+MySQLdb.OperationalError: (1054, "Unknown column 'address.phone_number' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 335, in register
+    user = form.save()
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py", line 58, in save
+    address = Address.objects.using('homeaffairs').filter(idNumber=citizen).first()
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1104, in first
+    for obj in queryset[:1]:
+               ~~~~~~~~^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.OperationalError: (1054, "Unknown column 'address.phone_number' in 'field list'")
+Internal Server Error: /register/
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+MySQLdb.OperationalError: (1054, "Unknown column 'address.phone_number' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 335, in register
+    user = form.save()
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py", line 58, in save
+    address = Address.objects.using('homeaffairs').filter(idNumber=citizen).first()
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1104, in first
+    for obj in queryset[:1]:
+               ~~~~~~~~^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.OperationalError: (1054, "Unknown column 'address.phone_number' in 'field list'")
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /register/
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+MySQLdb.IntegrityError: (1062, "Duplicate entry 'kutylaalfredo@gmail.com' for key 'policyholder.email'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 335, in register
+    user = form.save()
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py", line 63, in save
+    PolicyHolder.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        user=user,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        email = user.email,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: (1062, "Duplicate entry 'kutylaalfredo@gmail.com' for key 'policyholder.email'")
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /register/
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+MySQLdb.IntegrityError: (1062, "Duplicate entry 'kutylaalfredo60@gmail.com' for key 'policyholder.email'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 335, in register
+    user = form.save()
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py", line 63, in save
+    PolicyHolder.objects.create(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        user=user,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        email = user.email,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1864, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: (1062, "Duplicate entry 'kutylaalfredo60@gmail.com' for key 'policyholder.email'")
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo60@gmail.com
+No PolicyHolder found for email: kutylaalfredo@gmail.com
+No PolicyHolder found for email: kutylaalfredo@gmail.com
+No PolicyHolder found for email: kutylaalfredo@gmail.com
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /admin-dashboard/
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+MySQLdb.ProgrammingError: (1146, "Table 'ifps_db.admin_notifications' doesn't exist")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1115, in admin_dashboard
+    return render(request, 'Admin Templates/admin_dashboard.html', context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 199, in render
+    len_values = len(values)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1945, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\cursors.py", line 330, in _query
+    db.query(q)
+    ~~~~~~~~^^^
+  File "C:\Users\ADMIN\AppData\Local\Programs\Python\Python313\Lib\site-packages\MySQLdb\connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: (1146, "Table 'ifps_db.admin_notifications' doesn't exist")
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\ADMIN\Desktop\End of Course Project\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader

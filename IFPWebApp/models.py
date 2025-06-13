@@ -413,3 +413,73 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action}"
+    
+# models.py
+import base64
+import numpy as np
+import face_recognition
+from io import BytesIO
+from django.db import models
+from django.core.files.base import ContentFile
+from PIL import Image
+
+# models.py
+# models.py
+class FaceEncoding(models.Model):
+    id_number = models.CharField(max_length=20, unique=True, primary_key=True)
+    encoding = models.BinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'face_encoding'
+        app_label = 'IFPWebApp'
+    
+    @classmethod
+    def create_from_image(cls, id_number, image_file):
+        """
+        Create a new FaceEncoding instance from an image file
+        """
+        # Convert InMemoryUploadedFile to PIL image
+        img = Image.open(image_file)
+        img = img.convert('RGB')
+        img_array = np.array(img)
+        
+        # Get face encodings
+        face_encodings = face_recognition.face_encodings(img_array)
+        
+        if not face_encodings:
+            raise ValueError("No faces found in the image")
+        
+        # Store first face encoding
+        encoding = face_encodings[0].tobytes()
+        
+        # Create and return the FaceEncoding instance
+        return cls.objects.create(id_number=id_number, encoding=encoding)
+    
+    def get_encoding_array(self):
+        return np.frombuffer(self.encoding, dtype=np.float64)
+    
+    def __str__(self):
+        return f"Face Encoding for {self.id_number}"
+
+
+class FaceVerificationAttempt(models.Model):
+    id_number = models.CharField(max_length=20)
+    ip_address = models.GenericIPAddressField()
+    attempts = models.PositiveIntegerField(default=0)
+    last_attempt = models.DateTimeField(auto_now=True)
+    locked_until = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'face_verification_attempt'
+        app_label = 'IFPWebApp'
+
+# Add this to your existing models
+class FaceVerificationSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    session_key = models.CharField(max_length=40)
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'face_verification_session'
