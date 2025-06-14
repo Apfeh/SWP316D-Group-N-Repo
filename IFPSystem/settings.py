@@ -124,10 +124,10 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':'newdb',
+         'ENGINE': 'django.db.backends.mysql',
+        'NAME':'ifps_db',
         'USER':'root',
-        'PASSWORD' :'myr00tp@ssw0rd',
+        'PASSWORD' :'@Nalau12',
         'HOST':'localhost',
         'PORT':'3306',
    },
@@ -135,7 +135,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'homeaffairsdb',
         'USER': 'root',
-        'PASSWORD': 'myr00tp@ssw0rd',
+        'PASSWORD': '@Nalau12',
         'HOST': 'localhost',
         'PORT': '3306',
     }

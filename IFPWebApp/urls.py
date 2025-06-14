@@ -37,9 +37,7 @@ urlpatterns = [
     path('send-otp/', views.send_otp, name='send_otp'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
-     path('send-otp1/', views.send_otp1, name='send_otp1'),
-    path('verify-otp1/', views.verify_otp1, name='verify_otp1'),
-    path('resend-otp1/', views.resend_otp1, name='resend_otp1'),
+   
     path('approve/<str:token>/', views.approve_beneficiary, name='approve_beneficiary'),
     path('decline/<str:token>/', views.decline_beneficiary, name='decline_beneficiary'),
     # Insured Person Pages
@@ -88,4 +86,8 @@ urlpatterns = [
   
     path('insured/<int:pk>/update-status/', UpdateInsuredStatus.as_view(), name='update-insured-status'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+     path('register-face/',views.register_face, name='register_face'),
+    path('verify-face/', views.verify_face, name='verify_face'),
+     path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
 ]

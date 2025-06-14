@@ -16,7 +16,11 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Citizen, PolicyHolder, Address
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
+    
+ 
 class CustomRegistrationForm(UserCreationForm):
     id_number = forms.CharField(
         max_length=20,
@@ -32,6 +36,12 @@ class CustomRegistrationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         self.fields['username'].help_text = None  # Remove default help text
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered")
+        return email
+
     def clean_id_number(self):
         id_number = self.cleaned_data['id_number']
         
@@ -46,10 +56,12 @@ class CustomRegistrationForm(UserCreationForm):
         return id_number
 
     def save(self, commit=True):
+        citizen = Citizen.objects.using('homeaffairs').get(idNumber=self.cleaned_data['id_number'])
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        user.username = self.cleaned_data['email']  # Use email as username
-        
+        user.username = self.cleaned_data['username']  # Use username to sign in
+        user.first_name = citizen.name
+        user.last_name = citizen.surname
         if commit:
             user.save()
             
@@ -69,3 +81,50 @@ class CustomRegistrationForm(UserCreationForm):
             
         return user
 
+# forms.py
+from django import forms
+from .models import Citizen
+
+class FaceRegistrationForm(forms.Form):
+    id_number = forms.CharField(
+        label='ID Number',
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter ID number'
+        })
+    )
+    face_image = forms.ImageField(
+        label='Upload Face Image',
+        widget=forms.FileInput(attrs={
+            'accept': 'image/*',
+            'class': 'form-control-file'
+        })
+    )
+    
+    def clean_id_number(self):
+        id_number = self.cleaned_data['id_number']
+        if not Citizen.objects.filter(idNumber=id_number).exists():
+            raise forms.ValidationError("ID number not found in database")
+        return id_number
+
+# Remove id_number field from verification form
+class FaceVerificationForm(forms.Form):
+    face_image = forms.ImageField(
+        label='Capture Face',
+        widget=forms.FileInput(attrs={
+            'accept': 'image/*',
+            'capture': 'environment',
+            'class': 'd-none',
+            'id': 'faceCapture'
+        })
+    )
+    face_image = forms.ImageField(
+        label='Capture Face',
+        widget=forms.FileInput(attrs={
+            'accept': 'image/*',
+            'capture': 'environment',
+            'class': 'd-none',
+            'id': 'faceCapture'
+        })
+    )
