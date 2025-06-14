@@ -88,4 +88,7 @@ urlpatterns = [
   
     path('insured/<int:pk>/update-status/', UpdateInsuredStatus.as_view(), name='update-insured-status'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+
+    path('admin-profile/',views.profile, name='ad_profile'),
+    path('admin-notifications/',views.AdminNotis, name='ad_notifications')
 ]

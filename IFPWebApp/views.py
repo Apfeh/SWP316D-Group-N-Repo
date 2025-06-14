@@ -1143,6 +1143,10 @@ from .models import PolicyHolder
 import time
 import random
 import logging
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Policy, Claim, Admin_notification,ActivityLog  # Replace with actual model names
+from django.db.models import Avg
 
 logger = logging.getLogger(__name__)
 
@@ -1194,11 +1198,6 @@ def risk_reports(request):
         "reports": reports,
         "risk_distribution": risk_distribution
     })
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Policy, Claim, Admin_notification,ActivityLog  # Replace with actual model names
-from django.db.models import Avg
 
 
 def admin_dashboard(request):
@@ -1664,6 +1663,14 @@ class UpdateInsuredStatus(APIView):
             details=f'Set status to deceased for insured person {insured.id}'
         )
 
+@login_required(login_url='login')
+def profile(request):
+    adminholder = Admin.objects.filter(user=request.user).first()
 
-
+    context = {
+        'adminholder': adminholder,
+    }
+    return render(request, 'Admin Templates/profile.html', context)
         
+def AdminNotis(request):
+    return redirect('Admin Templates/notifications.html')        

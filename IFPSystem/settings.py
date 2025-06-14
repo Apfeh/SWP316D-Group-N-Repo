@@ -126,17 +126,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME':'newdb',
-        'USER':'root',
-        'PASSWORD' :'myr00tp@ssw0rd',
-        'HOST':'localhost',
+        'USER':'Buks',
+        'PASSWORD' :'buks123',
+        'HOST':'192.168.137.241',
         'PORT':'3306',
    },
     'homeaffairs': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'homeaffairsdb',
-        'USER': 'root',
-        'PASSWORD': 'myr00tp@ssw0rd',
-        'HOST': 'localhost',
+        'USER': 'Buks',
+        'PASSWORD': 'buks123',
+        'HOST': '192.168.137.241',
         'PORT': '3306',
     }
 }
