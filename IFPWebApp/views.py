@@ -456,6 +456,36 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# views.py updates
+
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+import json
+from datetime import timedelta
+
+# Email template
+def approval_email_template(recipient_name, policy_holder_name, insured_citizen, insured_id, relationship, approval_url):
+    subject = "Action Required: Approval for Insurance Coverage"
+    
+    context = {
+        'recipient_name': recipient_name,
+        'policy_holder_name': policy_holder_name,
+        'insured_name': f"{insured_citizen.name} {insured_citizen.surname}",
+        'insured_id': insured_id,
+        'insured_dob': insured_citizen.dateOfBirth,
+        'relationship': relationship,
+        'approval_url': approval_url
+    }
+    
+    html_message = render_to_string('email/approval_request.html', context)
+    plain_message = strip_tags(html_message)
+    
+    return subject, html_message, plain_message
+
+# Updated add_policy view
 @login_required
 def add_policy(request):
     logger.debug(f"User email: {request.user.email}")
@@ -524,11 +554,12 @@ def add_policy(request):
         )
         approval_request.save()
         
-        # Send approval email
+        # Build approval URL with face verification step
         approval_url = request.build_absolute_uri(
             f'/approve-insured/{approval_request.token}/'
         )
         
+        # Determine recipient name
         if is_underage:
             try:
                 parent_citizen = Citizen.objects.get(idNumber=parent_id)
@@ -538,34 +569,22 @@ def add_policy(request):
         else:
             recipient_name = f"{insured_citizen.name} {insured_citizen.surname}"
         
-        subject = "Action Required: Approval for Insurance Coverage"
-        message = f"""
-        Dear {recipient_name},
-        
-        {policy_holder.name} has added you as an insured person for a new policy.
-        
-        Insured Person Details:
-        - Name: {insured_citizen.name} {insured_citizen.surname}
-        - ID Number: {insured_id}
-        - Date of Birth: {insured_citizen.dateOfBirth}
-        - Relationship: {relationship}
-        
-        To approve this coverage, please click the link below and enter your ID number:
-        {approval_url}
-        
-        This link expires in 7 days.
-        
-        If you did not authorize this, please ignore this email or contact our support team.
-        
-        Regards,
-        FraudShield Team
-        """
+        # Send styled email
+        subject, html_message, plain_message = approval_email_template(
+            recipient_name,
+            policy_holder.name,
+            insured_citizen,
+            insured_id,
+            relationship,
+            approval_url
+        )
         
         send_mail(
             subject,
-            message,
+            plain_message,
             settings.EMAIL_HOST_USER,
             [contact_email],
+            html_message=html_message,
             fail_silently=False,
         )
         
@@ -585,6 +604,7 @@ def add_policy(request):
 
     return render(request, 'Policyholder Pages/add-policy.html')
 
+# Updated approve_insured_person view with face verification
 def approve_insured_person(request, token):
     try:
         approval_request = ApprovalRequest.objects.get(token=token)
@@ -610,48 +630,17 @@ def approve_insured_person(request, token):
         if (entered_id == policy_data['id_number'] or 
             (policy_data['is_underage'] and entered_id == policy_data['parent_id_number'])):
             
-            # Create the actual policy now that it's approved
-            policy_holder = PolicyHolder.objects.get(id_number=policy_data['policy_holder_id'])
+            # Store approval token in session for face verification
+            request.session['approval_token'] = str(token)  # Convert UUID to string
+            request.session['id_number'] = entered_id
             
-            policy = Policy(
-                policyHolder=policy_holder,
-                policyType=policy_data['policy_type'],
-                premiumAmount=0.00,
-                startDate=timezone.now().date(),
-                endDate=timezone.now().date() + timedelta(days=365),
-                status='active',
-                expiration_date=timezone.now() + timedelta(days=7)
-            )
-            policy.save()
+            # Store only necessary policy data (remove UUIDs)
+            session_policy_data = policy_data.copy()
+            session_policy_data.pop('policy_holder_id', None)
+            request.session['policy_data'] = session_policy_data
             
-            # Create insured person
-            insured_person = InsuredPerson(
-                policy_id=policy,
-                name=policy_data['insured_name'],
-                date_of_birth=policy_data['insured_dob'],
-                relationship_to_policy_holder=policy_data['relationship'],
-                holder=policy_holder,
-                id_number=policy_data['id_number'],
-                parent_id_number=policy_data['parent_id_number'],
-                contact_email=policy_data['contact_email'],
-                contact_phone=policy_data['contact_phone']
-            )
-            insured_person.save()
-            
-            # Update approval request
-            approval_request.insured_person = insured_person
-            approval_request.status = 'approved'
-            approval_request.save()
-            
-            # Create notification for policyholder
-            Notification.objects.create(
-                user=policy_holder.user,
-                message=f"Policy #{policy.policyId} has been approved by {insured_person.name}",
-                notification_type='approval_received',
-                related_policy=policy
-            )
-            
-            return render(request, 'approval_success.html')
+            # Redirect to face verification
+            return redirect('verify_face_approval')
         else:
             return render(request, 'approval_page.html', {
                 'error': 'ID number does not match',
@@ -659,6 +648,150 @@ def approve_insured_person(request, token):
             })
     
     return render(request, 'approval_page.html', {'token': token})
+
+# New view for face verification during approval
+def verify_face_approval(request):
+    # Check if the user has an active approval session
+    if 'approval_token' not in request.session or 'id_number' not in request.session:
+        return redirect('landing_page')
+    
+    token = request.session['approval_token']
+    id_number = request.session['id_number']
+    policy_data = request.session.get('policy_data', {})
+    
+    try:
+        approval_request = ApprovalRequest.objects.get(token=token)
+    except ApprovalRequest.DoesNotExist:
+        return redirect('landing_page')
+    
+    # Check if approval request has expired
+    if timezone.now() > approval_request.expires_at:
+        return render(request, 'approval_error.html', {
+            'message': 'This approval link has expired'
+        })
+    
+    if request.method == 'POST':
+        form = FaceVerificationForm(request.POST, request.FILES)
+        if form.is_valid():
+            face_image = request.FILES['face_image']
+            
+            try:
+                # Get citizen from database
+                citizen = Citizen.objects.get(idNumber=id_number)
+                
+                try:
+                    # Get encoding from database
+                    face_encoding = FaceEncoding.objects.get(id_number=id_number)
+                    
+                    # Process image
+                    img = Image.open(face_image)
+                    img = img.convert('RGB')
+                    img_array = np.array(img)
+                    
+                    uploaded_encodings = face_recognition.face_encodings(img_array)
+                    
+                    if not uploaded_encodings:
+                        messages.error(request, "No face detected in the captured image")
+                        return redirect('verify_face_approval')
+                    
+                    # Compare faces
+                    stored_encoding = face_encoding.get_encoding_array()
+                    results = face_recognition.compare_faces(
+                        [stored_encoding], 
+                        uploaded_encodings[0],
+                        tolerance=0.5
+                    )
+                    
+                    if results[0]:
+                        # Successful verification
+                        # Create the actual policy
+                        # Get policy holder from approval request's original data
+                        original_policy_data = json.loads(approval_request.policy_data)
+                        policy_holder_id = original_policy_data['policy_holder_id']
+                        
+                        try:
+                            policy_holder = PolicyHolder.objects.get(id_number=policy_holder_id)
+                        except PolicyHolder.DoesNotExist:
+                            messages.error(request, "Policy holder not found")
+                            return redirect('verify_face_approval')
+                        
+                        policy = Policy(
+                            policyHolder=policy_holder,
+                            policyType=policy_data['policy_type'],
+                            premiumAmount=0.00,
+                            startDate=timezone.now().date(),
+                            endDate=timezone.now().date() + timedelta(days=365),
+                            status='active',
+                            expiration_date=timezone.now() + timedelta(days=7)
+                        )
+                        policy.save()
+                        
+                        insured_person = InsuredPerson(
+                            policy_id=policy,
+                            name=policy_data['insured_name'],
+                            date_of_birth=policy_data['insured_dob'],
+                            relationship_to_policy_holder=policy_data['relationship'],
+                            holder=policy_holder,
+                            contact_email=policy_data['contact_email'],
+                            contact_phone=policy_data['contact_phone']
+                        )
+                        insured_person.save()
+                        
+                        # Update approval request
+                        approval_request.insured_person = insured_person
+                        approval_request.status = 'approved'
+                        approval_request.save()
+                        
+                        # Create notification for policyholder
+                        Notification.objects.create(
+                            user=policy_holder.user,
+                            message=f"Policy #{policy.policyId} has been approved by {insured_person.name}",
+                            notification_type='approval_received',
+                            related_policy=policy
+                        )
+                        
+                        # Clear session
+                        del request.session['approval_token']
+                        del request.session['id_number']
+                        del request.session['policy_data']
+                        
+                        # Redirect to landing page
+                        return redirect('approval_success')
+                    else:
+                        messages.error(request, "Face verification failed. Please try again.")
+                except FaceEncoding.DoesNotExist:
+                    messages.error(request, "No face registered for this account")
+            except Citizen.DoesNotExist:
+                messages.error(request, "ID number not found in national database")
+    else:
+        form = FaceVerificationForm()
+    
+    return render(request, 'verify_face_approval.html', {
+        'form': form,
+        'id_number': id_number
+    })
+# views.py
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
+
+def approval_success(request):
+    # Get the policy if available
+    try:
+        policy = Policy.objects.latest('created_at')
+    except Policy.DoesNotExist:
+        policy = None
+    
+    # Calculate dates
+    start_date = timezone.now()
+    end_date = start_date + timedelta(days=365)
+    
+    return render(request, 'approval_success.html', {
+        'policy': policy,
+        'start_date': start_date,
+        'end_date': end_date
+    })
+
 @login_required
 def notifications(request):
     # Get pending claims
@@ -930,44 +1063,6 @@ from datetime import datetime, timedelta
 
 def send_otp(request):
     if request.method == 'POST':
-        email = request.user.email  # Fixed recipient email
-        
-        # Clear existing OTPs
-        OTP.objects.filter(email=email).delete()
-        
-        # Generate 6-digit OTP
-        otp_code = str(random.randint(100000, 999999))
-        
-        # Set expiration time (3 minutes from now)
-        expires_at = timezone.now() + timedelta(minutes=3)
-        
-        # Create new OTP
-        otp = OTP.objects.create(
-            email=email,
-            otp=otp_code,
-            expires_at=expires_at
-        )
-        
-        # Send email
-        subject = 'Your Verification OTP'
-        message = f'Your OTP is {otp.otp}. It expires in 3 minutes.'
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
-        messages.success(request, 'OTP sent successfully!')
-        return redirect('verify_otp')
-    
-    return render(request, 'verification/send_otp.html')
-from datetime import timedelta
-
-import random
-
-def send_otp(request):
-    if request.method == 'POST':
         email = request.user.email   # Or get from request.POST
         
         # Clear existing OTPs for this email
@@ -1016,7 +1111,9 @@ def verify_otp(request):
             if entered_otp == otp.otp:
                 otp.is_verified = True
                 otp.save()
-                return redirect('beneficiary_verification')
+                request.session['otp_verified'] = True
+        
+                return redirect('verify_face')
             
             messages.error(request, 'Invalid OTP. Please try again.')
             
@@ -1024,7 +1121,7 @@ def verify_otp(request):
             messages.error(request, 'OTP not found. Please request a new one.')
             return redirect('send_otp')
     #original is return render(request, 'verification/verify_otp.html')
-    return render(request, 'Policyholder Pages\dashboard.html')
+    return render(request, 'verification/verify_otp.html', )
 
 def resend_otp(request):
     email = request.user.email  # Or get from session/request
@@ -1061,79 +1158,7 @@ def resend_otp(request):
     
 
 
-#verification for login
-# verification/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.core.mail import send_mail
-from django.conf import settings
-from django.utils import timezone
-from .models import OTP
-from django.contrib import messages
 
-
-@login_required
-def send_otp1(request):
-    if request.method == 'POST':
-        email = request.user.email
-        # Clear existing OTPS
-        OTP.objects.filter(email=email).delete()
-        
-        # Create new OTP
-        otp = OTP.objects.create(email=email)
-        
-        # Send email
-        subject = 'Your Verification OTP'
-        message = f'Your OTP is {otp.otp}. It expires in 3 minutes.'
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
-        messages.success(request, 'OTP sent successfully!')
-        return redirect('verify_otp')
-    
-    return render(request, 'verification/send_otp.html')
-
-def verify_otp1(request):
-    if request.method == 'POST':
-        entered_otp = request.POST.get('otp')
-        email = 'kutylaalfredo62@gmail.com'
-        
-        try:
-            otp = OTP.objects.get(email=email, is_verified=False)
-            if otp.is_expired():
-                messages.error(request, 'OTP has expired. Please request a new one.')
-                return redirect('send_otp')
-            
-            if entered_otp == otp.otp:
-                otp.is_verified = True
-                otp.save()
-                return redirect('dashboard')
-            
-            messages.error(request, 'Invalid OTP. Please try again.')
-            
-        except OTP.DoesNotExist:
-            messages.error(request, 'OTP not found. Please request a new one.')
-            return redirect('send_otp')
-    
-    return render(request, 'verification/verify_otp.html')
-
-def resend_otp1(request):
-    email = 'kutylaalfredo62@gmail.com'
-    try:
-        otp = OTP.objects.get(email=email)
-        if otp.attempts >= 3:
-            messages.error(request, 'Maximum resend attempts reached.')
-            return redirect('send_otp')
-        
-        otp.attempts += 1
-        otp.save()
-        return redirect('send_otp')
-    
-    except OTP.DoesNotExist:
-        return redirect('send_otp')
 
 @login_required
 def delete_beneficiary(request, beneficiary_id):
@@ -1920,8 +1945,306 @@ def claim_details(request):
 
     return render(request, 'Beneficiary/claim_details.html', {'claims': claims})
 
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils import timezone
+from django.conf import settings
+from django.core.cache import cache
+from datetime import timedelta
+from .models import Citizen, FaceEncoding, FaceVerificationAttempt
+from .forms import FaceRegistrationForm, FaceVerificationForm
+import numpy as np
+import face_recognition
+from PIL import Image
+import logging
+
+
+
+# views.py
+# views.py
+# views.py
+def register_face(request):
+    
+    
+    if request.method == 'POST':
+        form = FaceRegistrationForm(request.POST, request.FILES)
+        if form.is_valid():
+            id_number = form.cleaned_data['id_number']
+            face_image = request.FILES['face_image']
+            
+            try:
+                # Verify ID exists in Citizen table
+                citizen = Citizen.objects.get(idNumber=id_number)
+                
+                # Create or update face encoding
+                try:
+                    # Update existing encoding
+                    face_encoding = FaceEncoding.objects.get(id_number=id_number)
+                    face_encoding.delete()
+                    messages.info(request, "Updated existing face registration")
+                except FaceEncoding.DoesNotExist:
+                    pass  # No existing encoding
+                
+                # Create new face encoding - CALL ON CLASS, NOT MANAGER
+                FaceEncoding.create_from_image(id_number, face_image)
+                messages.success(request, f"Face registered successfully for {citizen.name} {citizen.surname}!")
+                return redirect('register_face')
+                
+            except Citizen.DoesNotExist:
+                messages.error(request, "ID number not found in national database")
+            except Exception as e:
+                logger.error(f"Error registering face: {str(e)}", exc_info=True)
+                messages.error(request, f"Error registering face: {str(e)}")
+    else:
+        form = FaceRegistrationForm()
+    
+    # Get all registered faces
+    registered_faces = FaceEncoding.objects.all()
+    citizens = []
+    
+    for face in registered_faces:
+        try:
+            citizen = Citizen.objects.get(idNumber=face.id_number)
+            citizens.append({
+                'name': f"{citizen.name} {citizen.surname}",
+                'id_number': citizen.idNumber
+            })
+        except Citizen.DoesNotExist:
+            # Handle case where citizen was deleted from database
+            face.delete()
+    
+    return render(request, 'register_face.html', {
+        'form': form,
+        'citizens': citizens
+    })
+
+from django.contrib.sessions.models import Session
+from .models import FaceVerificationSession
+
+def verify_face(request):
+    # Check if user is coming from OTP verification
+    if not request.session.get('otp_verified'):
+        messages.warning(request, "Please complete OTP verification first")
+        return redirect('otp_verification')
+    
+    # Get IP address for attempt tracking
+    ip_address = request.META.get('REMOTE_ADDR')
+    
+    # Check if user is in cooldown period
+    cache_key = f"face_verify_cooldown_{ip_address}"
+    if cache.get(cache_key):
+        messages.error(request, "Too many failed attempts. Please try again after 5 minutes.")
+        return render(request, 'verify_face.html', {'cooldown': True})
+    
+    # Get the current user's policyholder info
+    try:
+        policy_holder = PolicyHolder.objects.get(user=request.user)
+        id_number = policy_holder.id_number
+    except PolicyHolder.DoesNotExist:
+        messages.error(request, "Policy holder profile not found")
+        return redirect('dashboard')
+    
+    # Get or create attempt record
+    attempt, created = FaceVerificationAttempt.objects.get_or_create(
+        id_number=id_number,
+        ip_address=ip_address,
+        defaults={'attempts': 0}
+    )
+    
+    # Check if locked
+    if attempt.locked_until and attempt.locked_until > timezone.now():
+        messages.error(request, "Too many failed attempts. Please try again after 5 minutes. Please contact support if you need immediate assistance.")
+        return render(request, 'verify_face.html', {'cooldown': True})
+    
+    if request.method == 'POST':
+        form = FaceVerificationForm(request.POST, request.FILES)
+        if form.is_valid():
+            face_image = request.FILES['face_image']
+            
+            try:
+                # Get citizen from database
+                citizen = Citizen.objects.get(idNumber=id_number)
+                
+                try:
+                    # Get encoding from database
+                    face_encoding = FaceEncoding.objects.get(id_number=id_number)
+                    
+                    # Process image
+                    img = Image.open(face_image)
+                    img = img.convert('RGB')
+                    img_array = np.array(img)
+                    
+                    uploaded_encodings = face_recognition.face_encodings(img_array)
+                    
+                    if not uploaded_encodings:
+                        messages.error(request, "No face detected in the captured image")
+                        return redirect('verify_face')
+                    
+                    # Compare faces
+                    stored_encoding = face_encoding.get_encoding_array()
+                    results = face_recognition.compare_faces(
+                        [stored_encoding], 
+                        uploaded_encodings[0],
+                        tolerance=0.5
+                    )
+                    
+                    if results[0]:
+                        # Successful verification
+                        attempt.delete()  # Reset attempts
+                        
+                        # Create verification session
+                        FaceVerificationSession.objects.create(
+                            user=request.user,
+                            session_key=request.session.session_key,
+                            verified=True
+                        )
+                        
+                        request.session['face_verified'] = True
+                        request.session.pop('otp_verified', None)  # Clear OTP flag
+                        return redirect('dashboard')
+                    else:
+                        # Failed attempt
+                        attempt.attempts += 1
+                        attempt.last_attempt = timezone.now()
+                        
+                        if attempt.attempts >= 3:
+                            # Lock for 5 minutes
+                            attempt.locked_until = timezone.now() + timedelta(minutes=5)
+                            cache.set(cache_key, True, 300)  # Cache for 5 minutes
+                            messages.error(request, "Too many failed attempts. Please try again after 5 minutes.")
+                        else:
+                            messages.error(request, f"Face verification failed. {3 - attempt.attempts} attempts remaining.")
+                        
+                        attempt.save()
+                except FaceEncoding.DoesNotExist:
+                    messages.error(request, "No face registered for your account")
+            except Citizen.DoesNotExist:
+                messages.error(request, "Your ID number not found in national database")
+    else:
+        form = FaceVerificationForm()
+    
+    return render(request, 'verify_face.html', {
+        'form': form,
+        'user_id': id_number  # Pass to template for display only
+    })
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.urls import reverse
+from django.conf import settings
+from .models import PolicyHolder
+import secrets
+
+def forgot_password(request):
+    error = None
+    success = None
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        id_number = request.POST.get('id_number')
+        
+        try:
+            # Check if user exists
+            user = User.objects.get(email=email)
+            
+            # Check if policyholder exists with matching email and ID
+            policy_holder = PolicyHolder.objects.get(id_number=id_number, email=email)
+            
+            # Generate a secure token
+            reset_token = secrets.token_urlsafe(32)
+            
+            # Store token in user session (or database for more security)
+            request.session['reset_token'] = reset_token
+            request.session['reset_user_id'] = user.id
+            
+            # Create reset link
+            reset_link = request.build_absolute_uri(
+                reverse('reset_password') + f'?token={reset_token}'
+            )
+            
+            # Send email
+            subject = 'Password Reset Request - FraudShield'
+            html_message = render_to_string('forgot_password/password_reset_email.html', {
+                'reset_link': reset_link
+            })
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject,
+                plain_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                html_message=html_message,
+                fail_silently=False
+            )
+            
+            success = 'Password reset instructions have been sent to your email.'
+            
+        except User.DoesNotExist:
+            error = 'Invalid creditials, ensure email and ID number are valid.'
+        except PolicyHolder.DoesNotExist:
+            error = 'Invalid creditials, ensure email and ID number are valid.'
+        except Exception as e:
+            error = f'An error occurred: {str(e)}'
+    
+    return render(request, 'forgot_password/forgot_password.html', {
+        'error': error,
+        'success': success
+    })
+
+def reset_password(request):
+    error = None
+    success = None
+    
+    # Check token validity
+    token = request.GET.get('token')
+    session_token = request.session.get('reset_token')
+    user_id = request.session.get('reset_user_id')
+    
+    if not token or token != session_token or not user_id:
+        return redirect('forgot_password')
+    
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        if password1 != password2:
+            error = 'Passwords do not match.'
+        else:
+            try:
+                user = User.objects.get(id=user_id)
+                user.set_password(password1)
+                user.save()
+                
+                # Clear session data
+                del request.session['reset_token']
+                del request.session['reset_user_id']
+                
+                # Update session if user is logged in
+                update_session_auth_hash(request, user)
+                
+                success = 'Your password has been reset successfully!'
+                messages.success(request, success)
+                return redirect('login')
+                
+            except User.DoesNotExist:
+                error = 'Invalid user. Please try the password reset process again.'
+    
+    return render(request, 'forgot_password/reset_password.html', {
+        'error': error,
+        'success': success
+    })
+        
+
 def support_panel(request):
     return render(request, 'Beneficiary/support_panel.html')
 
 def appeals_history(request):
     return render(request, 'Beneficiary/appeals_history.html')       
+
