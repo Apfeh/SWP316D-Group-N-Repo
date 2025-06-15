@@ -8,6 +8,9 @@ urlpatterns = [
     path('', views.landing_page, name='landing_page'),
     path('login/', views.login_view, name='login'),
     path('register/', views.register, name='register'),
+    path('contact/', views.contact,name='contact'),
+    path('terms/', views.terms,name='terms'),
+    path('privacy/', views.privacy,name='privacy'),
 
     # Admin Pages
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
@@ -86,9 +89,25 @@ urlpatterns = [
   
     path('insured/<int:pk>/update-status/', UpdateInsuredStatus.as_view(), name='update-insured-status'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+
      path('register-face/',views.register_face, name='register_face'),
     path('verify-face/', views.verify_face, name='verify_face'),
      path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/', views.reset_password, name='reset_password'),
     path('verify-face-approval/', views.verify_face_approval, name='verify_face_approval'),
+
+
+    path('admin-profile/',views.profile, name='ad_profile'),
+    path('admin-notifications/',views.AdminNotis, name='ad_notifications'),
+
+    path('beneficiaryLogin/', views.login_request, name='beneficiary_login'),
+    path('beneficiary/login/', views.beneficiary_login, name='beneficiaryLogin'),
+    path('enter-otp/', views.verify_otp, name='enter_otp'),
+    path('beneficiary-dashboard/', views.beneficiary_dashboard, name='beneficiary_dashboard'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('claim-form/', views.claim_form, name='claim_form'),
+    path('claim-details/', views.claim_details, name='claim_details'),
+    path('support-panel/', views.support_panel, name='support_panel'),
+    path('appeals-history/', views.appeals_history, name='appeals_history'),
+    path('file-claim/', views.file_claim, name='file_claim'),
 ]
