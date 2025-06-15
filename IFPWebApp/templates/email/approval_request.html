@@ -1,0 +1,108 @@
+<!-- templates/email/approval_request.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Action Required: Approval for Insurance Coverage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #0077b6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 30px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #00b894;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .details {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0077b6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9em;
+            border-top: 1px solid #eaeaea;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #0077b6;
+            margin-top: 0;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>FraudShield Insurance</h2>
+        </div>
+        
+        <div class="content">
+            <h1>Action Required: Policy Approval</h1>
+            
+            <p>Dear {{ recipient_name }},</p>
+            
+            <p>{{ policy_holder_name }} has added you as an insured person for a new insurance policy.</p>
+            
+            <div class="details">
+                <h3>Policy Details:</h3>
+                <p><strong>Insured Person:</strong> {{ insured_name }}</p>
+                <p><strong>ID Number:</strong> {{ insured_id }}</p>
+                <p><strong>Date of Birth:</strong> {{ insured_dob }}</p>
+                <p><strong>Relationship:</strong> {{ relationship }}</p>
+            </div>
+            
+            <p>To complete this process, you need to:</p>
+            <ol>
+                <li>Verify your identity using the link below</li>
+                <li>Complete a quick face verification</li>
+            </ol>
+            
+            <p>
+                <a href="{{ approval_url }}" class="button">Verify Your Identity</a>
+            </p>
+            
+            <p>This link will expire in 7 days. If you did not request this or have any concerns, please contact our support team immediately.</p>
+            
+            <p>Thank you for choosing FraudShield Insurance.</p>
+        </div>
+        
+        <div class="footer">
+            <p>FraudShield Insurance &copy; {% now "Y" %}</p>
+            <p>This is an automated message. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

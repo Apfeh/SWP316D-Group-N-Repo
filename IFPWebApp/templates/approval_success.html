@@ -1,11 +1,13 @@
+<!-- templates/approval_success.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FraudShield • Approval Successful</title>
+    <title>Approval Successful • FraudShield</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -15,67 +17,233 @@
 
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f4f7fa;
+            background: linear-gradient(135deg, #f4f7fa 0%, #e8f4f8 100%);
             color: #333;
             line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .form-container {
+        .success-container {
             background-color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 6rem auto 2rem;
-            max-width: 500px;
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .form-container h2 {
-            font-size: 1.8rem;
-            color: #0077b6;
-            margin-bottom: 1.5rem;
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #0077b6 0%, #00b894 100%);
         }
 
-        .success-icon {
-            font-size: 4rem;
-            color: #00b894;
-            margin-bottom: 1rem;
+        .check-circle {
+            width: 100px;
+            height: 100px;
+            background: #00b894;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            animation: scaleIn 0.5s ease-out;
         }
 
-        .message {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
-        }
-
-        .home-link {
-            display: inline-block;
-            background-color: #0077b6;
+        .check-circle i {
+            font-size: 50px;
             color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
         }
 
-        .home-link:hover {
-            background-color: #005f8d;
+        h1 {
+            color: #0077b6;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .policy-details {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+            border-left: 4px solid #00b894;
+        }
+
+        .policy-details h3 {
+            color: #0077b6;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            width: 40%;
+        }
+
+        .detail-value {
+            color: #333;
+            width: 60%;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, #0077b6 0%, #00b894 100%);
+            color: white;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 119, 182, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 119, 182, 0.3);
+        }
+
+        .additional-info {
+            margin-top: 30px;
+            color: #777;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
 
         @media (max-width: 768px) {
-            .form-container {
-                margin: 5rem 1rem 1rem;
-                padding: 1.5rem;
+            .success-container {
+                padding: 30px 20px;
+            }
+            
+            .check-circle {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .check-circle i {
+                font-size: 40px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label, .detail-value {
+                width: 100%;
+            }
+            
+            .detail-label {
+                margin-bottom: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                width: 100%;
+                padding: 14px;
             }
         }
     </style>
 </head>
 <body>
-    <section class="form-container">
-        <div class="success-icon">✓</div>
-        <h2>Approval Successful!</h2>
-        <p class="message">You have successfully approved the insurance coverage.</p>
-        <a href="{% url 'landing_page' %}" class="home-link">Return to Home</a>
-    </section>
+    <div class="success-container fade-in">
+        <div class="check-circle">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h1>Approval Successful!</h1>
+        
+        <p class="success-message">
+            You've successfully approved the insurance policy. The policyholder has been notified and the policy is now active.
+        </p>
+        
+        <div class="policy-details fade-in">
+            <h3>Policy Information</h3>
+            
+            <div class="detail-row">
+                <span class="detail-label">Policy Type:</span>
+                <span class="detail-value">{% if policy %}{{ policy.get_policyType_display }}{% else %}Life Insurance{% endif %}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Policy Status:</span>
+                <span class="detail-value">Active</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Start Date:</span>
+                <span class="detail-value">{{ start_date|date:"F d, Y" }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">End Date:</span>
+                <span class="detail-value">{{ end_date|date:"F d, Y" }}</span>
+            </div>
+        </div>
+        
+        <p class="additional-info fade-in">
+            <i class="fas fa-info-circle"></i> A confirmation email has been sent to your registered email address with all policy details.
+        </p>
+        
+        <a href="{% url 'landing_page' %}" class="btn">
+            Return to Homepage <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
 </body>
 </html>

@@ -64,7 +64,7 @@ urlpatterns = [
     path('fraud-check/<int:policyholder_id>/', views.run_manual_fraud_check, name='run_manual_fraud_check'),
     path('get-citizen/', views.get_citizen, name='get_citizen'),
     path('approve-insured/<uuid:token>/', views.approve_insured_person, name='approve_insured'),
-
+    path('approval-success/', views.approval_success, name='approval_success'),
   #claim review
       path('claims/', views.claim_review, name='claim_review'),
       path('update-claim-status/<int:claim_id>/', views.update_claim_status, name='update_claim_status'),
@@ -90,4 +90,5 @@ urlpatterns = [
     path('verify-face/', views.verify_face, name='verify_face'),
      path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/', views.reset_password, name='reset_password'),
+    path('verify-face-approval/', views.verify_face_approval, name='verify_face_approval'),
 ]

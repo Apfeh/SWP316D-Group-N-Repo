@@ -421,6 +421,36 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# views.py updates
+
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+import json
+from datetime import timedelta
+
+# Email template
+def approval_email_template(recipient_name, policy_holder_name, insured_citizen, insured_id, relationship, approval_url):
+    subject = "Action Required: Approval for Insurance Coverage"
+    
+    context = {
+        'recipient_name': recipient_name,
+        'policy_holder_name': policy_holder_name,
+        'insured_name': f"{insured_citizen.name} {insured_citizen.surname}",
+        'insured_id': insured_id,
+        'insured_dob': insured_citizen.dateOfBirth,
+        'relationship': relationship,
+        'approval_url': approval_url
+    }
+    
+    html_message = render_to_string('email/approval_request.html', context)
+    plain_message = strip_tags(html_message)
+    
+    return subject, html_message, plain_message
+
+# Updated add_policy view
 @login_required
 def add_policy(request):
     logger.debug(f"User email: {request.user.email}")
@@ -489,11 +519,12 @@ def add_policy(request):
         )
         approval_request.save()
         
-        # Send approval email
+        # Build approval URL with face verification step
         approval_url = request.build_absolute_uri(
             f'/approve-insured/{approval_request.token}/'
         )
         
+        # Determine recipient name
         if is_underage:
             try:
                 parent_citizen = Citizen.objects.get(idNumber=parent_id)
@@ -503,34 +534,22 @@ def add_policy(request):
         else:
             recipient_name = f"{insured_citizen.name} {insured_citizen.surname}"
         
-        subject = "Action Required: Approval for Insurance Coverage"
-        message = f"""
-        Dear {recipient_name},
-        
-        {policy_holder.name} has added you as an insured person for a new policy.
-        
-        Insured Person Details:
-        - Name: {insured_citizen.name} {insured_citizen.surname}
-        - ID Number: {insured_id}
-        - Date of Birth: {insured_citizen.dateOfBirth}
-        - Relationship: {relationship}
-        
-        To approve this coverage, please click the link below and enter your ID number:
-        {approval_url}
-        
-        This link expires in 7 days.
-        
-        If you did not authorize this, please ignore this email or contact our support team.
-        
-        Regards,
-        FraudShield Team
-        """
+        # Send styled email
+        subject, html_message, plain_message = approval_email_template(
+            recipient_name,
+            policy_holder.name,
+            insured_citizen,
+            insured_id,
+            relationship,
+            approval_url
+        )
         
         send_mail(
             subject,
-            message,
+            plain_message,
             settings.EMAIL_HOST_USER,
             [contact_email],
+            html_message=html_message,
             fail_silently=False,
         )
         
@@ -550,6 +569,7 @@ def add_policy(request):
 
     return render(request, 'Policyholder Pages/add-policy.html')
 
+# Updated approve_insured_person view with face verification
 def approve_insured_person(request, token):
     try:
         approval_request = ApprovalRequest.objects.get(token=token)
@@ -575,48 +595,17 @@ def approve_insured_person(request, token):
         if (entered_id == policy_data['id_number'] or 
             (policy_data['is_underage'] and entered_id == policy_data['parent_id_number'])):
             
-            # Create the actual policy now that it's approved
-            policy_holder = PolicyHolder.objects.get(id_number=policy_data['policy_holder_id'])
+            # Store approval token in session for face verification
+            request.session['approval_token'] = str(token)  # Convert UUID to string
+            request.session['id_number'] = entered_id
             
-            policy = Policy(
-                policyHolder=policy_holder,
-                policyType=policy_data['policy_type'],
-                premiumAmount=0.00,
-                startDate=timezone.now().date(),
-                endDate=timezone.now().date() + timedelta(days=365),
-                status='active',
-                expiration_date=timezone.now() + timedelta(days=7)
-            )
-            policy.save()
+            # Store only necessary policy data (remove UUIDs)
+            session_policy_data = policy_data.copy()
+            session_policy_data.pop('policy_holder_id', None)
+            request.session['policy_data'] = session_policy_data
             
-            # Create insured person
-            insured_person = InsuredPerson(
-                policy_id=policy,
-                name=policy_data['insured_name'],
-                date_of_birth=policy_data['insured_dob'],
-                relationship_to_policy_holder=policy_data['relationship'],
-                holder=policy_holder,
-                id_number=policy_data['id_number'],
-                parent_id_number=policy_data['parent_id_number'],
-                contact_email=policy_data['contact_email'],
-                contact_phone=policy_data['contact_phone']
-            )
-            insured_person.save()
-            
-            # Update approval request
-            approval_request.insured_person = insured_person
-            approval_request.status = 'approved'
-            approval_request.save()
-            
-            # Create notification for policyholder
-            Notification.objects.create(
-                user=policy_holder.user,
-                message=f"Policy #{policy.policyId} has been approved by {insured_person.name}",
-                notification_type='approval_received',
-                related_policy=policy
-            )
-            
-            return render(request, 'approval_success.html')
+            # Redirect to face verification
+            return redirect('verify_face_approval')
         else:
             return render(request, 'approval_page.html', {
                 'error': 'ID number does not match',
@@ -624,6 +613,150 @@ def approve_insured_person(request, token):
             })
     
     return render(request, 'approval_page.html', {'token': token})
+
+# New view for face verification during approval
+def verify_face_approval(request):
+    # Check if the user has an active approval session
+    if 'approval_token' not in request.session or 'id_number' not in request.session:
+        return redirect('landing_page')
+    
+    token = request.session['approval_token']
+    id_number = request.session['id_number']
+    policy_data = request.session.get('policy_data', {})
+    
+    try:
+        approval_request = ApprovalRequest.objects.get(token=token)
+    except ApprovalRequest.DoesNotExist:
+        return redirect('landing_page')
+    
+    # Check if approval request has expired
+    if timezone.now() > approval_request.expires_at:
+        return render(request, 'approval_error.html', {
+            'message': 'This approval link has expired'
+        })
+    
+    if request.method == 'POST':
+        form = FaceVerificationForm(request.POST, request.FILES)
+        if form.is_valid():
+            face_image = request.FILES['face_image']
+            
+            try:
+                # Get citizen from database
+                citizen = Citizen.objects.get(idNumber=id_number)
+                
+                try:
+                    # Get encoding from database
+                    face_encoding = FaceEncoding.objects.get(id_number=id_number)
+                    
+                    # Process image
+                    img = Image.open(face_image)
+                    img = img.convert('RGB')
+                    img_array = np.array(img)
+                    
+                    uploaded_encodings = face_recognition.face_encodings(img_array)
+                    
+                    if not uploaded_encodings:
+                        messages.error(request, "No face detected in the captured image")
+                        return redirect('verify_face_approval')
+                    
+                    # Compare faces
+                    stored_encoding = face_encoding.get_encoding_array()
+                    results = face_recognition.compare_faces(
+                        [stored_encoding], 
+                        uploaded_encodings[0],
+                        tolerance=0.5
+                    )
+                    
+                    if results[0]:
+                        # Successful verification
+                        # Create the actual policy
+                        # Get policy holder from approval request's original data
+                        original_policy_data = json.loads(approval_request.policy_data)
+                        policy_holder_id = original_policy_data['policy_holder_id']
+                        
+                        try:
+                            policy_holder = PolicyHolder.objects.get(id_number=policy_holder_id)
+                        except PolicyHolder.DoesNotExist:
+                            messages.error(request, "Policy holder not found")
+                            return redirect('verify_face_approval')
+                        
+                        policy = Policy(
+                            policyHolder=policy_holder,
+                            policyType=policy_data['policy_type'],
+                            premiumAmount=0.00,
+                            startDate=timezone.now().date(),
+                            endDate=timezone.now().date() + timedelta(days=365),
+                            status='active',
+                            expiration_date=timezone.now() + timedelta(days=7)
+                        )
+                        policy.save()
+                        
+                        insured_person = InsuredPerson(
+                            policy_id=policy,
+                            name=policy_data['insured_name'],
+                            date_of_birth=policy_data['insured_dob'],
+                            relationship_to_policy_holder=policy_data['relationship'],
+                            holder=policy_holder,
+                            contact_email=policy_data['contact_email'],
+                            contact_phone=policy_data['contact_phone']
+                        )
+                        insured_person.save()
+                        
+                        # Update approval request
+                        approval_request.insured_person = insured_person
+                        approval_request.status = 'approved'
+                        approval_request.save()
+                        
+                        # Create notification for policyholder
+                        Notification.objects.create(
+                            user=policy_holder.user,
+                            message=f"Policy #{policy.policyId} has been approved by {insured_person.name}",
+                            notification_type='approval_received',
+                            related_policy=policy
+                        )
+                        
+                        # Clear session
+                        del request.session['approval_token']
+                        del request.session['id_number']
+                        del request.session['policy_data']
+                        
+                        # Redirect to landing page
+                        return redirect('approval_success')
+                    else:
+                        messages.error(request, "Face verification failed. Please try again.")
+                except FaceEncoding.DoesNotExist:
+                    messages.error(request, "No face registered for this account")
+            except Citizen.DoesNotExist:
+                messages.error(request, "ID number not found in national database")
+    else:
+        form = FaceVerificationForm()
+    
+    return render(request, 'verify_face_approval.html', {
+        'form': form,
+        'id_number': id_number
+    })
+# views.py
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
+
+def approval_success(request):
+    # Get the policy if available
+    try:
+        policy = Policy.objects.latest('created_at')
+    except Policy.DoesNotExist:
+        policy = None
+    
+    # Calculate dates
+    start_date = timezone.now()
+    end_date = start_date + timedelta(days=365)
+    
+    return render(request, 'approval_success.html', {
+        'policy': policy,
+        'start_date': start_date,
+        'end_date': end_date
+    })
+
 @login_required
 def notifications(request):
     # Get pending claims
