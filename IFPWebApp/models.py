@@ -104,10 +104,12 @@ class Beneficiary(models.Model):
     beneficiaryId = models.AutoField(primary_key=True)
     policy = models.ForeignKey(Policy, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    contactNumber = models.CharField(max_length=100)
+    contactNumber = models.CharField(max_length=20)
     relationshipToInsured = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    email = models.CharField(max_length=255) #create this column using sql
+    email = models.EmailField(unique=True,null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.beneficiaryId})"  
     class Meta:
         db_table = 'beneficiary'
 

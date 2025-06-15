@@ -216,7 +216,7 @@
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#testimonials">Testimonials</a>
-            <a href="#contact">Contact</a>
+            <a href="{% url 'contact' %}">Contact</a>
             <a href="{% url 'login' %}" class="login-button">Login</a>
             <a href="{% url 'register' %}">Register</a>
         </div>
@@ -272,9 +272,9 @@
 
     <footer>
         <p>&copy; 2025 FraudShield. All rights reserved.</p>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Contact Us</a>
+        <a href="{% url 'contact' %}">Privacy Policy</a>
+        <a href="{% url 'terms' %}">Terms of Service</a>
+        <a href="{% url 'privacy' %}">Contact Us</a>
     </footer>
 
     <script>

@@ -128,7 +128,7 @@ DATABASES = {
         'NAME':'newdb',
         'USER':'Buks',
         'PASSWORD' :'buks123',
-        'HOST':'192.168.137.241',
+        'HOST':'localhost',
         'PORT':'3306',
    },
     'homeaffairs': {
@@ -136,7 +136,7 @@ DATABASES = {
         'NAME': 'homeaffairsdb',
         'USER': 'Buks',
         'PASSWORD': 'buks123',
-        'HOST': '192.168.137.241',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }

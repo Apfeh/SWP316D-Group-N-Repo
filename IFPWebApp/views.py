@@ -30,6 +30,15 @@ def login(request):
 
 def register(request):
     return render(request, 'register.html')
+
+def contact(request):
+    return render(request, 'contact.html')
+
+def terms(request):
+    return render(request, 'terms.html')
+
+def privacy(request):
+    return render(request, 'privacy.html')
 from django.contrib.auth.decorators import login_required
 @login_required
 def logout(request):
@@ -137,8 +146,37 @@ def update_policyholder(request, id):
 def add_beneficiary(request):
     return render(request, "add_beneficiary.html")
 
+
+
 def beneficiary_dashboard(request):
-    return render(request, "beneficiary_dashboard.html")
+    beneficiary_id = request.session.get('beneficiary_id')
+
+    if not beneficiary_id:
+        return redirect('login')  # or 'beneficiary_login' if that's your login route
+
+    beneficiary = Beneficiary.objects.filter(beneficiaryId=beneficiary_id).first()
+
+    latest_claim = None
+    if beneficiary:
+        latest_claim = Claim.objects.filter(beneficiaryId=beneficiary).order_by('-dateFiled').first()
+
+    if latest_claim:
+        claim_summary = {
+            'beneficiary_name': beneficiary.name,
+            'current_status': latest_claim.status,
+            'claim_amount': getattr(latest_claim, 'claimAmount', 0),
+            'previous_claims': Claim.objects.filter(beneficiaryId=beneficiary).exclude(claimId=latest_claim.claimId).count()
+        }
+    else:
+        claim_summary = {
+            'beneficiary_name': beneficiary.name if beneficiary else "Unknown",
+            'current_status': 'No claims',
+            'claim_amount': 0,
+            'previous_claims': 0
+        }
+
+    return render(request, 'Beneficiary/beneficiary_dashboard.html', {'claim_summary': claim_summary})
+
 
 def beneficiary_list(request):
     return render(request, "beneficiary_list.html")
@@ -253,9 +291,6 @@ def update_policyholder(request, id):
 
 def add_beneficiary(request):
     return render(request, "add_beneficiary.html")
-
-def beneficiary_dashboard(request):
-    return render(request, "beneficiary_dashboard.html")
 
 def beneficiary_verification(request):
     return render(request, "beneficiary_verification.html")
@@ -1673,4 +1708,220 @@ def profile(request):
     return render(request, 'Admin Templates/profile.html', context)
         
 def AdminNotis(request):
-    return redirect('Admin Templates/notifications.html')        
+    return redirect('Admin Templates/notifications.html') 
+
+#Beneficiary Login
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from .models import Beneficiary
+import random
+from django.urls import reverse
+
+def login_request(request):
+    if request.method == 'POST':
+        beneficiary_id = request.POST['beneficiaryId']
+        email = request.POST['email']
+
+        try:
+            Beneficiary.objects.get(beneficiaryId=int(beneficiary_id.strip()),email__iexact=email.strip()
+)
+            otp = str(random.randint(100000, 999999))
+
+            # Store OTP and email in session
+            request.session['otp'] = otp
+            request.session['email'] = email
+
+            # Send OTP to email
+            send_mail(
+                'Your Login OTP',
+                f'Your OTP is {otp}',
+                'no-reply@insurance.com',
+                [email]
+            )
+            return render(request, 'Beneficiary/enter_otp.html', {'email': email})
+        except Beneficiary.DoesNotExist:
+            return render(request, 'Beneficiary/beneficiaryLogin.html', {'error': 'Invalid credentials'})
+
+    return render(request, 'Beneficiary/beneficiaryLogin.html')
+
+
+def verify_otp(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        otp_input = request.POST['otp']
+
+        stored_otp = request.session.get('otp')
+        stored_email = request.session.get('email')
+
+        if stored_otp == otp_input and stored_email == email:
+            try:
+                beneficiary = Beneficiary.objects.get(email=email)
+                request.session['beneficiary_id'] = beneficiary.beneficiaryId
+                return redirect('beneficiary_dashboard')
+            except Beneficiary.DoesNotExist:
+                return render(request, 'Beneficiary/enter_otp.html', {'email': email, 'error': 'Beneficiary not found'})
+        else:
+            return render(request, 'Beneficiary/enter_otp.html', {'email': email, 'error': 'Incorrect OTP'})
+
+    # For GET requests
+    email = request.GET.get('email')
+    return render(request, 'Beneficiary/enter_otp.html', {'email': email})
+
+
+def resend_otp(request):
+    email = request.GET.get('email')
+
+    if not email:
+        return redirect('login')
+
+    otp = str(random.randint(100000, 999999))
+    request.session['otp'] = otp
+    request.session['email'] = email
+
+    send_mail(
+        'Your OTP Code',
+        f'Your new OTP is {otp}',
+        'noreply@ifp.com',
+        [email],
+        fail_silently=False,
+    )
+
+    return redirect(f"{reverse('enter_otp')}?email={email}")
+
+
+def beneficiary_login(request):
+    return render(request, 'Beneficiary/beneficiaryLogin.html')
+
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Claim, Policy, Beneficiary, PolicyHolder
+
+def file_claim(request):
+    if request.method == 'POST':
+        # Get beneficiary from session (set during OTP login)
+        beneficiary_id = request.session.get('beneficiary_id')
+        if not beneficiary_id:
+            messages.error(request, "You must be logged in to submit a claim.")
+            return redirect('beneficiary_login')
+
+        # Extract form data
+        policy_id = request.POST.get('policyId')
+        selected_beneficiary_id = request.POST.get('beneficiaryId')
+        id_number = request.POST.get('id_number')
+        claim_amount = request.POST.get('claimAmount')
+
+        # Ensure the selected beneficiary matches the logged-in user
+        if str(beneficiary_id) != selected_beneficiary_id:
+            messages.error(request, "You are not allowed to file a claim for another beneficiary.")
+            return redirect('claim_form')
+
+        try:
+            policy = Policy.objects.get(policyId=policy_id)
+            beneficiary = Beneficiary.objects.get(beneficiaryId=beneficiary_id)
+            policy_holder = PolicyHolder.objects.get(id_number=id_number)
+
+            # Create the claim
+            Claim.objects.create(
+                policy=policy,
+                beneficiary=beneficiary,
+                policy_holder=policy_holder,
+                claim_amount=claim_amount,
+                status='Pending'
+            )
+
+            messages.success(request, "Claim submitted successfully.")
+            return redirect('beneficiary_dashboard')
+        except (Policy.DoesNotExist, Beneficiary.DoesNotExist, PolicyHolder.DoesNotExist):
+            messages.error(request, "Invalid data. Please check your selections.")
+            return redirect('claim_form')
+
+    # If GET, redirect to form
+    return redirect('claim_form')
+
+def claim_form(request):
+    beneficiary_id = request.session.get('beneficiary_id')
+    if not beneficiary_id:
+        return redirect('beneficiary_login')
+
+    # Get logged-in beneficiary
+    beneficiary = get_object_or_404(Beneficiary, beneficiaryId=beneficiary_id)
+
+    if request.method == 'POST':
+        policy_id = request.POST.get('policyId')
+        id_number = request.POST.get('id_number')
+        claim_amount = request.POST.get('claimAmount')
+
+        # Validate input existence
+        if not (policy_id and id_number and claim_amount):
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('claim_form')
+
+        try:
+            # Fetch related objects to link in Claim
+            policy = Policy.objects.get(policyId=policy_id)
+            policy_holder = PolicyHolder.objects.get(id_number=id_number)
+
+            # Security: Check that this beneficiary is linked to the policy
+            if beneficiary.policy.policyId != policy.policyId:
+                messages.error(request, "You can only claim on your own policies.")
+                return redirect('claim_form')
+
+            # Check that the policy_holder matches the policy's policyHolder
+            if policy.policyHolder != policy_holder:
+                messages.error(request, "Policy holder does not match the selected policy.")
+                return redirect('claim_form')
+
+            # Create Claim
+            new_claim = Claim.objects.create(
+                policyId=policy,
+                beneficiaryId=beneficiary,
+                policyHolderId=policy_holder,
+                claimAmount=claim_amount,
+                status='Pending Fraud Check'
+            )
+
+            messages.success(request, "Claim submitted successfully.")
+            return redirect('beneficiary_dashboard')
+
+        except Policy.DoesNotExist:
+            messages.error(request, "Selected policy does not exist.")
+        except PolicyHolder.DoesNotExist:
+            messages.error(request, "Selected policy holder does not exist.")
+        except Exception as e:
+            messages.error(request, f"Error submitting claim: {e}")
+
+    # GET: show policies linked to this beneficiary and related policyholders
+    # Since Beneficiary has a ForeignKey to Policy, get that Policy
+    policy = beneficiary.policy
+    policyholders = PolicyHolder.objects.filter(id_number=policy.policyHolder.id_number)
+
+    return render(request, 'Beneficiary/claim_form.html', {
+        'policies': [policy],            # Single policy linked to beneficiary
+        'beneficiaries': [beneficiary], # Only the logged-in beneficiary
+        'policyholders': policyholders,
+    })
+
+def claim_details(request):
+    beneficiary_id = request.session.get('beneficiary_id')
+
+    if not beneficiary_id:
+        return redirect('beneficiary_login')  # replace with your login route name
+
+    beneficiary = Beneficiary.objects.filter(beneficiaryId=beneficiary_id).first()
+
+    if not beneficiary:
+        return render(request, 'Beneficiary/claim_details.html', {'error': 'No beneficiary found for your account.'})
+
+    claims = Claim.objects.filter(beneficiaryId=beneficiary).order_by('-dateFiled')
+
+    return render(request, 'Beneficiary/claim_details.html', {'claims': claims})
+
+def support_panel(request):
+    return render(request, 'Beneficiary/support_panel.html')
+
+def appeals_history(request):
+    return render(request, 'Beneficiary/appeals_history.html')       

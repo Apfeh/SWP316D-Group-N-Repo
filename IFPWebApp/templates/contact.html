@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us • FraudShield</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #00b894;
+      --background-color: #f4f7fa;
+      --text-color: #333;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+        .navbar {
+      position: fixed; top: 0; left: 0; width: 100%;
+      background-color: var(--white);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+      flex-wrap: wrap;
+      height: 56px;
+    }
+    .logo { 
+      font-size: 1.5rem; font-weight: 700; color: var(--primary-color);
+      user-select: none; 
+    }
+    .nav-toggle { display: none; }
+    .nav-toggle-label {
+      display: none; cursor: pointer;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-toggle-label span {
+      display: block;
+      width: 25px; height: 3px;
+      background: var(--text-color);
+      border-radius: 2px;
+    }
+    .nav-links {
+      display: flex; gap: 1rem;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--text-color);
+      text-decoration: none;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--secondary-color); }
+    
+
+    .content {
+      max-width: 800px;
+      margin: 6rem auto 3rem;
+      background-color: var(--white);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h1 { color: var(--primary-color); margin-bottom: 1rem; text-align: center; }
+    p.intro { margin-bottom: 2rem; font-size: 1.1rem; text-align: center; }
+    h2 { color: var(--secondary-color); margin-top: 2rem; margin-bottom: 1rem; }
+    .contact-info p { margin-bottom: 0.6rem; line-height: 1.5; }
+    .contact-info strong { color: var(--primary-color); }
+    form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+    label { font-weight: 600; color: var(--primary-color); }
+    input, textarea {
+      width: 100%; padding: 0.6rem 0.8rem; font-size: 1rem; border: 1px solid #ccc;
+      border-radius: 6px; transition: border-color 0.3s;
+    }
+    input:focus, textarea:focus { border-color: var(--secondary-color); outline: none; }
+    textarea { resize: vertical; min-height: 120px; }
+    button {
+      background-color: var(--primary-color); color: var(--white); border: none;
+      padding: 0.75rem; font-size: 1.1rem; font-weight: 700;
+      border-radius: 6px; cursor: pointer; transition: background-color 0.3s;
+    }
+    button:hover { background-color: var(--secondary-color); }
+    .social-links { text-align: center; margin-top: 2rem; }
+    .social-links a { margin: 0 0.5rem; color: var(--primary-color); text-decoration: none; transition: color 0.3s; }
+    .social-links a:hover { color: var(--secondary-color); }
+    .map-placeholder {
+      margin-top: 1rem; width: 100%; height: 250px; background: #ddd;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; color: #777; font-style: italic;
+    }
+    footer {
+      background-color: var(--primary-color); color: var(--white);
+      text-align: center; padding: 2rem 1rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    }
+    footer a { color: var(--secondary-color); text-decoration: none; margin: 0.25rem; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Responsive: show burger menu */
+        /* Responsive */
+    @media (max-width: 768px) {
+      .nav-toggle-label { display: flex; }
+      .nav-links {
+        position: absolute;
+        top: 56px; left: 0; right: 0;
+        background: var(--white);
+        flex-direction: column;
+        gap: 0;
+        padding: 1rem 0;
+        display: none;
+      }
+      .nav-toggle:checked + .nav-toggle-label + .nav-links {
+        display: flex;
+      }
+      .content {
+        margin: 8rem auto 3rem;
+        padding: 1.5rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .logo { font-size: 1.25rem; }
+      .content {
+        margin: 9rem 1rem 3rem;
+        padding: 1rem;
+      }
+    }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+  </style>
+</head>
+<body>
+ <nav class="navbar">
+    <div class="logo">IFPS</div>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden />
+    <label for="nav-toggle" class="nav-toggle-label">
+      <span></span><span></span><span></span>
+    </label>
+
+    <div class="nav-links">
+     <a href="{% url 'landing_page' %}">Home</a>
+      <a href="{% url 'terms' %}">Terms</a>
+      <a href="{% url 'privacy' %}">Privacy Policy</a>
+
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1>Contact Us</h1>
+    <p class="intro">We’re here to help! Whether you have questions about our services, need assistance with your account, or want to report suspicious activity, please get in touch with us using the details below.</p>
+
+    <section class="contact-info">
+      <h2>Contact Information</h2>
+      <p><strong>General Inquiries:</strong><br>
+        Email: <a href="mailto:support@ifpsystem.org">support@ifpsystem.org</a><br>
+        Phone: +1 (555) 123-4567<br>
+        Office Hours: Monday – Friday, 9:00 AM – 5:00 PM (Local Time)
+      </p>
+      <p><strong>Report Fraud:</strong><br>
+        Email: <a href="mailto:fraud@ifpsystem.org">fraud@ifpsystem.org</a><br>
+        Phone: +1 (555) 987-6543 (24/7 Hotline)
+      </p>
+      <p><strong>Mailing Address:</strong><br>
+        Insurance Fraud Prevention System<br>
+        1234 FraudShield Ave, Suite 100<br>
+        Cityville, ST 56789<br>
+        Country
+      </p>
+    </section>
+
+    <section class="contact-form">
+      <h2>Send Us a Message</h2>
+      <form id="contactForm" novalidate>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required placeholder="Your full name" />
+
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="your.email@example.com" />
+
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" required placeholder="Subject of your message" />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" required placeholder="Write your message here..."></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+
+    <section class="social-links">
+      <h2>Connect With Us</h2>
+      <a href="https://twitter.com/IFPSystem" target="_blank" rel="noopener noreferrer">Twitter</a>
+      <a href="https://linkedin.com/company/insurance-fraud-prevention-system" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://facebook.com/IFPSFraudShield" target="_blank" rel="noopener noreferrer">Facebook</a>
+    </section>
+
+    <section class="map-section">
+      <h2>Our Location</h2>
+      <div class="map-placeholder">[Google Map Embed Placeholder]</div>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 FraudShield. All rights reserved.</p>
+    <a href="{% url 'privacy' %}">Privacy Policy</a>
+    <a href="{% url 'terms' %}">Terms of Service</a>
+    <a href="{% url 'contact' %}">Contact Us</a>
+  </footer>
+</body>
+</html>
