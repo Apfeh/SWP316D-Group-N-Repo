@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Approval Error</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 6rem auto 2rem;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .form-container h2 {
+            font-size: 1.8rem;
+            color: #e74c3c;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .home-link {
+            display: inline-block;
+            background-color: #0077b6;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-link:hover {
+            background-color: #005f8d;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 5rem 1rem 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="form-container">
+        <div class="error-icon">✗</div>
+        <h2>Approval Error</h2>
+        <p class="message">The approval link is invalid or has expired. Please contact support if you believe this is an error.</p>
+        <a href="{% url 'landing_page' %}" class="home-link">Return to Home</a>
+    </section>
+</body>
+</html>

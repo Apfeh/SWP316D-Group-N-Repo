@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-#mk^du8iq!a&wh-=wa9=rv&lq(zh9@70y-5srta@%u()!y53lx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -123,19 +123,20 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-   'default': {
+
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'ifps_db',
-        'USER':'root',
-        'PASSWORD' :'@Nalau12',
+        'NAME':'newdb',
+        'USER':'Buks',
+        'PASSWORD' :'buks123',
         'HOST':'localhost',
         'PORT':'3306',
    },
     'homeaffairs': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'homeaffairsdb',
-        'USER': 'root',
-        'PASSWORD': '@Nalau12',
+        'USER': 'Buks',
+        'PASSWORD': 'buks123',
         'HOST': 'localhost',
         'PORT': '3306',
     }

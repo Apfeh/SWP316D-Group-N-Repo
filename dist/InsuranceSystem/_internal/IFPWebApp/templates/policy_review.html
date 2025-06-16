@@ -1,0 +1,58 @@
+<!-- policy_review.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Policy Review</title>
+    <!-- Include Bootstrap CSS and other necessary stylesheets -->
+</head>
+<body>
+    <!-- Sidebar and Navbar code -->
+
+    <div class="container">
+        <h2>Policy Review</h2>
+
+        <!-- Search Form -->
+        <form method="get" action="{% url 'policy_review' %}">
+            <input type="text" name="q" placeholder="Search by holder name" value="{{ request.GET.q }}">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Policy Table -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Policy ID</th>
+                    <th>Holder Name</th>
+                    <th>Insured Person(s)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for policy in policies %}
+                <tr>
+                    <td>{{ policy.policyID }}</td>
+                    <td>{{ policy.policyHolder.name }}</td>
+                    <td>
+                        {% for person in policy.insuredperson_set.all %}
+                            {{ person.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>{{ policy.status }}</td>
+                    <td>
+                        <a href="{% url 'policy_detail' policy.policyID %}">Review</a>
+                        {% if policy.status == 'Pending' %}
+                            <a href="{% url 'approve_policy' policy.policyID %}">Approve</a>
+                            <a href="{% url 'reject_policy' policy.policyID %}">Reject</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<!-- Footer code -->
+</body>
+</html>
+

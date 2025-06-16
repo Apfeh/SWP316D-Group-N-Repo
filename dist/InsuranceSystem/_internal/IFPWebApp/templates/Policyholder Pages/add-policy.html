@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Add Policy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Existing styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        :root {
+            --primary-blue: #0077b6;
+            --secondary-green: #00b894;
+            --light-gray: #f4f7fa;
+            --dark-gray: #333;
+            --white: #ffffff;
+            --accent-yellow: #ffd166;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--secondary-green);
+        }
+
+        nav a.active {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .cta-button {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+
+        .form-container {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 6rem auto 2rem;
+            max-width: 800px;
+        }
+
+        .form-container h2 {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .confirmation-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #0077b6;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .confirmation-box.confirmed {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .underage-section {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .fetch-button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .fetch-button:hover {
+            background-color: #005f8d;
+        }
+        
+        .contact-section {
+            margin-top: 1rem;
+        }
+        
+        .confirmation-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .confirmation-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .confirm-yes {
+            background-color: #00b894;
+            color: white;
+        }
+        
+        .confirm-no {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .confirmation-button:hover {
+            opacity: 0.9;
+        }
+
+        /* New: Checkbox styling */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .checkbox-container label {
+            display: inline-block;
+            margin-bottom: 0;
+            font-size: 1rem;
+            color: var(--dark-gray);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .checkbox-container:hover label {
+            color: var(--primary-blue);
+        }
+        
+        /* New: Button container */
+        .fetch-button-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
+
+            nav a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .form-container {
+                margin: 5rem 1rem 1rem;
+                padding: 1.5rem;
+            }
+            
+            .confirmation-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">FraudShield</div>
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'add_policy' %}" class="active">Add Policy</a>
+            <a href="{% url 'policy_status' %}">Policy Status</a>
+            <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
+            <a href="{% url 'file_claim' %}">File Claim</a>
+            <a href="{% url 'claim_status' %}">Claim Status</a>
+            <a href="{% url 'landing_page' %}">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Add Policy Form -->
+    <section class="form-container fade-in">
+        <h2>Add New Policy</h2>
+        <form method="post" id="policyForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Insured Person ID Number -->
+            <div class="form-group">
+                <label for="insured-id">Insured Person ID Number *</label>
+                <input type="text" id="insured-id" name="insured_id" required>
+                <div class="fetch-button-container">
+                    <button type="button" id="fetch-details" class="fetch-button">Fetch Details from Home Affairs</button>
+                </div>
+            </div>
+            
+            <!-- Confirmation Section -->
+            <div id="confirmation-box" class="confirmation-box">
+                <p>Confirm details from Home Affairs database:</p>
+                <p><strong>Name:</strong> <span id="confirmed-name"></span></p>
+                <p><strong>Date of Birth:</strong> <span id="confirmed-dob"></span></p>
+                
+                <div class="confirmation-buttons">
+                    <button type="button" id="confirm-yes" class="confirmation-button confirm-yes">Yes, this is correct</button>
+                    <button type="button" id="confirm-no" class="confirmation-button confirm-no">No, try again</button>
+                </div>
+                
+                <input type="hidden" id="confirmed-status" name="confirmed_status" value="0">
+            </div>
+            
+            <!-- Underage Option -->
+            <div class="checkbox-container">
+                <input type="checkbox" id="is-underage" name="is_underage">
+                <label for="is-underage">Is this person under 18?</label>
+            </div>
+            
+            <!-- Parent Section -->
+            <div id="parent-section" class="underage-section">
+                <div class="form-group">
+                    <label for="parent-id">Parent/Guardian ID Number *</label>
+                    <input type="text" id="parent-id" name="parent_id">
+                    <div class="fetch-button-container">
+                        <button type="button" id="fetch-parent" class="fetch-button">Fetch Parent Details</button>
+                    </div>
+                </div>
+                
+                <div id="parent-confirmation" class="confirmation-box">
+                    <p>Parent details from Home Affairs database:</p>
+                    <p><strong>Name:</strong> <span id="parent-name"></span></p>
+                    <p><strong>Date of Birth:</strong> <span id="parent-dob"></span></p>
+                    
+                    <div class="confirmation-buttons">
+                        <button type="button" id="confirm-parent-yes" class="confirmation-button confirm-yes">Yes, this is correct</button>
+                        <button type="button" id="confirm-parent-no" class="confirmation-button confirm-no">No, try again</button>
+                    </div>
+                    
+                    <input type="hidden" id="parent-confirmed-status" name="parent_confirmed_status" value="0">
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="contact-section">
+                <div class="form-group">
+                    <label for="contact-email">Contact Email *</label>
+                    <input type="email" id="contact-email" name="contact_email" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">Contact Phone</label>
+                    <input type="text" id="contact-phone" name="contact_phone">
+                </div>
+            </div>
+            
+            <!-- Relationship -->
+            <div class="form-group">
+                <label for="relationship">Relationship to Policyholder *</label>
+                <select id="relationship" name="relationship" required>
+                    <option value="">Select Relationship</option>
+                    <option value="Self">Self</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Child">Child</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <!-- Policy Type -->
+            <div class="form-group">
+                <label for="policy-type">Policy Type *</label>
+                <select id="policy-type" name="policy_type" required>
+                    <option value="">Select Type</option>
+                    <option value="life">Life Insurance</option>
+                    <option value="funeral">Funeral Insurance</option>
+                </select>
+            </div>
+            
+            <!-- Documents -->
+            <div class="form-group">
+                <label for="relationship-docs">Relationship Documents (e.g., Marriage Certificate)</label>
+                <input type="file" id="relationship-docs" name="relationship_docs" accept=".pdf,.jpg,.png" required>
+            </div>
+            
+            <button type="submit" class="cta-button">Submit Policy</button>
+        </form>
+    </section>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('policyForm');
+            const isUnderage = document.getElementById('is-underage');
+            const parentSection = document.getElementById('parent-section');
+            const fetchBtn = document.getElementById('fetch-details');
+            const fetchParentBtn = document.getElementById('fetch-parent');
+            
+            // Toggle parent section based on underage status
+            isUnderage.addEventListener('change', () => {
+                parentSection.style.display = isUnderage.checked ? 'block' : 'none';
+                if (!isUnderage.checked) {
+                    document.getElementById('parent-id').value = '';
+                    document.getElementById('parent-confirmation').style.display = 'none';
+                    document.getElementById('parent-confirmed-status').value = '0';
+                }
+            });
+            
+            // Fetch insured person details
+            fetchBtn.addEventListener('click', async () => {
+                const idNumber = document.getElementById('insured-id').value;
+                if (!idNumber) {
+                    alert('Please enter an ID number');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/get-citizen/?id_number=${idNumber}`);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    
+                    document.getElementById('confirmed-name').textContent = `${data.name} ${data.surname}`;
+                    document.getElementById('confirmed-dob').textContent = data.dateOfBirth;
+                    
+                    // Reset confirmation status
+                    document.getElementById('confirmed-status').value = '0';
+                    document.getElementById('confirmation-box').classList.remove('confirmed');
+                    document.getElementById('confirmation-box').style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error fetching citizen data:', error);
+                    alert('Failed to fetch details. Please try again.');
+                }
+            });
+            
+            // Fetch parent details
+            fetchParentBtn.addEventListener('click', async () => {
+                const parentId = document.getElementById('parent-id').value;
+                if (!parentId) {
+                    alert('Please enter a parent ID number');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/get-citizen/?id_number=${parentId}`);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    
+                    document.getElementById('parent-name').textContent = `${data.name} ${data.surname}`;
+                    document.getElementById('parent-dob').textContent = data.dateOfBirth;
+                    
+                    // Reset confirmation status
+                    document.getElementById('parent-confirmed-status').value = '0';
+                    document.getElementById('parent-confirmation').classList.remove('confirmed');
+                    document.getElementById('parent-confirmation').style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error fetching parent data:', error);
+                    alert('Failed to fetch parent details. Please try again.');
+                }
+            });
+            
+            // Confirmation handling
+            const confirmYesBtn = document.getElementById('confirm-yes');
+            const confirmNoBtn = document.getElementById('confirm-no');
+            const confirmParentYesBtn = document.getElementById('confirm-parent-yes');
+            const confirmParentNoBtn = document.getElementById('confirm-parent-no');
+            const confirmedStatus = document.getElementById('confirmed-status');
+            const parentConfirmedStatus = document.getElementById('parent-confirmed-status');
+
+            // Handle insured person confirmation
+            confirmYesBtn.addEventListener('click', () => {
+                confirmedStatus.value = '1';
+                document.getElementById('confirmation-box').classList.add('confirmed');
+                alert('Details confirmed!');
+            });
+
+            confirmNoBtn.addEventListener('click', () => {
+                document.getElementById('insured-id').value = '';
+                document.getElementById('confirmation-box').style.display = 'none';
+                document.getElementById('confirmed-name').textContent = '';
+                document.getElementById('confirmed-dob').textContent = '';
+                confirmedStatus.value = '0';
+                document.getElementById('confirmation-box').classList.remove('confirmed');
+                alert('Please enter a different ID number');
+            });
+
+            // Handle parent confirmation
+            confirmParentYesBtn.addEventListener('click', () => {
+                parentConfirmedStatus.value = '1';
+                document.getElementById('parent-confirmation').classList.add('confirmed');
+                alert('Parent details confirmed!');
+            });
+
+            confirmParentNoBtn.addEventListener('click', () => {
+                document.getElementById('parent-id').value = '';
+                document.getElementById('parent-confirmation').style.display = 'none';
+                document.getElementById('parent-name').textContent = '';
+                document.getElementById('parent-dob').textContent = '';
+                parentConfirmedStatus.value = '0';
+                document.getElementById('parent-confirmation').classList.remove('confirmed');
+                alert('Please enter a different parent ID number');
+            });
+
+            // Form validation
+            form.addEventListener('submit', (e) => {
+                const confirmation = document.getElementById('confirmation-box');
+                
+                // Check if insured person details are confirmed
+                if (confirmedStatus.value !== '1') {
+                    e.preventDefault();
+                    alert('Please confirm the insured person details before submitting');
+                    return;
+                }
+                
+                // Check if parent details are confirmed for underage
+                if (isUnderage.checked && parentConfirmedStatus.value !== '1') {
+                    e.preventDefault();
+                    alert('Please confirm the parent details before submitting');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

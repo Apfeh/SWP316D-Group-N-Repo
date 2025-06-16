@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Beneficiary Dashboard</title>
+  
+  <!-- Fonts and Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #00b894;
+      --background-color: #f4f7fa;
+      --text-color: #333;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    .navbar {
+      background-color: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .navbar .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .navbar .profile-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background-color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .dashboard {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 2rem 1rem;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      color: white;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+    }
+
+    .sidebar a {
+      display: block;
+      margin: 0.75rem 0;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      transition: background 0.2s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+    }
+
+    .sidebar a:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 6rem 2rem 2rem;
+    }
+
+    .main-content h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+
+    .welcome-card {
+      background-color: var(--white);
+      padding: 1.5rem 2rem;
+      border-left: 6px solid var(--secondary-color);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    .welcome-card h3 {
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-box {
+      background-color: var(--white);
+      padding: 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+    }
+
+    .dashboard-box:hover {
+      transform: translateY(-4px);
+    }
+
+    .dashboard-box h4 {
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-box p {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-box button {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .dashboard-box button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .top-right-icons a {
+      color: var(--primary-color);
+      margin-left: 15px;
+      font-size: 1.4rem;
+    }
+
+    .profile-container {
+    position: relative;
+    display: inline-block;
+    }
+
+    .profile-container i {
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--primary-color);
+    }
+
+    .profile-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 35px;
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1001;
+    min-width: 150px;
+    }
+
+    .profile-dropdown a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: background 0.2s;
+    }
+
+    .profile-dropdown a:hover {
+    background-color: var(--background-color);
+    }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.2rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .cta-button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h3><i class="bi bi-speedometer2"></i> Dashboard</h3>
+      <a href="{% url 'beneficiary_dashboard' %}">Dashboard</a>
+      <a href="{% url 'claim_form' %}">Claim Filling Section</a>
+      <a href="{% url 'claim_details' %}">Claim Details</a>
+      <a href="{% url 'support_panel'%}">Support/Appeal Panel</a>
+      <a href="{% url 'appeals_history' %}">Appeals History</a>
+    </aside>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="logo">IFPS</div>
+        <div class="top-right-icons">
+            <div class="profile-container">
+                <i class="bi bi-person-circle" id="profileIcon"></i>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="">👤 Profile</a>
+                        <a href=""><i class="bi bi-bell-fill"></i>Notifications</a>
+                        <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i>Logout</a>
+                    </div>
+            </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="main-content">
+      <h2>Claim Filing Panel</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+<form method="POST" action="{% url 'claim_form' %}">
+    {% csrf_token %}
+
+    <!-- Policy selection -->
+    <div class="form-group">
+        <label for="policyId">Policy:</label>
+        <select name="policyId" id="policyId" required>
+            <option value="">Select Policy</option>
+            {% for policy in policies %}
+                <option value="{{ policy.policyId }}">
+                    {{ policy.policyId }} - {{ policy.policyType }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Beneficiary selection -->
+    <div class="form-group">
+        <label for="beneficiaryId">Beneficiary:</label>
+        <select name="beneficiaryId" id="beneficiaryId" required>
+            <option value="">Select Beneficiary</option>
+            {% for b in beneficiaries %}
+                <option value="{{ b.beneficiaryId }}">
+                    {{ b.name }} ({{ b.beneficiaryId }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Policy Holder selection -->
+    <div class="form-group">
+        <label for="id_number">Policy Holder:</label>
+        <select name="id_number" id="id_number" required>
+            <option value="">Select Policy Holder</option>
+            {% for holder in policyholders %}
+                <option value="{{ holder.id_number }}">
+                    {{ holder.name }} ({{ holder.id_number }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Claim Amount -->
+    <div class="form-group">
+        <label for="claimAmount">Claim Amount:</label>
+        <input type="number" name="claimAmount" id="claimAmount" step="0.01" required>
+    </div>
+
+    <!-- Hidden status -->
+    <input type="hidden" name="status" value="Pending Fraud Check">
+
+    <!-- Submit -->
+    <button type="submit" class="cta-button">Submit Claim</button>
+</form>
+
+    </section>
+  </div>
+
+    <script>
+        const profileIcon = document.getElementById('profileIcon');
+        const dropdown = document.getElementById('profileDropdown');
+
+        profileIcon.addEventListener('click', () => {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Optional: Hide dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!profileIcon.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+

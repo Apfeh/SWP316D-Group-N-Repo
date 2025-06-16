@@ -4,11 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from django.core.mail import send_mail
+from .notifications import send_claim_status_email
 from django.conf import settings
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 from django.db.models import Q, Avg
 from django.views.decorators.csrf import csrf_exempt
@@ -1220,8 +1222,117 @@ def claim_review(request):
     ]
     return render(request, 'Admin Templates/claim_review.html', {'claims': claims})
 
-def user_management(request):
-    return render(request, 'Admin Templates/user_management.html')
+def suspend_user_view(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = False
+    user.save()
+    messages.success(request, f"{user.get_full_name()} has been suspended.")
+    return redirect('user_management')
+
+
+def user_management_view(request):
+    role = request.GET.get('role', 'all')
+    status = request.GET.get('status', 'all')
+
+    policyholders = []
+    beneficiaries = []
+    admins = []
+
+    if role in ['policyholder', 'all']:
+        policyholders = PolicyHolder.objects.select_related('user').all()
+
+        if status != 'all':
+            is_active = (status == 'active')
+            policyholders = policyholders.filter(user__is_active=is_active)
+
+    if role in ['beneficiary', 'all']:
+        beneficiaries = Beneficiary.objects.all()
+        # You can later add status filtering logic if Beneficiary has status fields
+
+    if role in ['admin', 'all']:
+        admins = User.objects.filter(is_staff=True)
+        if status != 'all':
+            is_active = (status == 'active')
+            admins = admins.filter(is_active=is_active)
+
+    return render(request, 'Admin Templates/user_management.html', {
+        'policyholders': policyholders,
+        'beneficiaries': beneficiaries,
+        'admins': admins,
+        'selected_role': role,
+        'selected_status': status,
+    })
+
+def toggle_user_status(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = not user.is_active
+    user.save()
+    action = "reactivated" if user.is_active else "suspended"
+    messages.success(request, f"{user.get_full_name()} has been {action}.")
+    return redirect('user_management')
+
+def reset_password_view(request, user_id):
+    if request.method == 'POST':
+        admin_password = request.POST.get('admin_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Verify admin credentials
+        admin = authenticate(username=request.user.username, password=admin_password)
+        if not admin or not admin.is_staff:
+            return JsonResponse({'error': 'Invalid admin credentials'}, status=403)
+        
+        if new_password != confirm_password:
+            return JsonResponse({'error': 'Passwords do not match'}, status=400)
+        
+        user = get_object_or_404(User, id=user_id)
+        user.password = make_password(new_password)
+        user.save()
+        return JsonResponse({'success': 'Password reset successfully'})
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def policyholder_details(request, id):
+    try:
+        policyholder = get_object_or_404(PolicyHolder, id_number=id)
+        num_insured = InsuredPerson.objects.filter(holder=policyholder).count()
+        return JsonResponse({
+            'name': policyholder.name,
+            'id_number': policyholder.id_number,
+            'risk_score': policyholder.risk_score,
+            'num_insured': num_insured,
+            'phone_number': policyholder.phone_number,
+            'email': policyholder.email,
+            'beneficiary_changes': policyholder.beneficiary_changes,
+            'claims_last_year': policyholder.claims_last_year,
+            'incomplete_documents': 'Yes' if policyholder.incomplete_documents else 'No'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+def beneficiary_details(request, id):
+    try:
+        beneficiary = get_object_or_404(Beneficiary, beneficiaryId=id)
+        return JsonResponse({
+            'name': beneficiary.name,
+            'email': beneficiary.email,
+            'contact_number': beneficiary.contactNumber,
+            'relationship': beneficiary.relationshipToInsured,
+            'policy_id': beneficiary.policy.policyId
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+def admin_details(request, id):
+    try:
+        admin = get_object_or_404(Admin, user_id=id)
+        return JsonResponse({
+            'name': admin.user.get_full_name(),
+            'email': admin.email,
+            'username': admin.user.username
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 def claim_review(request):
@@ -2025,7 +2136,7 @@ def support_panel(request):
 def appeals_history(request):
     return render(request, 'Beneficiary/appeals_history.html')       
 
-# views.py
+
 # views.py
 from django.http import JsonResponse
 
@@ -2141,3 +2252,16 @@ def verify_face_beneficiary(request):
     })
 def beneficiary_login(request):
     return render(request, 'Beneficiary/beneficiaryLogin.html')
+
+def manual_notify_claim(request, claim_id):
+    try:
+        claim = Claim.objects.get(pk=claim_id)
+    except Claim.DoesNotExist:
+        return HttpResponse("Claim not found", status=404)
+
+    policyholder = claim.policyholder
+    send_claim_status_email(policyholder.email, claim.status)
+ 
+
+    return HttpResponse("Notifications sent!")
+

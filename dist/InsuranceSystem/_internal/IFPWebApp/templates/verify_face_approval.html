@@ -1,0 +1,461 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Facial Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --primary-blue: #0077b6;
+            --secondary-green: #00b894;
+            --light-gray: #f4f7fa;
+            --dark-gray: #333;
+            --white: #ffffff;
+        }
+
+        header {
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--secondary-green);
+        }
+
+        .card {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+
+        .user-info {
+            background-color: #e8f4f8;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .user-info p {
+            margin: 0.25rem 0;
+        }
+
+        .user-id {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-button {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .camera-container {
+            border: 2px dashed var(--primary-blue);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin-bottom: 1.5rem;
+        }
+        
+        .camera-preview {
+            width: 100%;
+            height: 250px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .camera-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+        }
+        
+        .camera-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .camera-placeholder p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.2em;
+            border-color: currentColor transparent currentColor currentColor;
+            border-style: solid;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #capturedImage {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            border: 2px solid var(--secondary-green);
+            margin-bottom: 1rem;
+        }
+        
+        .captured-image-container {
+            display: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            nav {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav a {
+                margin: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .camera-preview {
+                height: 200px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .camera-preview {
+                height: 180px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">FraudShield</div>
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'add_policy' %}">Add Policy</a>
+            <a href="{% url 'policy_status' %}">Policy Status</a>
+            <a href="{% url 'landing_page' %}">Logout</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card fade-in">
+            <div class="text-center mb-4">
+                <h2>Facial Verification</h2>
+                <p class="text-muted">Please verify your identity to proceed</p>
+            </div>
+            
+            <div class="user-info">
+                <p>Verifying identity for:</p>
+                <p class="user-name">{{ request.user.get_full_name }}</p>
+                
+            </div>
+            
+            {% if cooldown %}
+            <div class="alert alert-danger">
+                <h4><i class="fas fa-lock"></i> Account Temporarily Locked</h4>
+                <p>Too many failed attempts. Please try again after 5 minutes.</p>
+                <div class="text-center mt-3">
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <form method="post" enctype="multipart/form-data" id="faceVerifyForm">
+                {% csrf_token %}
+                
+                <div class="camera-container">
+                    <div class="camera-preview" id="cameraPreview">
+                        <div class="camera-placeholder">
+                            <i class="fas fa-camera"></i>
+                            <p>Camera feed will appear here</p>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" id="startCamera" class="cta-button">
+                            <i class="fas fa-video"></i> Start Camera
+                        </button>
+                        <button type="button" id="captureBtn" class="cta-button" style="display:none;">
+                            <i class="fas fa-camera"></i> Capture Image
+                        </button>
+                    </div>
+                </div>
+                
+                <input type="file" id="faceCapture" name="face_image" accept="image/*" capture="environment" style="display: none;">
+                
+                <div class="captured-image-container">
+                    <h5>Captured Image</h5>
+                    <div id="capturedImage"></div>
+                    <div class="button-group">
+                        <button type="button" id="retryCapture" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Retry Capture
+                        </button>
+                        <button type="submit" class="cta-button" id="verifyBtn">
+                            <i class="fas fa-check-circle"></i> Verify Identity
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p>Verifying your identity...</p>
+                </div>
+            </form>
+            {% endif %}
+            
+            {% if messages %}
+                <div class="mt-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}info{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startCameraBtn = document.getElementById('startCamera');
+            const captureBtn = document.getElementById('captureBtn');
+            const retryCaptureBtn = document.getElementById('retryCapture');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const cameraPreview = document.getElementById('cameraPreview');
+            const capturedImageDiv = document.getElementById('capturedImage');
+            const capturedImageContainer = document.querySelector('.captured-image-container');
+            const faceImageInput = document.getElementById('faceCapture');
+            const form = document.getElementById('faceVerifyForm');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            let stream = null;
+            let video = null;
+            
+            // Start camera
+            startCameraBtn.addEventListener('click', async () => {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    
+                    cameraPreview.innerHTML = '';
+                    video = document.createElement('video');
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    video.srcObject = stream;
+                    cameraPreview.appendChild(video);
+                    
+                    startCameraBtn.style.display = 'none';
+                    captureBtn.style.display = 'block';
+                } catch (err) {
+                    console.error('Error accessing camera:', err);
+                    alert('Could not access camera. Please ensure you have granted permission.');
+                }
+            });
+            
+            // Capture image
+            captureBtn.addEventListener('click', () => {
+                if (!video) return;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                
+                // Display captured image
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                capturedImageDiv.style.backgroundImage = `url(${dataUrl})`;
+                capturedImageContainer.style.display = 'block';
+                captureBtn.style.display = 'none';
+                
+                // Convert to blob and set as file input
+                canvas.toBlob(blob => {
+                    const file = new File([blob], 'face_capture.jpg', { type: 'image/jpeg' });
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    faceImageInput.files = dataTransfer.files;
+                }, 'image/jpeg');
+            });
+            
+            // Retry capture
+            retryCaptureBtn.addEventListener('click', () => {
+                capturedImageContainer.style.display = 'none';
+                startCameraBtn.style.display = 'block';
+                cameraPreview.innerHTML = `
+                    <div class="camera-placeholder">
+                        <i class="fas fa-camera"></i>
+                        <p>Camera feed will appear here</p>
+                    </div>
+                `;
+            });
+            
+            // Form submission
+            form.addEventListener('submit', () => {
+                loadingOverlay.style.display = 'flex';
+            });
+        });
+    </script>
+</body>
+</html>
