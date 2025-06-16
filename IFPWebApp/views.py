@@ -1,35 +1,48 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Beneficiary
-
-from .models import Claim
-
-from .models import InsuredPerson
+from django.contrib.auth import authenticate, login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from django.core.files.storage import FileSystemStorage
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.urls import reverse
-from .models import PolicyHolder
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponse
-from django.contrib import messages
-from .models import Policy
-from django.contrib.auth.hashers import make_password
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import PolicyHolder
+from django.db.models import Q, Avg
+from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import cache
+from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from twilio.rest import Client
+from datetime import date, datetime, timedelta
+import json
+import uuid
+import secrets
+import random
+import logging
+import numpy as np
+import face_recognition
+from PIL import Image, ImageEnhance
+import pytesseract
+import cv2
+from pdf2image import convert_from_bytes
+from .models import (
+    PolicyHolder, Policy, Beneficiary, InsuredPerson, Claim, Citizen, ApprovalRequest,
+    Notification, PendingBeneficiary, Admin, Admin_notification, ActivityLog, OTP,
+    FaceEncoding, FaceVerificationAttempt, FaceVerificationSession, Photo
+)
+from IFPWebApp.models import Citizen as IFPCitizen, Address
+from .forms import CustomRegistrationForm, FaceRegistrationForm, FaceVerificationForm
+from .serializers import InsuredPersonSerializer
 from .fraud_detection import run_automatic_checks
+from .ai_engine import assess_policy_risk
 
-
-
-
-
-
-def landing_page(request):
-    return render(request, 'landing_page.html')
-
-def login(request):
-    return render(request, 'registration/login.html')
-
-def register(request):
-    return render(request, 'register.html')
+logger = logging.getLogger(__name__)
 
 def contact(request):
     return render(request, 'contact.html')
@@ -39,306 +52,60 @@ def terms(request):
 
 def privacy(request):
     return render(request, 'privacy.html')
-from django.contrib.auth.decorators import login_required
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        # Try admin login
+        try:
+            admin = Admin.objects.get(email=username, password=password)
+            # Check if a User exists for this admin, or create one
+            try:
+                user = User.objects.get(username=admin.email)
+            except User.DoesNotExist:
+                # Create a User for the admin (one-time setup)
+                user = User.objects.create_user(
+                    username=admin.email,
+                    email=admin.email,
+                    password=password,  # Note: This is temporary; passwords should be hashed
+                    is_staff=True  # Mark as staff for admin access
+                )
+            # Authenticate the user
+            user = authenticate(request, username=admin.email, password=password)
+            if user:
+                login(request, user)
+                request.session['admin_id'] = admin.id  # Keep for backward compatibility
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Admin authentication failed')
+        except Admin.DoesNotExist:
+            pass
+        
+        # Try regular user authentication
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            try:
+                request.user.policyholder
+                return redirect('dashboard')
+            except PolicyHolder.DoesNotExist:
+                messages.error(request, 'No policyholder profile found')
+        else:
+            messages.error(request, 'Invalid credentials')
+    return render(request, 'registration/login.html')  # Fixed backslash to forward slash
+
+
 @login_required
 def logout(request):
     return render(request, 'landing_page.html')
 
-def beneficiary_list(request):
-    beneficiaries = Beneficiary.objects.all()
-    return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries})
-
-
-
-#InsuredPerson view
-def index(request):
-    insured_persons = InsuredPerson.objects.all()
-    return render(request, 'insured_persons.html', {'insured_persons': insured_persons})
-
-def delete_insured_person(request, id):
-    person = get_object_or_404(InsuredPerson, id=id)
-    if request.method == 'POST':
-        person.delete()
-        return redirect(reverse('insured_persons_list'))
-    return redirect(reverse('insured_persons_list'))
-
-#Policy Holder
-def dashboard(request):
-    return render(request, 'Policyholder Pages/dashboard.html')
-
-# List all PolicyHolders
-def list_policyholders(request):
-    policyholders = PolicyHolder.objects.all()
-    return render(request, 'list.html', {'policyholders': policyholders})
-
-# Add new PolicyHolder
-def add_policyholder(request):
-    if request.method == "POST":
-        policyHolderId = request.POST.get('policyHolderId')
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        contact = request.POST.get('contact')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        PolicyHolder.objects.create(
-            policyHolderId=policyHolderId,
-            name=name,
-            address=address,
-            contact=contact,
-            email=email,
-            password=make_password(password)
-        )
-        return redirect('dashboard')
-    return render(request, 'add.html')
-
-# Update a PolicyHolder
-
-
-# List all PolicyHolders
-def list_policyholders(request):
-    policyholders = PolicyHolder.objects.all()
-    return render(request, 'list.html', {'policyholders': policyholders})
-
-# Add new PolicyHolder
-def add_policyholder(request):
-    if request.method == "POST":
-        id_number = request.POST.get('id_number')
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        contact = request.POST.get('contact')
-        email = request.POST.get('email')
-        password = request.POST.get('password')  # Consider hashing in real usage
-
-        PolicyHolder.objects.create(
-            id_number=id_number,
-            name=name,
-            address=address,
-            contact=contact,
-            email=email,
-            password=password
-        )
-        return redirect('dashboard')
-
-    return render(request, 'add.html')
-
-# Update a PolicyHolder
-def update_policyholder(request, id):
-    try:
-        policyholder = PolicyHolder.objects.get(policyHolderId=id)
-    except PolicyHolder.DoesNotExist:
-        return HttpResponse("PolicyHolder not found", status=404)
-
-    if request.method == "POST":
-        policyholder.name = request.POST.get('name')
-        policyholder.address = request.POST.get('address')
-        policyholder.contact = request.POST.get('contact')
-        policyholder.email = request.POST.get('email')
-        policyholder.save()
-        return redirect('list_policyholders')
-    
-    return render(request, 'update.html', {'policyholder': policyholder})
-
-
-
-
-# Dalphy's Beneficiary Pages
-def add_beneficiary(request):
-    return render(request, "add_beneficiary.html")
-
-
-
-def beneficiary_dashboard(request):
-    beneficiary_id = request.session.get('beneficiary_id')
-
-    if not beneficiary_id:
-        return redirect('login')  # or 'beneficiary_login' if that's your login route
-
-    beneficiary = Beneficiary.objects.filter(beneficiaryId=beneficiary_id).first()
-
-    latest_claim = None
-    if beneficiary:
-        latest_claim = Claim.objects.filter(beneficiaryId=beneficiary).order_by('-dateFiled').first()
-
-    if latest_claim:
-        claim_summary = {
-            'beneficiary_name': beneficiary.name,
-            'current_status': latest_claim.status,
-            'claim_amount': getattr(latest_claim, 'claimAmount', 0),
-            'previous_claims': Claim.objects.filter(beneficiaryId=beneficiary).exclude(claimId=latest_claim.claimId).count()
-        }
-    else:
-        claim_summary = {
-            'beneficiary_name': beneficiary.name if beneficiary else "Unknown",
-            'current_status': 'No claims',
-            'claim_amount': 0,
-            'previous_claims': 0
-        }
-
-    return render(request, 'Beneficiary/beneficiary_dashboard.html', {'claim_summary': claim_summary})
-
-
-def beneficiary_list(request):
-    return render(request, "beneficiary_list.html")
-
-def beneficiary_verification(request):
-    return render(request, "beneficiary_verification.html")
-
-def claim_status(request):
-    return render(request, "claim_status.html")
-
-def edit_beneficiary(request):
-    return render(request, "edit_beneficiary.html")
-
-def file_claim(request):
-    return render(request, "file_claim.html")
-
-# Insured Person Pages
-def add_insured_person(request):
-    return render(request, "add_insured_person.html")
-
-def consent_verification(request):
-    return render(request, "consent_verification.html")
-
-def insured_dashboard(request):
-    return render(request, "dashboard.html")  # reused dashboard
-    # if you prefer a different template, you can change here
-
-def policy_details(request):
-    return render(request, "policy_details.html")
-
-# Nyiko's Law Enforcement Pages
-def law_dashboard(request):
-    return render(request, "dashboard.html")  # reused dashboard
-    # if law has their own dashboard.html, differentiate later
-
-def fraud_case_details(request):
-    return render(request, "fraud_case_details.html")
-
-def fraud_database_search(request):
-    return render(request, "fraud_database_search.html")
-
-def law_login(request):
-    return render(request, "login.html")
-
-
-# Landing and Authentication
 
 def landing_page(request):
      request.session.flush()
      return render(request, 'landing_page.html')
 
-def login(request):
-    return render(request, 'registration/login.html')
-
-
-# Insured Person Views
-
-def index(request):
-    insured_persons = InsuredPerson.objects.all()
-    return render(request, 'insured_persons.html', {'insured_persons': insured_persons})
-
-def delete_insured_person(request, id):
-    person = get_object_or_404(InsuredPerson, id=id)
-    if request.method == 'POST':
-        person.delete()
-        return redirect(reverse('insured_persons_list'))
-    return redirect(reverse('insured_persons_list'))
-
-# PolicyHolder Views
-
-
-def list_policyholders(request):
-    policyholders = PolicyHolder.objects.all()
-    return render(request, 'list.html', {'policyholders': policyholders})
-
-def add_policyholder(request):
-    if request.method == "POST":
-        policyHolderId = request.POST.get('policyHolderId')
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        contact = request.POST.get('contact')
-        email = request.POST.get('email')
-        PolicyHolder.objects.create(
-            policyHolderId=policyHolderId,
-            name=name,
-            address=address,
-            contact=contact,
-            email=email
-        )
-        return redirect('dashboard')
-    return render(request, 'add.html')
-
-def update_policyholder(request, id):
-    try:
-        policyholder = PolicyHolder.objects.get(policyHolderId=id)
-    except PolicyHolder.DoesNotExist:
-        return HttpResponse("PolicyHolder not found", status=404)
-
-    if request.method == "POST":
-        policyholder.name = request.POST.get('name')
-        policyholder.address = request.POST.get('address')
-        policyholder.contact = request.POST.get('contact')
-        policyholder.email = request.POST.get('email')
-        policyholder.save()
-        return redirect('list_policyholders')
-
-    return render(request, 'update.html', {'policyholder': policyholder})
-
-
-
-# Static/Dashboard Views
-
-def add_beneficiary(request):
-    return render(request, "add_beneficiary.html")
-
-def beneficiary_verification(request):
-    return render(request, "beneficiary_verification.html")
-
-def claim_status(request):
-    return render(request, "claim_status.html")
-
-def edit_beneficiary(request):
-    return render(request, "edit_beneficiary.html")
-
-def file_claim(request):
-    return render(request, "file_claim.html")
-
-def add_insured_person(request):
-    return render(request, "add_insured_person.html")
-
-def consent_verification(request):
-    return render(request, "consent_verification.html")
-
-def insured_dashboard(request):
-    return render(request, "dashboard.html")
-
-def policy_details(request):
-    return render(request, "policy_details.html")
-
-def law_dashboard(request):
-    return render(request, "dashboard.html")
-
-def fraud_case_details(request):
-    return render(request, "fraud_case_details.html")
-
-def fraud_database_search(request):
-    return render(request, "fraud_database_search.html")
-
-def law_login(request):
-    return render(request, "login.html")
-
-
-def home(request):
-    return render(request, 'boitshepo/home.html')
-
-POLICIES = [
-    {'id': 1, 'holder_name': 'John Doe', 'insured_persons': 'Jane Doe', 'risk_score': 75, 'status': 'Pending'},
-    {'id': 2, 'holder_name': 'Alice Smith', 'insured_persons': 'Bob Smith', 'risk_score': 55, 'status': 'Pending'},
-    {'id': 3, 'holder_name': 'Mark Johnson', 'insured_persons': 'Lucy Johnson', 'risk_score': 85, 'status': 'Pending'},
-]
-
-# IFPWebApp/views_fraud.py
 
 
 def run_manual_fraud_check(request, policyholder_id):
@@ -347,20 +114,6 @@ def run_manual_fraud_check(request, policyholder_id):
     messages.success(request, f"Fraud check run for {policyholder.name}")
     return redirect('policyholder_detail', policyholder_id=policyholder.id)  # adjust to your actual view
 
-
-#======================================================================================================================================
-# IFPWebApp/views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Policy, PolicyHolder, InsuredPerson, Beneficiary, Claim
-from django.core.files.storage import FileSystemStorage
-from .forms import CustomRegistrationForm
-import logging
-
-# Set up logging
-logger = logging.getLogger(__name__)
 
 def register(request):
   
@@ -416,17 +169,6 @@ def dashboard(request):
     return render(request, 'Policyholder Pages/dashboard.html', context)
 
 
-
-
-from django.http import JsonResponse
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import Citizen, Policy, InsuredPerson, PolicyHolder, ApprovalRequest
-import uuid
-from datetime import date, timedelta
-import logging
-
-logger = logging.getLogger(__name__)
 @login_required
 def get_citizen(request):
     id_number = request.GET.get('id_number')
@@ -440,31 +182,6 @@ def get_citizen(request):
     except Citizen.DoesNotExist:
         return JsonResponse({'error': 'Citizen not found in national database'}, status=404)
 
-
-from django.utils import timezone
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import PolicyHolder, Citizen, Policy, InsuredPerson, ApprovalRequest, Notification, Claim
-import uuid
-import logging
-from datetime import timedelta
-import json
-
-logger = logging.getLogger(__name__)
-
-# views.py updates
-
-from django.shortcuts import render, redirect
-from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-import json
-from datetime import timedelta
 
 # Email template
 def approval_email_template(recipient_name, policy_holder_name, insured_citizen, insured_id, relationship, approval_url):
@@ -770,10 +487,7 @@ def verify_face_approval(request):
         'form': form,
         'id_number': id_number
     })
-# views.py
-from django.shortcuts import render
-from django.utils import timezone
-from datetime import timedelta
+
 
 def approval_success(request):
     # Get the policy if available
@@ -840,10 +554,6 @@ def policy_status(request):
     context = {'policies': policies}
     return render(request, 'Policyholder Pages/policy-status.html', context)
 
-from django.core.mail import send_mail
-from django.urls import reverse
-from uuid import uuid4
-from .models import PendingBeneficiary
 
 @login_required
 def manage_beneficiaries(request):
@@ -861,7 +571,7 @@ def manage_beneficiaries(request):
 
         try:
             policy = Policy.objects.get(policyId=policy_id, policyHolder=policy_holder)
-            token = uuid4().hex
+            token = uuid.uuid4().hex
             
             # Create pending beneficiary
             PendingBeneficiary.objects.create(
@@ -1174,49 +884,6 @@ def delete_beneficiary(request, beneficiary_id):
     return redirect('manage_beneficiaries')
 
 
-# views.py
-
-# FACE RECOGNITION (BYPASSED)
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
-from django.contrib import messages
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Citizen, Photo
-import tempfile
-import os
-import logging
-import io
-from django.db import transaction
-from IFPWebApp.models import Citizen, Address
-from .models import PolicyHolder
-from datetime import datetime
-import logging
-import time
-import random
-# views.py
-from django.db import transaction
-from django.http import JsonResponse
-from django.urls import reverse
-from IFPWebApp.models import Citizen
-from .models import PolicyHolder
-import time
-import random
-import logging
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Policy, Claim, Admin_notification,ActivityLog  # Replace with actual model names
-from django.db.models import Avg
-
-logger = logging.getLogger(__name__)
-
-from django.shortcuts import render
-from .ai_engine import assess_policy_risk
-from .models import PolicyHolder, Admin
-
-
-logger = logging.getLogger(__name__)
-
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
@@ -1259,8 +926,8 @@ def risk_reports(request):
         "risk_distribution": risk_distribution
     })
 
-
-def admin_dashboard(request):
+@login_required
+def admin_dashboard(request, ):
     total_policies = Policy.objects.count()
     active_claims = Claim.objects.filter(status='Pending').count()
     risk_scores = PolicyHolder.objects.aggregate(avg_score=Avg('risk_score'))
@@ -1335,36 +1002,6 @@ def fraud_alerts(request):
     }
     return render(request, 'Admin Templates/fraud_alerts.html', context)
 
-from django.contrib.auth import authenticate, login
-
-from django.contrib.auth import authenticate, login
-
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        
-        # First try admin login
-        try:
-            admin = Admin.objects.get(email=username, password=password)
-            request.session['admin_id'] = admin.id
-            return redirect('admin_dashboard')
-        except Admin.DoesNotExist:
-            pass
-        
-        # Then try regular user authentication
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            try:
-                # Check policyholder association
-                request.user.policyholder
-                return redirect('dashboard')
-            except PolicyHolder.DoesNotExist:
-                messages.error(request, 'No policyholder profile found')
-        else:
-            messages.error(request, 'Invalid credentials')
-    return render(request, 'registration\login.html')
 
 def claim_review(request):
     claims = [
@@ -1401,13 +1038,6 @@ def claim_review(request):
 
 def user_management(request):
     return render(request, 'Admin Templates/user_management.html')
-
-#Claim review
-
-from django.shortcuts import render
-from .models import PolicyHolder, Claim
-from django.http import JsonResponse
-from django.template.loader import render_to_string
 
 
 def claim_review(request):
@@ -1447,9 +1077,6 @@ def claim_review(request):
          'start_date': start_date or '',
          'end_date': end_date or '',
 })
-
-#Policy Review 
-from django.db.models import Q
 
 
 def policy_review(request):
@@ -1513,8 +1140,6 @@ def policy_review(request):
     }
     return render(request, 'Admin Templates/policy_review.html', context)
 
-from django.shortcuts import redirect, get_object_or_404
-from .models import Claim  # adjust if in another app
 
 def update_claim_status(request, claim_id):
     if request.method == "POST":
@@ -1527,8 +1152,6 @@ def update_claim_status(request, claim_id):
 
     return redirect('claim_review')  # Redirect back to claim review page
 
-from django.shortcuts import redirect, get_object_or_404
-from .models import Policy  # adjust if in another app
 
 def update_policy_status(request, policy_id):
     if request.method == "POST":
@@ -1540,15 +1163,6 @@ def update_policy_status(request, policy_id):
             policy.save()
 
     return redirect('policy_review')  # Adjust to match your URL name
-
-
-
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import PolicyHolder, Policy, Beneficiary, InsuredPerson, Claim
-import logging
-
 
 
 
@@ -1673,15 +1287,6 @@ def policyholder_claims(request, id_number):
         return render(request, 'Admin Templates/error.html', {'error': 'Failed to load claims'}, status=500)
     
 
-from rest_framework import permissions
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import InsuredPerson, Beneficiary, ActivityLog
-from .serializers import InsuredPersonSerializer
-from twilio.rest import Client
-from django.conf import settings
-
 class UpdateInsuredStatus(APIView):
     permission_classes = [permissions.IsAdminUser]
 
@@ -1723,7 +1328,7 @@ class UpdateInsuredStatus(APIView):
             details=f'Set status to deceased for insured person {insured.id}'
         )
 
-@login_required(login_url='login')
+@login_required
 def profile(request):
     adminholder = Admin.objects.filter(user=request.user).first()
 
@@ -1733,14 +1338,36 @@ def profile(request):
     return render(request, 'Admin Templates/profile.html', context)
         
 def AdminNotis(request):
-    return redirect('Admin Templates/notifications.html') 
+    return redirect('Admin Templates\notifications.html') 
 
-#Beneficiary Login
-from django.shortcuts import render, redirect
-from django.core.mail import send_mail
-from .models import Beneficiary
-import random
-from django.urls import reverse
+def beneficiary_dashboard(request):
+    beneficiary_id = request.session.get('beneficiary_id')
+
+    if not beneficiary_id:
+        return redirect('login')  # or 'beneficiary_login' if that's your login route
+
+    beneficiary = Beneficiary.objects.filter(beneficiaryId=beneficiary_id).first()
+
+    latest_claim = None
+    if beneficiary:
+        latest_claim = Claim.objects.filter(beneficiaryId=beneficiary).order_by('-dateFiled').first()
+
+    if latest_claim:
+        claim_summary = {
+            'beneficiary_name': beneficiary.name,
+            'current_status': latest_claim.status,
+            'claim_amount': getattr(latest_claim, 'claimAmount', 0),
+            'previous_claims': Claim.objects.filter(beneficiaryId=beneficiary).exclude(claimId=latest_claim.claimId).count()
+        }
+    else:
+        claim_summary = {
+            'beneficiary_name': beneficiary.name if beneficiary else "Unknown",
+            'current_status': 'No claims',
+            'claim_amount': 0,
+            'previous_claims': 0
+        }
+
+    return render(request, 'Beneficiary/beneficiary_dashboard.html', {'claim_summary': claim_summary})
 
 def login_request(request):
     if request.method == 'POST':
@@ -1820,12 +1447,7 @@ def beneficiary_login(request):
 
 
 
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Claim, Policy, Beneficiary, PolicyHolder
-
-def file_claim(request):
+def file_claim_beneficiary(request):
     if request.method == 'POST':
         # Get beneficiary from session (set during OTP login)
         beneficiary_id = request.session.get('beneficiary_id')
@@ -1945,25 +1567,6 @@ def claim_details(request):
 
     return render(request, 'Beneficiary/claim_details.html', {'claims': claims})
 
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils import timezone
-from django.conf import settings
-from django.core.cache import cache
-from datetime import timedelta
-from .models import Citizen, FaceEncoding, FaceVerificationAttempt
-from .forms import FaceRegistrationForm, FaceVerificationForm
-import numpy as np
-import face_recognition
-from PIL import Image
-import logging
-
-
-
-# views.py
-# views.py
-# views.py
 def register_face(request):
     
     
@@ -2129,17 +1732,6 @@ def verify_face(request):
         'user_id': id_number  # Pass to template for display only
     })
 
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
-from django.urls import reverse
-from django.conf import settings
-from .models import PolicyHolder
-import secrets
 
 def forgot_password(request):
     error = None

@@ -21,12 +21,12 @@ urlpatterns = [
     path('user-management/', views.user_management, name='user_management'),
 
     # Dalphy's Beneficiary Pages
-    path('add-beneficiary/', views.add_beneficiary, name='add_beneficiary'),
+    #path('add-beneficiary/', views.add_beneficiary, name='add_beneficiary'),
     path('beneficiary-dashboard/', views.beneficiary_dashboard, name='beneficiary_dashboard'),
-    path('beneficiary-list/', views.beneficiary_list, name='beneficiary_list'),
+    #path('beneficiary-list/', views.beneficiary_list, name='beneficiary_list'),
     #path('beneficiary-verification/', views.beneficiary_verification, name='beneficiary_verification'),
     path('claim-status/', views.claim_status, name='claim_status'),
-    path('edit-beneficiary/', views.edit_beneficiary, name='edit_beneficiary'),
+    #path('edit-beneficiary/', views.edit_beneficiary, name='edit_beneficiary'),
    #path('facial-recognition/',views.face_recognition, name='facial_recognition'),
   
    # path('facial-recognition/', views.face_recognition, name='facial_recognition'),
@@ -43,17 +43,7 @@ urlpatterns = [
    
     path('approve/<str:token>/', views.approve_beneficiary, name='approve_beneficiary'),
     path('decline/<str:token>/', views.decline_beneficiary, name='decline_beneficiary'),
-    # Insured Person Pages
-    path('add-insured-person/', views.add_insured_person, name='add_insured_person'),
-    path('consent-verification/', views.consent_verification, name='consent_verification'),
-    path('insured-dashboard/', views.insured_dashboard, name='insured_dashboard'),
-    path('policy-details/', views.policy_details, name='policy_details'),
 
-    # Nyiko's Law Enforcement Pages
-    path('law-dashboard/', views.law_dashboard, name='law_dashboard'),
-    path('fraud-case-details/', views.fraud_case_details, name='fraud_case_details'),
-    path('fraud-database-search/', views.fraud_database_search, name='fraud_database_search'),
-    path('law-login/', views.law_login, name='law_login'),
 
     path('dashboard/', views.dashboard, name='dashboard'),
     path('add-policy/', views.add_policy, name='add_policy'),
@@ -109,5 +99,5 @@ urlpatterns = [
     path('claim-details/', views.claim_details, name='claim_details'),
     path('support-panel/', views.support_panel, name='support_panel'),
     path('appeals-history/', views.appeals_history, name='appeals_history'),
-    path('file-claim/', views.file_claim, name='file_claim'),
+    path('file-claim/', views.file_claim_beneficiary, name='file_claim_beneficiary'),
 ]
