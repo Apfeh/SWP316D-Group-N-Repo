@@ -574,6 +574,7 @@ def notifications(request):
         'notifications': user_notifications
     }
     return render(request, 'Policyholder Pages/notifications.html', context)
+<<<<<<< Updated upstream
 # views.py
 @login_required
 def dashboard(request):
@@ -662,6 +663,9 @@ def mark_notification_read(request, notification_id):
     notification.read = True
     notification.save()
     return JsonResponse({'status': 'success'})
+=======
+
+>>>>>>> Stashed changes
 @login_required
 def policy_status(request):
     logger.debug(f"User email: {request.user.email}")
@@ -1070,6 +1074,22 @@ def resend_otp(request):
 
 
 @login_required
+<<<<<<< Updated upstream
+=======
+def delete_beneficiary(request, beneficiary_id):
+    try:
+        beneficiary = Beneficiary.objects.get(
+            id=beneficiary_id,
+            policy__policyHolder__email=request.user.email
+        )
+        beneficiary.delete()
+        messages.success(request, 'Beneficiary removed successfully')
+    except Beneficiary.DoesNotExist:
+        messages.error(request, 'Beneficiary not found')
+    return redirect('manage_beneficiaries')
+
+@login_required
+>>>>>>> Stashed changes
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
