@@ -5,7 +5,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from IFPWebApp.models import (
     PolicyHolder, Policy, Beneficiary, Claim, InsuredPerson, FraudPreventionTeam,
-    Officer, Case, PendingBeneficiary, ApprovalRequest, Notification, Admin_notification
+    Officer, Case, ApprovalRequest, Notification, Admin_notification
 )
 import logging
 
@@ -44,7 +44,7 @@ previous_instances = {}
 @receiver(pre_save, sender=FraudPreventionTeam)
 @receiver(pre_save, sender=Officer)
 @receiver(pre_save, sender=Case)
-@receiver(pre_save, sender=PendingBeneficiary)
+
 @receiver(pre_save, sender=ApprovalRequest)
 @receiver(pre_save, sender=Notification)
 def store_previous_instance(sender, instance, **kwargs):
@@ -340,39 +340,7 @@ def notify_case_delete(sender, instance, **kwargs):
     notification = Admin_notification.objects.create(message=message)
     broadcast_notification(message, notification.created_at.isoformat(), notification.id)
 
-@receiver(post_save, sender=PendingBeneficiary)
-def notify_pending_beneficiary(sender, instance, created, **kwargs):
-    """Handle PendingBeneficiary create/update."""
-    if created:
-        message = f"New Pending Beneficiary added to Policy #{instance.policy.policyId}: {instance.name}"
-        logger.info(f"Creating notification: {message}")
-        notification = Admin_notification.objects.create(
-            message=message,
-            policy=instance.policy
-        )
-        broadcast_notification(message, notification.created_at.isoformat(), notification.id)
-    else:
-        previous = previous_instances.pop((sender, instance.pk), None)
-        if previous:
-            changes = []
-            if previous.name != instance.name:
-                changes.append(f"Name changed from '{previous.name}' to '{instance.name}'")
-            if changes:
-                message = f"Pending Beneficiary updated (Policy #{instance.policy.policyId}): {'; '.join(changes)}"
-                logger.info(f"Creating notification: {message}")
-                notification = Admin_notification.objects.create(
-                    message=message,
-                    policy=instance.policy
-                )
-                broadcast_notification(message, notification.created_at.isoformat(), notification.id)
 
-@receiver(post_delete, sender=PendingBeneficiary)
-def notify_pending_beneficiary_delete(sender, instance, **kwargs):
-    """Handle PendingBeneficiary deletion."""
-    message = f"Pending Beneficiary removed from Policy #{instance.policy.policyId}: {instance.name}"
-    logger.info(f"Creating notification: {message}")
-    notification = Admin_notification.objects.create(message=message)
-    broadcast_notification(message, notification.created_at.isoformat(), notification.id)
 
 @receiver(post_save, sender=ApprovalRequest)
 def notify_approval_request(sender, instance, created, **kwargs):

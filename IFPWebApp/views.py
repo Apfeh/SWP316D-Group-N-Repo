@@ -33,7 +33,7 @@ import cv2
 from pdf2image import convert_from_bytes
 from .models import (
     PolicyHolder, Policy, Beneficiary, InsuredPerson, Claim, Citizen, ApprovalRequest,
-    Notification, PendingBeneficiary, Admin, Admin_notification, ActivityLog, OTP,
+    Notification,  Admin, Admin_notification, ActivityLog, OTP,
     FaceEncoding, FaceVerificationAttempt, FaceVerificationSession, Photo
 )
 from IFPWebApp.models import Citizen as IFPCitizen, Address
@@ -136,37 +136,7 @@ def log_register(request):
     messages.warning(request, 'You are already logged in. Redirected to dashboard.')
     return redirect('dashboard')
 
-@login_required
-def dashboard(request):
-    logger.debug(f"User email: {request.user.email}")
-    try:
-        # Change from email= to user__email=
-        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
-        logger.debug(f"Found PolicyHolder: {policy_holder.id_number}")
-        #active_policies = Policy.objects.filter(policy_holder=policy_holder).count()
-        active_policies = Policy.objects.filter(policyHolder=policy_holder).count()
-        pending_claims = Claim.objects.filter(policyId__policyHolder=policy_holder, status='Pending').count()
 
-
-        
-        notifications = pending_claims
-        name = policy_holder.name  # Ensure this field exists in PolicyHolder
-        
-    except PolicyHolder.DoesNotExist:
-        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
-        active_policies = 0
-        pending_claims = 0
-        notifications = 0
-        name = "User"
-        messages.error(request, 'No policyholder profile found. Please contact support.')
-    
-    context = {
-        'active_policies': active_policies,
-        'pending_claims': pending_claims,
-        'notifications': notifications,
-        'name': name,
-    }
-    return render(request, 'Policyholder Pages/dashboard.html', context)
 
 
 @login_required
@@ -209,6 +179,7 @@ def add_policy(request):
     try:
         policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
         logger.debug(f"Found PolicyHolder: {policy_holder.user.email}")
+        
     except PolicyHolder.DoesNotExist:
         logger.warning(f"No PolicyHolder found for email: {request.user.email}")
         messages.error(request, 'No policyholder profile found. Please contact support.')
@@ -218,32 +189,53 @@ def add_policy(request):
         insured_id = request.POST.get('insured_id')
         is_underage = request.POST.get('is_underage') == 'on'
         parent_id = request.POST.get('parent_id') if is_underage else None
-        contact_email = request.POST.get('contact_email')
-        contact_phone = request.POST.get('contact_phone')
-        relationship = request.POST.get('relationship')
         policy_type = request.POST.get('policy_type')
         confirmed_status = request.POST.get('confirmed_status')
         parent_confirmed_status = request.POST.get('parent_confirmed_status')
-        relationship_docs = request.FILES.get('relationship_docs')
-        
+        relationship_docs = request.FILES.get('relationship_docs'),
+        relationship = request.POST.get('relationship')
+        contact_email= request.POST.get('contact_email')
+        contact_phone= request.POST.get('contact_phone')
         # Validate confirmations
-        if confirmed_status != '1':
+        if request.POST.get('confirmed_status') != '1':
             messages.error(request, 'Please confirm insured person details')
             return redirect('add_policy')
             
-        if is_underage and parent_confirmed_status != '1':
+        if is_underage and request.POST.get('parent_confirmed_status') != '1':
             messages.error(request, 'Please confirm parent details')
             return redirect('add_policy')
         
         try:
+            # Get citizen from national database
             insured_citizen = Citizen.objects.get(idNumber=insured_id)
         except Citizen.DoesNotExist:
             messages.error(request, 'Insured person not found in national database')
             return redirect('add_policy')
         
+        # Check for existing policy of same type - FIXED
+        existing_policy = Policy.objects.filter(
+            insuredperson__id_number=insured_id,  # Query through InsuredPerson
+            policyType=policy_type,
+            policyHolder=policy_holder
+        ).exists()
+        
+        if existing_policy:
+            messages.error(request, f'You already have an active {policy_type} policy for this person')
+            return redirect('add_policy')
+        
+        # Check for pending approval requests
+        pending_request = ApprovalRequest.objects.filter(
+            policy_data__contains=f'"id_number": "{insured_id}", "policy_type": "{policy_type}"',
+            status='pending'
+        ).exists()
+        
+        if pending_request:
+            messages.warning(request, f'You already have a pending {policy_type} policy request for this person')
+            return redirect('add_policy')
+        
         # Store document if provided
         doc_path = None
-        if relationship_docs:
+        if relationship_docs := request.FILES.get('relationship_docs'):
             fs = FileSystemStorage()
             filename = fs.save(relationship_docs.name, relationship_docs)
             doc_path = fs.url(filename)
@@ -251,6 +243,50 @@ def add_policy(request):
         # Prepare policy data for approval request
         policy_data = {
             'policy_holder_id': policy_holder.id_number,
+            'policy_type': policy_type,
+            'insured_name': f"{insured_citizen.name} {insured_citizen.surname}",
+            'insured_dob': insured_citizen.dateOfBirth.isoformat(),
+            'relationship': relationship,
+            'id_number': insured_id,
+            'parent_id_number': parent_id,
+            'contact_email': contact_email,
+            'contact_phone': contact_phone,
+            'document_path': doc_path,
+            'is_underage': is_underage,
+        }
+        
+        # Create approval request (policy not created yet)
+        expires_at = timezone.now() + timedelta(days=7)
+        approval_request = ApprovalRequest(
+            policy_data=json.dumps(policy_data),
+            expires_at=expires_at
+        )
+        approval_request.save()
+        
+        if existing_policy:
+            messages.error(request, f'You already have an active {policy_type} policy for this person')
+            return redirect('add_policy')
+        
+        # Check for pending approval requests
+        pending_request = ApprovalRequest.objects.filter(
+            policy_data__contains=f'"id_number": "{insured_id}", "policy_type": "{policy_type}"',
+            status='pending'
+        ).exists()
+        
+        if pending_request:
+            messages.warning(request, f'You already have a pending {policy_type} policy request for this person')
+            return redirect('add_policy')
+        
+        # Store document if provided
+        doc_path = None
+        if relationship_docs := request.FILES.get('relationship_docs'):
+            fs = FileSystemStorage()
+            filename = fs.save(relationship_docs.name, relationship_docs)
+            doc_path = fs.url(filename)
+        
+        # Prepare policy data for approval request
+        policy_data = {
+           'policy_holder_id': policy_holder.id_number,
             'policy_type': policy_type,
             'insured_name': f"{insured_citizen.name} {insured_citizen.surname}",
             'insured_dob': insured_citizen.dateOfBirth.isoformat(),
@@ -536,6 +572,94 @@ def notifications(request):
         'notifications': user_notifications
     }
     return render(request, 'Policyholder Pages/notifications.html', context)
+# views.py
+@login_required
+def dashboard(request):
+    logger.debug(f"User email: {request.user.email}")
+    #update
+    
+    #update
+    try:
+        # Change from email= to user__email=
+        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
+        logger.debug(f"Found PolicyHolder: {policy_holder.id_number}")
+        #active_policies = Policy.objects.filter(policy_holder=policy_holder).count()
+        active_policies = Policy.objects.filter(policyHolder=policy_holder).count()
+        pending_claims = Claim.objects.filter(policyId__policyHolder=policy_holder, status='Pending').count()
+    
+
+        
+        notifications = pending_claims
+        name = policy_holder.name  # Ensure this field exists in PolicyHolder
+        
+    except PolicyHolder.DoesNotExist:
+        logger.warning(f"No PolicyHolder found for email: {request.user.email}")
+        active_policies = 0
+        pending_claims = 0
+        notifications = 0
+        name = "User"
+        messages.error(request, 'No policyholder profile found. Please contact support.')
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Get pending claims using policyHolderId instead of user
+    if policy_holder:
+        pending_claims = Claim.objects.filter(
+            policyHolderId=policy_holder, 
+            status='Pending'
+        )
+    else:
+        pending_claims = Claim.objects.none()
+    
+    # Calculate total notifications count
+    unread_count = notifications.filter(read=False).count()
+    pendin_count = pending_claims.count()
+    total_notifications = unread_count + pendin_count
+    
+    pending_claims = Claim.objects.filter(policyId__policyHolder=policy_holder, status='Pending').count()
+    context = {
+        'active_policies': active_policies,
+        'pending_claims': pending_claims,
+        'notifications': total_notifications,
+        'name': name,
+    }
+    return render(request, 'Policyholder Pages/dashboard.html', context)
+@login_required
+def notifications_view(request):
+    try:
+        # Get the policy holder associated with the current user
+        policy_holder = PolicyHolder.objects.get(user=request.user)
+    except PolicyHolder.DoesNotExist:
+        policy_holder = None
+
+    # Get notifications for the current user
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Get pending claims using policyHolderId instead of user
+    if policy_holder:
+        pending_claims = Claim.objects.filter(
+            policyHolderId=policy_holder, 
+            status='Pending'
+        )
+    else:
+        pending_claims = Claim.objects.none()
+
+    # Calculate total notifications count
+    unread_count = notifications.filter(read=False).count()
+    pending_count = pending_claims.count()
+    total_notifications = unread_count + pending_count
+
+    context = {
+        'notifications': notifications,
+        'pending_claims': pending_claims,
+        'total_notifications': total_notifications,
+    }
+    return render(request, 'Policyholder Pages/notifications.html', context)
+# views.py
+def mark_notification_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.read = True
+    notification.save()
+    return JsonResponse({'status': 'success'})
 @login_required
 def policy_status(request):
     logger.debug(f"User email: {request.user.email}")
@@ -555,112 +679,183 @@ def policy_status(request):
     return render(request, 'Policyholder Pages/policy-status.html', context)
 
 
+# views.py
+from django.http import JsonResponse
+
 @login_required
+
 def manage_beneficiaries(request):
     try:
-        policy_holder = PolicyHolder.objects.get(user__email=request.user.email)
+        policy_holder = PolicyHolder.objects.get(user=request.user)
     except PolicyHolder.DoesNotExist:
         messages.error(request, 'No policyholder profile found.')
         return redirect('dashboard')
 
     if request.method == 'POST':
         policy_id = request.POST.get('policy_id')
-        beneficiary_name = request.POST.get('beneficiary_name')
-        beneficiary_email = request.POST.get('beneficiary_contact')
+        id_number = request.POST.get('id_number')
         relationship = request.POST.get('relationship')
 
         try:
+            # Get citizen by ID
+            citizen = Citizen.objects.get(idNumber=id_number)
             policy = Policy.objects.get(policyId=policy_id, policyHolder=policy_holder)
-            token = uuid.uuid4().hex
             
-            # Create pending beneficiary
-            PendingBeneficiary.objects.create(
+            # Check for duplicate
+            if Beneficiary.objects.filter(
+                beneficiaryId =citizen.idNumber,
+                policy__policyHolder=policy_holder
+            ).exists():
+                messages.error(request, 'This beneficiary is already added')
+                return redirect('manage_beneficiaries')
+            
+            # Create beneficiary
+            Beneficiary.objects.create(
                 policy=policy,
-                name=beneficiary_name,
-                email=beneficiary_email,
-                relationship=relationship,
-                token=token
+                beneficiaryId =citizen.idNumber,
+                name=f"{citizen.name} {citizen.surname}",
+                relationshipToInsured=relationship
             )
             
-            # Send approval email
-            approval_url = request.build_absolute_uri(
-                reverse('approve_beneficiary', kwargs={'token': token})
-            )
-            decline_url = request.build_absolute_uri(
-                reverse('decline_beneficiary', kwargs={'token': token})
-            )
-            
-            send_mail(
-                
-    subject='Action Required: Beneficiary Approval Request',
-    message=f'Please approve or decline being added as a beneficiary:\n\n'
-            f'Approve: {approval_url}\nDecline: {decline_url}',
-    from_email=settings.EMAIL_HOST_USER,
-    recipient_list=[beneficiary_email],
-    html_message=f'''
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333;">
-            <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <h2 style="color: #2F2B43;">Beneficiary Approval Request</h2>
-                <p>Dear Beneficiary,</p>
-                <p>You have been nominated to be added as a beneficiary. Please confirm your choice by clicking one of the buttons below:</p>
-
-                <div style="margin: 20px 0;">
-                    <a href="{approval_url}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
-                        Approve
-                    </a>
-                    <a href="{decline_url}" style="display: inline-block; background-color: #f44336; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
-                        Decline
-                    </a>
-                </div>
-
-                <p>If you were not expecting this email, you may ignore it.</p>
-                <p style="font-size: 12px; color: #777;">This message was sent automatically. Please do not reply.</p>
-            </div>
-        </div>
-    ''',
-    fail_silently=False
-
-            )
-            
-            messages.success(request, 'Approval request sent to beneficiary.')
+            messages.success(request, 'Beneficiary added successfully')
+        except Citizen.DoesNotExist:
+            messages.error(request, 'Citizen with provided ID not found')
+        except Policy.DoesNotExist:
+            messages.error(request, 'Policy not found')
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
         
         return redirect('manage_beneficiaries')
 
-    # GET request handling remains similar
-    pending = PendingBeneficiary.objects.filter(policy__policyHolder=policy_holder)
+   
     beneficiaries = Beneficiary.objects.filter(policy__policyHolder=policy_holder)
     
-    return render(request, 'Policyholder Pages\manage-beneficiaries.html', {
+    return render(request, 'Policyholder Pages/manage-beneficiaries.html', {
         'policy_options': Policy.objects.filter(policyHolder=policy_holder),
         'beneficiaries': beneficiaries,
-        'pending_beneficiaries': pending
+       
+    })
+# views.py
+from django.http import JsonResponse
+
+def validate_citizen(request, id_number):
+    try:
+        Citizen.objects.get(idNumber=id_number)
+        return JsonResponse({'exists': True})
+    except Citizen.DoesNotExist:
+        return JsonResponse({'exists': False})
+@login_required
+@login_required
+def check_duplicate_beneficiary(request, id_number):
+    try:
+        policy_holder = PolicyHolder.objects.get(user=request.user)
+        # Check using beneficiaryId field
+        is_duplicate = Beneficiary.objects.filter(
+            beneficiaryId=id_number,
+            policy__policyHolder=policy_holder
+        ).exists()
+        return JsonResponse({'is_duplicate': is_duplicate})
+    except PolicyHolder.DoesNotExist:
+        return JsonResponse({'is_duplicate': False})
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import PolicyHolder, Citizen, Beneficiary, Policy
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import PolicyHolder, Citizen, Beneficiary, Policy
+
+@login_required
+# views.py
+def manage_beneficiaries(request):
+    try:
+        policy_holder = PolicyHolder.objects.get(user=request.user)
+    except PolicyHolder.DoesNotExist:
+        messages.error(request, 'No policyholder profile found.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        policy_id = request.POST.get('policy_id')
+        id_number = request.POST.get('id_number')
+        relationship = request.POST.get('relationship')
+        email = request.POST.get('email')
+        try:
+            # Get citizen by ID
+            citizen = Citizen.objects.get(idNumber=id_number)
+            policy = Policy.objects.get(policyId=policy_id, policyHolder=policy_holder)
+            
+            # Check for duplicate using beneficiaryId
+            if Beneficiary.objects.filter(
+                beneficiaryId=id_number,  # Use beneficiaryId instead of citizen
+                policy__policyHolder=policy_holder
+            ).exists():
+                messages.error(request, 'This beneficiary is already added')
+                return redirect('manage_beneficiaries')
+            
+            # Create beneficiary using beneficiaryId
+            Beneficiary.objects.create(
+                policy=policy,
+                beneficiaryId=id_number,  # Store ID in beneficiaryId
+                name=f"{citizen.name} {citizen.surname}",
+                relationshipToInsured=relationship,
+                email =email  # Store email if needed
+            )
+            
+            messages.success(request, 'Beneficiary added successfully')
+        except Citizen.DoesNotExist:
+            messages.error(request, 'Citizen with provided ID not found')
+        except Policy.DoesNotExist:
+            messages.error(request, 'Policy not found')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+        
+        return redirect('manage_beneficiaries')
+
+    # GET request
+    beneficiaries = Beneficiary.objects.filter(policy__policyHolder=policy_holder)
+    
+    return render(request, 'Policyholder Pages/manage-beneficiaries.html', {
+        'policy_options': Policy.objects.filter(policyHolder=policy_holder),
+        'beneficiaries': beneficiaries
     })
 
-def approve_beneficiary(request, token):
+
+import logging
+logger = logging.getLogger(__name__)
+@login_required
+def delete_beneficiary(request, beneficiary_id):
     try:
-        pending = PendingBeneficiary.objects.get(token=token)
-        # Create actual beneficiary
-        Beneficiary.objects.create(
-            policy=pending.policy,
-            name=pending.name,
-            contactNumber=pending.email,
-            relationshipToInsured=pending.relationship
+        beneficiary = Beneficiary.objects.get(
+            beneficiaryId=beneficiary_id,  # Use beneficiaryId field
+            policy__policyHolder__user=request.user
         )
-        pending.delete()
-        return render(request, 'approval_response.html', {'approved': True})
-    except PendingBeneficiary.DoesNotExist:
-        return render(request, 'approval_response.html', {'invalid': True})
+        beneficiary.delete()
+        messages.success(request, 'Beneficiary removed successfully')
+    except Beneficiary.DoesNotExist:
+        messages.error(request, 'Beneficiary not found')
+    return redirect('manage_beneficiaries')
 
-def decline_beneficiary(request, token):
+def get_citizen_details(request):
+    id_number = request.GET.get('id_number')
+    if not id_number:
+        return JsonResponse({'error': 'ID number is required'}, status=400)
+    
     try:
-        pending = PendingBeneficiary.objects.get(token=token)
-        pending.delete()
-        return render(request, 'approval_response.html', {'approved': False})
-    except PendingBeneficiary.DoesNotExist:
-        return render(request, 'approval_response.html', {'invalid': True})
-
+        citizen = Citizen.objects.get(idNumber=id_number)
+        return JsonResponse({
+            'name': citizen.name,
+            'surname': citizen.surname,
+            'dateOfBirth': citizen.dateOfBirth.strftime('%Y-%m-%d')
+        })
+    except Citizen.DoesNotExist:
+        return JsonResponse({'error': 'Citizen not found'}, status=404)
 @login_required
 def file_claim(request):
     logger.debug(f"User email: {request.user.email}")
@@ -870,18 +1065,7 @@ def resend_otp(request):
 
 
 
-@login_required
-def delete_beneficiary(request, beneficiary_id):
-    try:
-        beneficiary = Beneficiary.objects.get(
-            id=beneficiary_id,
-            policy__policyHolder__email=request.user.email
-        )
-        beneficiary.delete()
-        messages.success(request, 'Beneficiary removed successfully')
-    except Beneficiary.DoesNotExist:
-        messages.error(request, 'Beneficiary not found')
-    return redirect('manage_beneficiaries')
+
 
 
 def risk_reports(request):
@@ -1373,7 +1557,9 @@ def login_request(request):
     if request.method == 'POST':
         beneficiary_id = request.POST['beneficiaryId']
         email = request.POST['email']
-
+        
+        request.session['beneficiary_id'] = beneficiary_id
+        request.session['email'] = email
         try:
             Beneficiary.objects.get(beneficiaryId=int(beneficiary_id.strip()),email__iexact=email.strip()
 )
@@ -1397,7 +1583,7 @@ def login_request(request):
     return render(request, 'Beneficiary/beneficiaryLogin.html')
 
 
-def verify_otp(request):
+def verify_otps(request):
     if request.method == 'POST':
         email = request.POST['email']
         otp_input = request.POST['otp']
@@ -1409,7 +1595,7 @@ def verify_otp(request):
             try:
                 beneficiary = Beneficiary.objects.get(email=email)
                 request.session['beneficiary_id'] = beneficiary.beneficiaryId
-                return redirect('beneficiary_dashboard')
+                return redirect('verify_face_beneficiary')
             except Beneficiary.DoesNotExist:
                 return render(request, 'Beneficiary/enter_otp.html', {'email': email, 'error': 'Beneficiary not found'})
         else:
@@ -1441,8 +1627,7 @@ def resend_otp(request):
     return redirect(f"{reverse('enter_otp')}?email={email}")
 
 
-def beneficiary_login(request):
-    return render(request, 'Beneficiary/beneficiaryLogin.html')
+
 
 
 
@@ -1819,7 +2004,7 @@ def reset_password(request):
                 del request.session['reset_user_id']
                 
                 # Update session if user is logged in
-                update_session_auth_hash(request, user)
+                
                 
                 success = 'Your password has been reset successfully!'
                 messages.success(request, success)
@@ -1840,3 +2025,119 @@ def support_panel(request):
 def appeals_history(request):
     return render(request, 'Beneficiary/appeals_history.html')       
 
+# views.py
+# views.py
+from django.http import JsonResponse
+
+from django.http import JsonResponse
+
+# views.py
+from django.http import JsonResponse
+from .models import Citizen
+
+def verify_face_beneficiary(request):
+    # Check if user is coming from OTP verification
+   
+    
+    # Get IP address for attempt tracking
+    ip_address = request.META.get('REMOTE_ADDR')
+    
+    # Check if user is in cooldown period
+    cache_key = f"face_verify_cooldown_{ip_address}"
+    if cache.get(cache_key):
+        messages.error(request, "Too many failed attempts. Please try again after 5 minutes.")
+        return render(request, 'verify_face.html', {'cooldown': True})
+    
+    # Get the current user's policyholder info
+    try:
+        
+        id_number = request.session.get('beneficiary_id')
+    except PolicyHolder.DoesNotExist:
+        messages.error(request, "Beneficiary not found")
+        return redirect('dashboard')
+    
+    # Get or create attempt record
+    attempt, created = FaceVerificationAttempt.objects.get_or_create(
+        id_number=id_number,
+        ip_address=ip_address,
+        defaults={'attempts': 0}
+    )
+    
+    # Check if locked
+    if attempt.locked_until and attempt.locked_until > timezone.now():
+        messages.error(request, "Too many failed attempts. Please try again after 5 minutes. Please contact support if you need immediate assistance.")
+        return render(request, 'verifyy_face.html', {'cooldown': True})
+    
+    if request.method == 'POST':
+        form = FaceVerificationForm(request.POST, request.FILES)
+        if form.is_valid():
+            face_image = request.FILES['face_image']
+            
+            try:
+                # Get citizen from database
+                citizen = Citizen.objects.get(idNumber=id_number)
+                
+                try:
+                    # Get encoding from database
+                    face_encoding = FaceEncoding.objects.get(id_number=id_number)
+                    
+                    # Process image
+                    img = Image.open(face_image)
+                    img = img.convert('RGB')
+                    img_array = np.array(img)
+                    
+                    uploaded_encodings = face_recognition.face_encodings(img_array)
+                    
+                    if not uploaded_encodings:
+                        messages.error(request, "No face detected in the captured image")
+                        return redirect('verify_face_beneficiary')
+                    
+                    # Compare faces
+                    stored_encoding = face_encoding.get_encoding_array()
+                    results = face_recognition.compare_faces(
+                        [stored_encoding], 
+                        uploaded_encodings[0],
+                        tolerance=0.5
+                    )
+                    
+                    if results[0]:
+                        # Successful verification
+                        attempt.delete()  # Reset attempts
+                        
+                        # Create verification session
+                        FaceVerificationSession.objects.create(
+                            user=request.user,
+                            session_key=request.session.session_key,
+                            verified=True
+                        )
+                        
+                        request.session['face_verified'] = True
+                        request.session.pop('otp_verified', None)  # Clear OTP flag
+                        return redirect('beneficiary_dashboard')
+                    else:
+                        # Failed attempt
+                        attempt.attempts += 1
+                        attempt.last_attempt = timezone.now()
+                        
+                        if attempt.attempts >= 3:
+                            # Lock for 5 minutes
+                            attempt.locked_until = timezone.now() + timedelta(minutes=5)
+                            cache.set(cache_key, True, 300)  # Cache for 5 minutes
+                            messages.error(request, "Too many failed attempts. Please try again after 5 minutes.")
+                        else:
+                            messages.error(request, f"Face verification failed. {3 - attempt.attempts} attempts remaining.")
+                        
+                        attempt.save()
+                except FaceEncoding.DoesNotExist:
+                    messages.error(request, "No face registered for your account")
+            except Citizen.DoesNotExist:
+                messages.error(request, "Your ID number not found in national database")
+    else:
+        form = FaceVerificationForm()
+    
+    return render(request, 'verifyy_face.html', {
+        'form': form,
+        'user_id': id_number  # Pass to template for display only
+    })
+def beneficiary_login(request):
+    return render(request, 'Beneficiary/beneficiaryLogin.html')

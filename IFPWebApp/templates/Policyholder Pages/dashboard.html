@@ -183,12 +183,13 @@
             <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
             <a href="{% url 'file_claim' %}">File Claim</a>
             <a href="{% url 'claim_status' %}">Claim Status</a>
+             <a href="{% url 'landing_page' %}">Logout</a>
             <a href="{% url 'notifications' %}">Notifications
                 {% if notifications %}
                     <span class="notification-badge">{{ notifications }}</span>
                 {% endif %}
             </a>         
-   <a href="{% url 'landing_page' %}">Logout</a>
+  
 
 
         </nav>
@@ -221,5 +222,56 @@
             </div>
         </div>
     </section>
+    </style>
+    <script>
+        // CSRF Token function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Mark as read functionality
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+            item.addEventListener('click', function() {
+                const notificationId = this.dataset.id;
+                fetch(`/mark-read/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.classList.remove('unread');
+                        // Update notification count
+                        const countBadge = document.querySelector('.nav-notification-count');
+                        const currentCount = parseInt(countBadge.textContent.match(/\d+/)[0]);
+                        countBadge.textContent = `(${currentCount - 1})`;
+                    }
+                });
+            });
+        });
+
+        // Periodic updates
+        setInterval(() => {
+            fetch('/get-notification-count/')
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.nav-notification-count').textContent = `(${data.count})`;
+                });
+        }, 30000);
+    </script>
 </body>
 </html>

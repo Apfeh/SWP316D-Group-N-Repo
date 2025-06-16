@@ -101,13 +101,14 @@ class Policy(models.Model):
 
 # Beneficiary.
 class Beneficiary(models.Model):
-    beneficiaryId = models.AutoField(primary_key=True)
+    
+    beneficiaryId = models.BigAutoField(primary_key=True) 
     policy = models.ForeignKey(Policy, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     contactNumber = models.CharField(max_length=20)
     relationshipToInsured = models.CharField(max_length=100)
     email = models.EmailField(unique=True,null=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.name} ({self.beneficiaryId})"  
     class Meta:
@@ -334,16 +335,7 @@ class OTP(models.Model):
     class Meta:
         db_table = 'otp'
 
-class PendingBeneficiary(models.Model):
-    policy = models.ForeignKey(Policy, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    relationship = models.CharField(max_length=100)
-    token = models.CharField(max_length=36, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = 'pending_beneficiary'
 
 import uuid
 class ApprovalRequest(models.Model):

@@ -41,8 +41,7 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
    
-    path('approve/<str:token>/', views.approve_beneficiary, name='approve_beneficiary'),
-    path('decline/<str:token>/', views.decline_beneficiary, name='decline_beneficiary'),
+  
 
 
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -51,8 +50,8 @@ urlpatterns = [
     path('manage-beneficiaries/', views.manage_beneficiaries, name='manage_beneficiaries'),
     path('file-claim/', views.file_claim, name='file_claim'),
     path('claim-status/', views.claim_status, name='claim_status'),
-    path('notifications/', views.notifications, name='notifications'),
-    path('delete-beneficiary/<int:beneficiary_id>/',views.delete_beneficiary, name='delete_beneficiary'),
+   # path('notifications/', views.notifications, name='notifications'),
+  
     #Letho Fraud Detection
     path('fraud-check/<int:policyholder_id>/', views.run_manual_fraud_check, name='run_manual_fraud_check'),
     path('get-citizen/', views.get_citizen, name='get_citizen'),
@@ -90,9 +89,10 @@ urlpatterns = [
     path('admin-profile/',views.profile, name='ad_profile'),
     path('admin-notifications/',views.AdminNotis, name='ad_notifications'),
 
-    path('beneficiaryLogin/', views.login_request, name='beneficiary_login'),
+   # beneficiary login
+   path('beneficiaryLogin/', views.login_request, name='beneficiary_login'),
     path('beneficiary/login/', views.beneficiary_login, name='beneficiaryLogin'),
-    path('enter-otp/', views.verify_otp, name='enter_otp'),
+    path('enter-otp/', views.verify_otps, name='enter_otp'),
     path('beneficiary-dashboard/', views.beneficiary_dashboard, name='beneficiary_dashboard'),
     path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('claim-form/', views.claim_form, name='claim_form'),
@@ -100,4 +100,14 @@ urlpatterns = [
     path('support-panel/', views.support_panel, name='support_panel'),
     path('appeals-history/', views.appeals_history, name='appeals_history'),
     path('file-claim/', views.file_claim_beneficiary, name='file_claim_beneficiary'),
+    path('notifications/', views.notifications_view, name='notifications'),
+      path('mark-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
+      path('get-citizen/', views.get_citizen_details, name='get_citizen_details'),
+       path('get-citizen/', views.get_citizen_details, name='get_citizen_details'),
+   path('delete-beneficiary/<str:beneficiary_id>/', 
+     views.delete_beneficiary, 
+     name='delete_beneficiary'),
+    path('validate-citizen/<str:id_number>/', views.validate_citizen, name='validate_citizen'),
+    path('check-duplicate-beneficiary/<str:id_number>/', views.check_duplicate_beneficiary, name='check_duplicate_beneficiary'),
+    path('verify-face-beneficiary/', views.verify_face_beneficiary, name='verify_face_beneficiary'),
 ]
