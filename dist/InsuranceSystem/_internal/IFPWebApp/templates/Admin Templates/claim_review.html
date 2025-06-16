@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Claim Review</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'admin.css' %}">
+
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+  <a href="{% url 'policy_review' %}">Policy Review</a>
+  <a href="{% url 'claim_review' %}">Claim Review</a>
+  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+  <a href="{% url 'user_management' %}">User Management</a>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar d-flex align-items-center justify-content-between">
+<form class="d-flex flex-wrap gap-2 align-items-end" role="search" method="get" action="{% url 'claim_review' %}">
+
+    <!-- ID Number Search -->
+    <div class="search-field">
+      <label for="search" class="form-label small-label">Policy Holder ID</label>
+      <input class="form-control form-control-sm" type="search" name="search" placeholder="e.g. 9201..." value="{{ query }}">
+    </div>
+
+    <!-- Insured Person Name -->
+    <div class="search-field">
+      <label for="insured_name" class="form-label small-label">Insured Name</label>
+      <input class="form-control form-control-sm" type="text" name="insured_name" placeholder="e.g. John Doe" value="{{ insured_name }}">
+    </div>
+
+    <!-- Claim Status Dropdown -->
+    <div class="search-field">
+      <label for="status" class="form-label small-label">Claim Status</label>
+      <select class="form-select form-select-sm" name="status">
+        <option value="">All</option>
+        <option value="Pending" {% if status == "Pending" %}selected{% endif %}>Pending</option>
+        <option value="Approved" {% if status == "Approved" %}selected{% endif %}>Approved</option>
+        <option value="Rejected" {% if status == "Rejected" %}selected{% endif %}>Rejected</option>
+        <option value="Investigating" {% if status == "Investigating" %}selected{% endif %}>Investigating</option>
+      </select>
+    </div>
+
+    <!-- Claim Date Range -->
+    <div class="search-field">
+      <label for="start_date" class="form-label small-label">From</label>
+      <input class="form-control form-control-sm" type="date" name="start_date" value="{{ start_date }}">
+    </div>
+
+    <div class="search-field">
+      <label for="end_date" class="form-label small-label">To</label>
+      <input class="form-control form-control-sm" type="date" name="end_date" value="{{ end_date }}">
+    </div>
+
+    <!-- Search Button -->
+    <div class="search-field">
+      <button class="btn btn-outline-primary btn-sm mt-2" type="submit">
+        <i class="bi bi-search"></i> Search
+      </button>
+    </div>
+  </form>
+
+  <div class="top-right-icons">
+    <a href="{% url 'ad_profile' %}"><i class="bi bi-person-circle"></i></a>
+    <a href="{% url 'ad_notifications' %}"><i class="bi bi-bell-fill"></i></a>
+    <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+  <h2>Claim Review</h2>
+
+  <!-- Claims Table -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Claim ID</th>
+        <th>Policy Holder</th>
+        <th>Insured Person</th>
+        <th>Claim Amount</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+   <tbody id="claims-table-body">
+  {% if claims %}
+    {% for claim in claims %}
+      <tr>
+        <td>{{ claim.claimId }}</td>
+        <td>{{ claim.policyHolderId.name }}</td>
+        <td>{{ claim.insured_person.name}}</td>
+        <td>R{{ claim.claimAmount }}</td>
+        <td>{{ claim.status }}</td>
+        <td>
+          <a class="modal-trigger" data-bs-toggle="modal" data-bs-target="#claimModal{{ claim.claimId }}">Review</a>
+        </td>
+      </tr>
+      <!-- Modal for this claim -->
+<div class="modal fade" id="claimModal{{ claim.claimId }}" tabindex="-1" aria-labelledby="modalLabel{{ claim.claimId }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel{{ claim.claimId }}">Claim Review: {{ claim.claimId }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Death Certificate:</strong></p>
+        {% if claim.death_certificate %}
+        {% if ".pdf" in claim.death_certificate.url %}
+        <iframe src="{{ claim.death_certificate.url }}" width="100%" height="300px" style="border:1px solid #ccc;"></iframe>
+        {% else %}
+        <img src="{{ claim.death_certificate.url }}" alt="Death Certificate" class="img-fluid mb-3">
+        {% endif %}
+        {% else %}
+        <img src="{% static 'images/no-file.png' %}" alt="No file" class="img-fluid mb-3">
+        {% endif %}
+      
+        <p><strong>Timeline of Events:</strong> Death occurred on {{ claim.death_date }}. Claim filed {{ claim.claim_date }}.</p>
+        <p><strong>Cause of Death:</strong> {{ claim.cause_of_death }}</p>
+      </div>
+      <form method="post" action="{% url 'update_claim_status' claim.claimId %}">
+  {% csrf_token %}
+           <div class="modal-footer d-flex flex-wrap gap-2">
+               <button type="submit" name="action" value="Approved" class="btn btn-success">Approve</button>
+               <button type="submit" name="action" value="Rejected" class="btn btn-danger">Reject</button>
+               <button type="submit" name="action" value="Investigating" class="btn btn-warning text-white">Investigate</button>
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+      </form>
+    </div>
+  </div>
+</div>
+    {% endfor %}
+  {% else %}
+    <tr>
+      <td colspan="6">No claims found for this policy holder.</td>
+    </tr>
+  {% endif %}
+</tbody>
+
+  </table>
+</div>
+
+
+<!-- Footer -->
+<div class="footer">
+  &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.querySelector('form[role="search"]').addEventListener('submit', function(e) {
+    e.preventDefault(); // stop full reload
+
+    const form = e.target;
+    const url = form.action || window.location.href;
+    const params = new URLSearchParams(new FormData(form));
+
+    fetch(url + '?' + params.toString(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.querySelector('#claims-table-body').innerHTML = data.html;
+    })
+    .catch(console.error);
+  });
+</script>
+
+</body>
+</html>

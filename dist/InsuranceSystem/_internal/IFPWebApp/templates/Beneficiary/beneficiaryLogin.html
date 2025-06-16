@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #f9f9f9; /* Light background */
+            font-family: Arial, sans-serif; /* Set a clean font */
+            display: flex; /* Center the form */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            height: 100vh; /* Full height */
+            margin: 0; /* Reset default margin */
+        }
+        
+        form {
+            background-color: #ffffff; /* White background for the form */
+            border-radius: 8px; /* Round corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 30px; /* Padding inside the form */
+            width: 300px; /* Fixed width */
+        }
+
+        h1 {
+            text-align: center; /* Center the heading */
+            color: #007BFF; /* Color for the heading */
+            font-size: 24px; /* Font size for the heading */
+        }
+
+        label {
+            display: block; /* Display labels as block elements */
+            margin-bottom: 5px; /* Space below labels */
+            color: #333; /* Text color */
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%; /* Full width inputs */
+            padding: 10px; /* Padding inside inputs */
+            margin-bottom: 20px; /* Space below inputs */
+            border: 1px solid #ccc; /* Light gray border */
+            border-radius: 4px; /* Rounded corners */
+        }
+
+        button {
+            width: 100%; /* Button full width */
+            padding: 10px; /* Padding inside the button */
+            background-color: #20c997; /* Green button background */
+            color: white; /* White text color */
+            border: none; /* No border */
+            border-radius: 4px; /* Rounded corners */
+            font-size: 16px; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+        }
+
+        button:hover {
+            background-color: #1e7e34; /* Darker green on hover */
+        }
+
+        .register-link {
+            text-align: center; /* Center the link */
+            margin-top: 20px; /* Space above the link */
+        }
+
+        .register-link a {
+            color: #007BFF; /* Link color */
+            text-decoration: none; /* No underline */
+        }
+
+        .register-link a:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
+    </style>
+</head>
+<body>
+    <form method="post" action="{% url 'beneficiary_login' %}">
+        {% csrf_token %}
+        <h1>Send OTP</h1>
+        
+        <label for="beneficiaryId">Beneficiary ID:</label>
+        <input type="text" name="beneficiaryId" required>
+        
+        <label for="email">Email:</label>
+        <input type="email" name="email" required>
+        
+        <button type="submit">Send OTP</button>
+        
+        {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+        
+        <div class="register-link">
+            Need help? <a href="#">Contact support</a>
+        </div>
+    </form>
+</body>
+</html>

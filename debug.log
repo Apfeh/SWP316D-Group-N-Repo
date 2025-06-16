@@ -1118,3 +1118,83 @@ Traceback (most recent call last):
 django.db.utils.OperationalError: no such table: citizen
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Internal Server Error: /policyholder/8001015009087/details/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: policyholder_details() got an unexpected keyword argument 'id'
+Internal Server Error: /policyholder/8904044400089/details/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: policyholder_details() got an unexpected keyword argument 'id'
+Not Found: /admin/2/details/
+Not Found: /admin/3/details/
+Not Found: /ws/notifications/
+Internal Server Error: /policyholder/8001015009087/details/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: policyholder_details() got an unexpected keyword argument 'id'
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+Not Found: /ws/notifications/
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader

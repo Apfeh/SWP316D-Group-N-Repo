@@ -1,0 +1,19 @@
+{% if claims %}
+  {% for claim in claims %}
+    <tr>
+      <td>{{ claim.claimId }}</td>
+      <td>{{ claim.policyHolderId.name }}</td>
+      <td>{{ claim.insured_person.name}}</td>
+      <td>R{{ claim.claimAmount }}</td>
+      <td>{{ claim.status }}</td>
+      <td>
+        <a class="modal-trigger" data-bs-toggle="modal" data-bs-target="#claimModal{{ claim.claimId }}">Review</a>
+      </td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="6">No claims found for this policy holder.</td>
+  </tr>
+{% endif %}
+

@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta http-equiv="refresh" content="10">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #00b894;
+      --accent-color: #d35400;
+      --background-color: #f4f7fa;
+      --white: #ffffff;
+      --navbar-bg: #ffffff;
+      --text-color: #333;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--navbar-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      background-color: var(--navbar-bg);
+      border-bottom: 1px solid #ccc;
+      z-index: 1000;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar .navbar-brand {
+      font-weight: bold;
+      font-size: 1.8rem;
+      color: var(--primary-color);
+    }
+
+    .navbar .form-control {
+      width: 300px;
+      margin-left: 20px;
+    }
+
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: var(--primary-color);
+      color: var(--white);
+      padding-top: 90px;
+      padding-left: 20px;
+    }
+
+    .sidebar a {
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .sidebar a:hover {
+      color: var(--secondary-color);
+    }
+
+    .content {
+      margin-left: 250px;
+      padding: 130px 3rem 3rem 3rem;
+      background-color: var(--navbar-bg);
+      min-height: 100vh;
+    }
+
+    .features h2 {
+      font-size: 2.8rem;
+      color: var(--primary-color);
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+
+    .carousel.cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .card {
+      flex: 1;
+      min-width: 230px;
+      max-width: 300px;
+      background-color: var(--white);
+      padding: 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .card:hover {
+      background-color: var(--secondary-color);
+      color: var(--white);
+      cursor: pointer;
+    }
+
+    .card:hover h3, .card:hover p, .card:hover i {
+      color: var(--white);
+    }
+
+    .card i {
+      font-size: 2rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    .card p {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .notifications-section {
+      margin-top: 3rem;
+    }
+
+    .notification-item {
+      background-color: #00b894;
+      color: var(--white);
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-section {
+      margin-top: 3rem;
+    }
+
+    .table-section h2 {
+      font-size: 2rem;
+      color: var(--primary-color);
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+    }
+
+    .table thead {
+      background-color: var(--primary-color);
+      color: var(--white);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: var(--primary-color);
+      color: var(--white);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      left: 0;
+    }
+
+    .top-right-icons a {
+      color: var(--primary-color);
+      margin-left: 15px;
+      font-size: 1.4rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+
+<!-- CSRF Token -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{% csrf_token %}">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+  <a href="{% url 'policy_review' %}">Policy Review</a>
+  <a href="{% url 'claim_review' %}">Claim Review</a>
+  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+  <a href="{% url 'user_management' %}">User Management</a>
+</div>
+
+<!-- Top Navbar -->
+<nav class="navbar">
+  <div class="logo">IFPS</div>
+  <div class="top-right-icons">
+    <a href="{% url 'ad_profile' %}"><i class="bi bi-person-circle"></i></a>
+    <a href="{% url 'ad_notifications' %}"><i class="bi bi-bell-fill"></i></a>
+    <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i></a>
+  </div>
+</nav>
+
+<!-- Main Content Area -->
+<div class="content">
+  <section class="features">
+    <h2>Admin Dashboard</h2>
+    <div class="carousel cards">
+      <a href="{% url 'policy_review' %}" class="card">
+        <i class="bi bi-file-earmark-text-fill"></i>
+        <h3>Total Policies</h3>
+        <p>{{ total_policies }}</p>
+      </a>
+      <a href="{% url 'claim_review' %}" class="card">
+        <i class="bi bi-check-circle-fill"></i>
+        <h3>Active Claims</h3>
+        <p>{{ active_claims }}</p>
+      </a>
+      <a href="{% url 'Risk_reports' %}" class="card">
+        <i class="bi bi-graph-up-arrow"></i>
+        <h3>Risk Scores</h3>
+        <p>{{ risk_scores.avg_score|floatformat:1 }}%</p>
+      </a>
+      <div class="card">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <h3>Flagged Cases</h3>
+        <p>{{ flagged_cases }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="features notifications-section">
+    <h2>Live Notifications</h2>
+    <div id="notifications">
+      {% for notif in notifications|slice:":5" %}
+      <div class="notification-item" id="notif-{{ notif.id }}">
+        <span>{{ notif.message }} ({{ notif.created_at }})</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="table-section">
+    <h2>Recent Activity</h2>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in activity_logs %}
+        <tr>
+          <td>{{ log.timestamp }}</td>
+          <td>{{ log.user }}</td>
+          <td>{{ log.action }}</td>
+          <td>{{ log.details }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  © 2025 Insurance Fraud Prevention System. All Rights Reserved.
+</div>
+
+<!-- WebSocket JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const socket = new WebSocket('ws://127.0.0.1:5000/ws/notifications/');
+    socket.onopen = () => console.log('WebSocket connected');
+    socket.onerror = (error) => console.error('WebSocket error:', error);
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Notification:', data);
+      const notificationDiv = document.getElementById('notifications');
+      
+      // Create new notification element
+      const div = document.createElement('div');
+      div.className = 'notification-item';
+      div.id = `notif-${data.id}`;
+      div.innerHTML = `<span>${data.message} (${data.created_at})</span>`;
+      
+      // Prepend new notification (newest first)
+      notificationDiv.prepend(div);
+      
+      // Keep only top 5 notifications
+      const allNotifications = notificationDiv.querySelectorAll('.notification-item');
+      if (allNotifications.length > 5) {
+        for (let i = 5; i < allNotifications.length; i++) {
+          allNotifications[i].remove();
+        }
+      }
+    };
+  });
+</script>
+
+</body>
+</html>

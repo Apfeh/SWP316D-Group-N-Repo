@@ -100,7 +100,7 @@
         <td>{{ entry.holder_name }}</td>
         <td>{{ entry.insured_names}}</td> 
         <td>{{ entry.risk_score }}</td>
-        <td>{{ entry.policy_status }}</td> 
+        <td>{{ entry.policy.policy_status }}</td> 
         <td class="action-btns">
           <a class="modal-trigger" onclick="openReviewModal('{{ entry.policy.policyId }}')">Review</a>
 

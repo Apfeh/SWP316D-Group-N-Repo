@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Policyholder Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Integrated Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        :root {
+            --primary-blue: #0077b6;
+            --secondary-green: #00b894;
+            --light-gray: #f4f7fa;
+            --dark-gray: #333;
+            --white: #ffffff;
+            --accent-yellow: #ffd166;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+         nav {
+            display: flex;
+            align-items: center;
+        }
+
+       .nav, nav a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+         .nav, nav a:hover {
+            color: var(--secondary-green);
+        }
+
+        .nav, nav a.active {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .cta-button {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+
+        .card {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 6rem auto 2rem;
+            max-width: 800px;
+        }
+
+        .card h2 {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .dashboard-item {
+            background-color: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 5px;
+            text-align: center;
+            position: relative;
+        }
+
+        .form-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+
+        .notification-badge {
+            background-color: #ff0000;
+            color: var(--white);
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
+
+            nav a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                margin: 5rem 1rem 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">FraudShield</div>
+        <nav>
+            <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
+            <a href="{% url 'add_policy' %}">Add Policy</a>
+            <a href="{% url 'policy_status' %}">Policy Status</a>
+            <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
+            <a href="{% url 'file_claim' %}">File Claim</a>
+            <a href="{% url 'claim_status' %}">Claim Status</a>
+            <a href="{% url 'notifications' %}">Notifications
+                {% if notifications %}
+                    <span class="notification-badge">{{ notifications }}</span>
+                {% endif %}
+            </a>         
+   <a href="{% url 'landing_page' %}">Logout</a>
+
+
+        </nav>
+    </header>
+
+    <!-- Dashboard -->
+    <section class="card fade-in">
+        <h2>Welcome, {{ name }}</h2>
+        <p>Manage your insurance policies, beneficiaries, and claims with ease.</p>
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <div class="dashboard-grid">
+            <div class="dashboard-item">
+                <h3>Active Policies</h3>
+                <p>{{ active_policies }} Policies</p>
+                <a href="{% url 'policy_status' %}" class="form-link">View Details</a>
+            </div>
+            <div class="dashboard-item">
+                <h3>Pending Claims</h3>
+                <p>{{ pending_claims }} Claim</p>
+                <a href="{% url 'claim_status' %}" class="form-link">View Status</a>
+            </div>
+            <div class="dashboard-item">
+                <h3>Notifications</h3>
+                <p>{{ notifications }} New Alerts</p>
+                <a href="{% url 'notifications' %}" class="form-link">View Notifications</a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

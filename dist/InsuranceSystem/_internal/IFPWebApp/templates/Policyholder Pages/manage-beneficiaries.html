@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield • Manage Beneficiaries</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Integrated Styles (unchanged) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        :root {
+            --primary-blue: #0077b6;
+            --secondary-green: #00b894;
+            --light-gray: #f4f7fa;
+            --dark-gray: #333;
+            --white: #ffffff;
+            --accent-yellow: #ffd166;
+        }
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        nav {
+            display: flex;
+            align-items: center;
+        }
+        nav a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: var(--secondary-green);
+        }
+        nav a.active {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+        .cta-button {
+            background-color: var(--secondary-green);
+            color: var(--white);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button:hover {
+            background-color: #009e7f;
+        }
+        .form-container {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 6rem auto 2rem;
+            max-width: 800px;
+        }
+        .form-container h2, .form-container h3 {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 1rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+        td {
+            background-color: var(--white);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            nav {
+                margin-top: 1rem;
+            }
+            nav a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+            .form-container {
+                margin: 5rem 1rem 1rem;
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">FraudShield</div>
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'add_policy' %}">Add Policy</a>
+            <a href="{% url 'policy_status' %}">Policy Status</a>
+            <a href="{% url 'manage_beneficiaries' %}" class="active">Beneficiaries</a>
+            <a href="{% url 'file_claim' %}">File Claim</a>
+            <a href="{% url 'claim_status' %}">Claim Status</a>
+            <a href="{% url 'landing_page' %}">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Manage Beneficiaries -->
+    <section class="form-container fade-in">
+        <h3>Approved Beneficiaries</h3>
+{% if beneficiaries %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Relationship</th>
+            <th>Policy Number</th>
+            <th>Approval Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for beneficiary in beneficiaries %}
+        <tr>
+            <td>{{ beneficiary.name }}</td>
+            <td>{{ beneficiary.contactNumber }}</td>
+            <td>{{ beneficiary.relationshipToInsured }}</td>
+            <td>{{ beneficiary.policy.policyId }}</td>
+            <td>{{ beneficiary.created_at|date:"M d, Y" }}</td>
+            <td>
+                <button class="cta-button danger" 
+                        onclick="confirmDelete('{{ beneficiary.id }}')">
+                    Remove
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+  
+    <p>No approved beneficiaries found.</p>
+</div>
+{% endif %}
+        <h2>Add Beneficiaries</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <p class="{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="policy-id">Policy</label>
+        <select id="policy-id" name="policy_id" required>
+            <option value="">Select Policy</option>
+            {% for policy in policy_options %}
+            <option value="{{ policy.policyId }}">
+                Policy {{ policy.policyId }} - {{ policy.policyType }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+            <div class="form-group">
+                <label for="beneficiary-name">Beneficiary Name</label>
+                <input type="text" id="beneficiary-name" name="beneficiary_name" required>
+            </div>
+            <div class="form-group">
+    <label for="relationship">Relationship to Insured</label>
+    <select id="relationship" name="relationship" required>
+        <option value="">Select Relationship</option>
+        <option value="Spouse">Spouse</option>
+        <option value="Child">Child</option>
+        <option value="Parent">Parent</option>
+        <option value="Sibling">Sibling</option>
+        <option value="Other">Other</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="beneficiary-contact">Beneficiary Email</label>
+    <input type="email" id="beneficiary-contact" name="beneficiary_contact" required>
+</div>
+            <button type="submit" class="cta-button">Add Beneficiary</button>
+        </form>
+
+       <h3>Pending Approval Requests</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Policy</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Relationship</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pending in pending_beneficiaries %}
+        <tr>
+            <td>Policy {{ pending.policy.policyID }}</td>
+            <td>{{ pending.name }}</td>
+            <td>{{ pending.email }}</td>
+            <td>{{ pending.relationship }}</td>
+            <td>Pending</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No pending requests</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </section>
+
+    <!-- Embedded JavaScript for Form Validation -->
+    <script>
+        // Add this to your existing validation script
+const selects = form.querySelectorAll('select[required]');
+selects.forEach(select => {
+    if (!select.value) {
+        valid = false;
+        select.style.borderColor = '#ff0000';
+    }
+});
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', (e) => {
+                const inputs = form.querySelectorAll('input[required], select[required]');
+                let valid = true;
+                inputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        valid = false;
+                        input.style.borderColor = '#ff0000';
+                    } else {
+                        input.style.borderColor = '#ccc';
+                    }
+                });
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields.');
+                }
+            });
+        });
+        // Add this to existing validation
+
+        function confirmDelete(beneficiaryId) {
+    if (confirm('Are you sure you want to remove this beneficiary?')) {
+        // Add your deletion logic here
+        window.location.href = `/delete-beneficiary/${beneficiaryId}/`;
+    }
+}
+    </script>
+</body>
+</html>

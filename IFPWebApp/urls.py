@@ -18,7 +18,15 @@ urlpatterns = [
     path('fraud-alerts/', views.fraud_alerts, name='fraud_alerts'),
     path('policy-review/', views.policy_review, name='policy_review'),
     path('risk-reports/', views.risk_reports, name='Risk_reports'),
-    path('user-management/', views.user_management, name='user_management'),
+    path('user-management', views.user_management_view,name='user_management'),  # Optional: default route to login
+    path('suspend-user/<int:user_id>/', views.suspend_user_view, name='suspend_user'),
+
+    path('user/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user_status'),
+    path('user/<int:user_id>/reset-password/', views.reset_password_view, name='reset_password'),
+    path('policyholder/<str:id>/details/', views.policyholder_details, name='policyholder_details'),
+    path('beneficiary/<int:id>/details/', views.beneficiary_details, name='beneficiary_details'),
+    path('admin/<int:id>/details/', views.admin_details, name='admin_details'),
+    path('user-management/', views.user_management_view, name='user_management'),
 
     # Dalphy's Beneficiary Pages
     #path('add-beneficiary/', views.add_beneficiary, name='add_beneficiary'),
@@ -89,6 +97,8 @@ urlpatterns = [
 
     path('admin-profile/',views.profile, name='ad_profile'),
     path('admin-notifications/',views.AdminNotis, name='ad_notifications'),
+
+    
 
     path('beneficiaryLogin/', views.login_request, name='beneficiary_login'),
     path('beneficiary/login/', views.beneficiary_login, name='beneficiaryLogin'),

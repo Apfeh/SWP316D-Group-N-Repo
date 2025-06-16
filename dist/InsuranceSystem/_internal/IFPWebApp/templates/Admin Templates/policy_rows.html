@@ -1,0 +1,17 @@
+{% for entry in policies %}
+  <tr>
+    <td>{{ entry.policy.policyId }}</td>
+    <td>{{ entry.holder_name }}</td>
+    <td>{{ entry.insured_names}}</td>
+    <td>{{ entry.risk_score }}</td>
+    <td>{{ entry.policy.policy_status }}</td>
+    <td class="action-btns">
+      <a class="modal-trigger" onclick="document.getElementById('review-modal-checkbox').checked = true;">Review</a>
+    </td>
+  </tr>
+{% empty %}
+  <tr>
+    <td colspan="6" class="text-center">No policies found.</td>
+  </tr>
+{% endfor %}
+

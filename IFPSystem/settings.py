@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#mk^du8iq!a&wh-=wa9=rv&lq(zh9@70y-5srta@%u()!y53lx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -123,15 +123,21 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    
     'default': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / "newdb",
-    
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME':'newdb',
+        'USER':'Buks',
+        'PASSWORD' :'buks123',
+        'HOST':'localhost',
+        'PORT':'3306',
    },
     'homeaffairs': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR /"homeaffairsdb",
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'homeaffairsdb',
+        'USER': 'Buks',
+        'PASSWORD': 'buks123',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 

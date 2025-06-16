@@ -96,8 +96,7 @@
       margin-bottom: 20px;
     }
 
-     /* Top right icons */
-     .top-right-icons {
+    .top-right-icons {
       position: absolute;
       top: 50%;
       right: 20px;
@@ -110,7 +109,6 @@
       font-size: 1.5rem;
     }
 
-    /* Footer */
     .footer {
       text-align: center;
       padding: 1rem;
@@ -121,20 +119,18 @@
       width: 100%;
       left: 0;
     }
-
-
   </style>
 </head>
 <body>
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <a href="{% url 'admin_dashboard' %}">Dashboard</a>
-    <a href="{% url 'policy_review' %}">Policy Review</a> 
-    <a href="{% url 'claim_review' %}">Claim Review</a>
-    <a href="{% url 'Risk_reports' %}">Risk Reports</a>
-    <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
-    <a href="#">User Management</a>
+  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+  <a href="{% url 'policy_review' %}">Policy Review</a>
+  <a href="{% url 'claim_review' %}">Claim Review</a>
+  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
+  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
+  <a href="{% url 'user_management' %}">User Management</a>
 </div>
 
 <!-- Navbar -->
@@ -146,7 +142,7 @@
   <div class="top-right-icons">
     <a href="#"><i class="bi bi-person-circle"></i></a>
     <a href="#"><i class="bi bi-bell-fill"></i></a>
-    <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i></a>
+    <a href="#"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
 
@@ -158,18 +154,18 @@
   <div class="filters-container">
     <label for="roleFilter">Role: </label>
     <select id="roleFilter" class="form-select d-inline w-auto">
-      <option value="all">All</option>
-      <option value="admin">Admin</option>
-      <option value="policyholder">Policyholder</option>
-      <option value="beneficiary">Beneficiary</option>
+      <option value="all" {% if selected_role == 'all' %}selected{% endif %}>All</option>
+      <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
+      <option value="policyholder" {% if selected_role == 'policyholder' %}selected{% endif %}>Policyholder</option>
+      <option value="beneficiary" {% if selected_role == 'beneficiary' %}selected{% endif %}>Beneficiary</option>
     </select>
 
     <label for="statusFilter" class="ms-3">Account Status: </label>
     <select id="statusFilter" class="form-select d-inline w-auto">
-      <option value="all">All</option>
-      <option value="active">Active</option>
-      <option value="suspended">Suspended</option>
-      <option value="flagged">Flagged</option>
+      <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All</option>
+      <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+      <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>Suspended</option>
+      <option value="flagged" {% if selected_status == 'flagged' %}selected{% endif %}>Flagged</option>
     </select>
   </div>
 
@@ -185,50 +181,323 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Dummy Data Row -->
+      {% for user in policyholders %}
       <tr>
-        <td>John Doe</td>
-        <td>Admin</td>
-        <td>Active</td>
-        <td>2025-04-25</td>
-        <td class="action-buttons">
-          <!-- Actions -->
-          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
-          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
-          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
-        </td>
-      </tr>
-      <tr>
-        <td>Jane Smith</td>
+        <td>{{ user.name }}</td>
         <td>Policyholder</td>
-        <td>Suspended</td>
-        <td>2025-04-23</td>
+        <td>
+          {% if user.user.is_active %}
+            Active
+          {% else %}
+            Suspended
+          {% endif %}
+        </td>
+        <td>{{ user.user.last_login|default:"Never" }}</td>
         <td class="action-buttons">
-          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
-          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
-          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
+          <button class="btn btn-warning btn-sm reset-password-btn" data-id="{{ user.user.id }}" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Reset Password</button>
+          <a href="{% url 'toggle_user_status' user.user.id %}">
+            <button class="btn {% if user.user.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm">
+              {% if user.user.is_active %}Suspend Account{% else %}Reactivate Account{% endif %}
+            </button>
+          </a>
+          <button class="btn btn-info btn-sm view-profile-btn" data-id="{{ user.id_number }}" data-type="policyholder" data-bs-toggle="modal" data-bs-target="#policyholderModal">View Profile</button>
         </td>
       </tr>
+      {% endfor %}
+
+      {% for user in beneficiaries %}
       <tr>
-        <td>Michael Johnson</td>
+        <td>{{ user.name }}</td>
         <td>Beneficiary</td>
         <td>Active</td>
-        <td>2025-04-20</td>
+        <td>{{ user.created_at|default:"N/A" }}</td>
         <td class="action-buttons">
-          <button class="btn btn-warning btn-sm" onclick="window.location.href='#'">Reset Password</button>
-          <button class="btn btn-danger btn-sm" onclick="window.location.href='#'">Suspend Account</button>
-          <button class="btn btn-info btn-sm" onclick="window.location.href='#'">View Profile & Activity</button>
+          <button class="btn btn-warning btn-sm reset-password-btn" data-id="{{ user.beneficiaryId }}" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Reset Password</button>
+          <button class="btn btn-info btn-sm view-profile-btn" data-id="{{ user.beneficiaryId }}" data-type="beneficiary" data-bs-toggle="modal" data-bs-target="#beneficiaryModal">View Profile</button>
         </td>
       </tr>
+      {% endfor %}
+
+      {% for user in admins %}
+      <tr>
+        <td>{{ user.get_full_name|default:user.username }}</td>
+        <td>Admin</td>
+        <td>
+          {% if user.is_active %}
+            Active
+          {% else %}
+            Suspended
+          {% endif %}
+        </td>
+        <td>{{ user.last_login|default:"Never" }}</td>
+        <td class="action-buttons">
+          <button class="btn btn-warning btn-sm reset-password-btn" data-id="{{ user.id }}" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Reset Password</button>
+          <a href="{% url 'toggle_user_status' user.id %}">
+            <button class="btn {% if user.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm">
+              {% if user.is_active %}Suspend Account{% else %}Reactivate Account{% endif %}
+            </button>
+          </a>
+          <button class="btn btn-info btn-sm view-profile-btn" data-id="{{ user.id }}" data-type="admin" data-bs-toggle="modal" data-bs-target="#adminModal">View Profile</button>
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
+</div>
 
+<!-- Modals -->
+<div class="modal fade" id="policyholderModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Policyholder Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="policyholder-error" class="alert alert-danger d-none"></div>
+        <p><strong>Name:</strong> <span id="policyholder-name"></span></p>
+        <p><strong>ID Number:</strong> <span id="policyholder-id"></span></p>
+        <p><strong>Risk Score:</strong> <span id="policyholder-score"></span></p>
+        <p><strong>Number of Insured:</strong> <span id="policyholder-num-insured"></span></p>
+        <p><strong>Phone Number:</strong> <span id="policyholder-phone"></span></p>
+        <p><strong>Email:</strong> <span id="policyholder-email"></span></p>
+        <p><strong>Beneficiary Changes:</strong> <span id="policyholder-beneficiary-changes"></span></p>
+        <p><strong>Claims Last Year:</strong> <span id="policyholder-claims-last-year"></span></p>
+        <p><strong>Incomplete Documents:</strong> <span id="policyholder-incomplete-docs"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="beneficiaryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Beneficiary Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="beneficiary-error" class="alert alert-danger d-none"></div>
+        <p><strong>Name:</strong> <span id="beneficiary-name"></span></p>
+        <p><strong>Email:</strong> <span id="beneficiary-email"></span></p>
+        <p><strong>Contact Number:</strong> <span id="beneficiary-contact"></span></p>
+        <p><strong>Relationship:</strong> <span id="beneficiary-relationship"></span></p>
+        <p><strong>Policy ID:</strong> <span id="beneficiary-policy-id"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="adminModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Admin Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="admin-error" class="alert alert-danger d-none"></div>
+        <p><strong>Name:</strong> <span id="admin-name"></span></p>
+        <p><strong>Email:</strong> <span id="admin-email"></span></p>
+        <p><strong>Username:</strong> <span id="admin-username"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reset Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="reset-password-error" class="alert alert-danger d-none"></div>
+        <form id="reset-password-form">
+          <div class="mb-3">
+            <label for="admin-password" class="form-label">Admin Password</label>
+            <input type="password" class="form-control" id="admin-password" required>
+          </div>
+          <div class="mb-3">
+            <label for="new-password" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="new-password" required>
+          </div>
+          <div class="mb-3">
+            <label for="confirm-password" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirm-password" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Reset Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Footer -->
 <div class="footer text-center py-3">
-  &copy; 2025 Insurance Fraud Prevention System. All Rights Reserved.
+  © 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    // CSRF Token Setup
+    function getCsrfToken() {
+        return $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token }}';
+    }
+
+    // Policyholder Modal
+    $('#policyholderModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var errorDiv = $('#policyholder-error');
+        errorDiv.addClass('d-none');
+        $('#policyholder-name, #policyholder-id, #policyholder-score, #policyholder-num-insured, #policyholder-phone, #policyholder-email, #policyholder-beneficiary-changes, #policyholder-claims-last-year, #policyholder-incomplete-docs').text('');
+        
+        $.ajax({
+            url: '/policyholder/' + id + '/details/',
+            method: 'GET',
+            success: function(data) {
+                if (data.error) {
+                    errorDiv.text(data.error);
+                    errorDiv.removeClass('d-none');
+                } else {
+                    $('#policyholder-name').text(data.name);
+                    $('#policyholder-id').text(data.id_number);
+                    $('#policyholder-score').text(data.risk_score);
+                    $('#policyholder-num-insured').text(data.num_insured);
+                    $('#policyholder-phone').text(data.phone_number);
+                    $('#policyholder-email').text(data.email);
+                    $('#policyholder-beneficiary-changes').text(data.beneficiary_changes);
+                    $('#policyholder-claims-last-year').text(data.claims_last_year);
+                    $('#policyholder-incomplete-docs').text(data.incomplete_documents);
+                }
+            },
+            error: function(xhr) {
+                errorDiv.text(xhr.responseJSON?.error || 'Failed to load policyholder details.');
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
+
+    // Beneficiary Modal
+    $('#beneficiaryModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var errorDiv = $('#beneficiary-error');
+        errorDiv.addClass('d-none');
+        $('#beneficiary-name, #beneficiary-email, #beneficiary-contact, #beneficiary-relationship, #beneficiary-policy-id').text('');
+        
+        $.ajax({
+            url: '/beneficiary/' + id + '/details/',
+            method: 'GET',
+            success: function(data) {
+                if (data.error) {
+                    errorDiv.text(data.error);
+                    errorDiv.removeClass('d-none');
+                } else {
+                    $('#beneficiary-name').text(data.name);
+                    $('#beneficiary-email').text(data.email);
+                    $('#beneficiary-contact').text(data.contact_number);
+                    $('#beneficiary-relationship').text(data.relationship);
+                    $('#beneficiary-policy-id').text(data.policy_id);
+                }
+            },
+            error: function(xhr) {
+                errorDiv.text(xhr.responseJSON?.error || 'Failed to load beneficiary details.');
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
+
+    // Admin Modal
+    $('#adminModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var errorDiv = $('#admin-error');
+        errorDiv.addClass('d-none');
+        $('#admin-name, #admin-email, #admin-username').text('');
+        
+        $.ajax({
+            url: '/admin/' + id + '/details/',
+            method: 'GET',
+            success: function(data) {
+                if (data.error) {
+                    errorDiv.text(data.error);
+                    errorDiv.removeClass('d-none');
+                } else {
+                    $('#admin-name').text(data.name);
+                    $('#admin-email').text(data.email);
+                    $('#admin-username').text(data.username);
+                }
+            },
+            error: function(xhr) {
+                errorDiv.text(xhr.responseJSON?.error || 'Failed to load admin details.');
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
+
+    // Reset Password
+    $('.reset-password-btn').on('click', function() {
+        var userId = $(this).data('id');
+        $('#reset-password-form').data('user-id', userId);
+        $('#reset-password-error').addClass('d-none');
+        $('#admin-password, #new-password, #confirm-password').val('');
+    });
+
+    $('#reset-password-form').on('submit', function(e) {
+        e.preventDefault();
+        var userId = $(this).data('user-id');
+        var errorDiv = $('#reset-password-error');
+        errorDiv.addClass('d-none');
+        
+        $.ajax({
+            url: '/user/' + userId + '/reset-password/',
+            method: 'POST',
+            data: {
+                admin_password: $('#admin-password').val(),
+                new_password: $('#new-password').val(),
+                confirm_password: $('#confirm-password').val(),
+                csrfmiddlewaretoken: getCsrfToken()
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('#resetPasswordModal').modal('hide');
+                    alert('Password reset successfully');
+                } else {
+                    errorDiv.text(data.error);
+                    errorDiv.removeClass('d-none');
+                }
+            },
+            error: function(xhr) {
+                errorDiv.text(xhr.responseJSON?.error || 'Failed to reset password.');
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
+
+    // Filter Handling
+    $('#roleFilter').on('change', function () {
+        const selectedRole = this.value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('role', selectedRole);
+        window.location.href = url.toString();
+    });
+
+    $('#statusFilter').on('change', function () {
+        const selectedStatus = this.value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('status', selectedStatus);
+        const selectedRole = $('#roleFilter').val();
+        url.searchParams.set('role', selectedRole);
+        window.location.href = url.toString();
+    });
+});
+</script>
 
 </body>
 </html>

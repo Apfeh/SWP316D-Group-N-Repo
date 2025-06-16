@@ -1,0 +1,639 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facial Verification</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+  </script>
+  <style>
+    body {
+      background-color: #f4f7fa;
+      font-family: 'Inter', sans-serif;
+    }
+    .navbar {
+      background-color: #009f82;
+    }
+    .form-section {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+    .btn-primary-custom {
+      background-color: #00b894;
+      border: none;
+      padding: 10px 20px;
+    }
+    .btn-primary-custom:hover {
+      background-color: #009f82;
+    }
+    .preview-img {
+      max-width: 100%;
+      max-height: 300px;
+      margin-top: 1rem;
+      display: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .preview-pdf {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #555;
+      display: none;
+    }
+    .camera-container {
+      margin-top: 1rem;
+      display: none;
+    }
+    #cameraPreview {
+      width: 100%;
+      max-height: 300px;
+      background-color: #eee;
+      border-radius: 0.5rem;
+    }
+    .camera-buttons {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 10px;
+    }
+    .upload-options {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 10px;
+    }
+    .option-btn {
+      padding: 8px 16px;
+    }
+    .option-btn.active {
+      background-color: #00b894;
+      color: white;
+    }
+    
+    /* Loading Modal Styles */
+    #loadingModal .modal-content {
+      background: transparent;
+      border: none;
+    }
+    #loadingModal .modal-body {
+      padding: 3rem;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1.5rem;
+      border: 0.35rem solid rgba(0, 184, 148, 0.2);
+      border-top-color: #00b894;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loading-text {
+      color: #009f82;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Enhanced Error/Success Styles */
+    .error-message {
+      position: relative;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #ffebee;
+      color: #d32f2f;
+      border-left: 4px solid #d32f2f;
+      display: flex;
+      align-items: center;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .success-message {
+      position: relative;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+      display: flex;
+      align-items: center;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .error-message svg, .success-message svg {
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .error-message .close-btn, .success-message .close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+    
+    .input-error {
+      border-color: #d32f2f !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23d32f2f'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23d32f2f' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .input-success {
+      border-color: #2e7d32 !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%232e7d32' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .shake-animation {
+      animation: shake 0.5s;
+    }
+    
+    .extraction-loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      margin: 10px 0;
+      color: #0d47a1;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    .alert {
+      animation-duration: 0.5s;
+      animation-fill-mode: both;
+     
+    }
+    
+    .alert svg {
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    
+    .ocr-feedback {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #fff8e1;
+      border-left: 4px solid #ffc107;
+      color: #5d4037;
+      display: flex;
+      align-items: center;
+    }
+    
+    .ocr-feedback svg {
+      margin-right: 10px;
+      color: #ffa000;
+    }
+  </style>
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-section">
+                <h3 class="text-center mb-4">Facial Recognition Verification</h3>
+                <p class="text-center mb-4">Please verify your identity by taking a live photo that matches your ID photo.</p>
+                
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info mr-3">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span>Verifying ID: <strong>{{ extracted_id }}</strong> for <strong>{{ citizen_name }}</strong></span>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <div class="camera-container mx-auto" id="cameraContainer" style="max-width: 500px;">
+                        <video id="cameraPreview" autoplay playsinline></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                        <div class="camera-buttons justify-content-center mt-3">
+                            <button id="captureBtn" class="btn btn-primary-custom">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera mr-2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                                Capture Photo
+                            </button>
+                            <button id="retryBtn" class="btn btn-secondary" style="display:none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw mr-2">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="capturedPhotoContainer" class="mt-4" style="display:none;">
+                        <h5 class="mb-3">Captured Photo</h5>
+                        <img id="capturedPhoto" class="img-thumbnail" style="max-width: 300px;"/>
+                        <div class="mt-3">
+                            <button id="submitBtn" class="btn btn-primary-custom">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle mr-2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                Submit for Verification
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="verificationResult" class="mt-4" style="display:none;"></div>
+                
+                <div class="attempts-counter mt-4 text-center">
+                    <p>Attempts remaining: <span id="attemptsLeft">3</span></p>
+                </div>
+                
+                <div class="light-feedback mt-3 text-center" style="display:none;">
+                    <div class="alert alert-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle mr-2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span id="lightFeedbackText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="loading-spinner"></div>
+                <h4 class="loading-text mt-3">Verifying your identity...</h4>
+                <p class="text-muted">This may take a few seconds</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cameraPreview = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const capturedPhoto = document.getElementById('capturedPhoto');
+    const capturedPhotoContainer = document.getElementById('capturedPhotoContainer');
+    const verificationResult = document.getElementById('verificationResult');
+    const attemptsLeftSpan = document.getElementById('attemptsLeft');
+    const lightFeedbackDiv = document.querySelector('.light-feedback');
+    const lightFeedbackText = document.getElementById('lightFeedbackText');
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    
+    let stream = null;
+    let attemptsLeft = 3;
+    let capturedImageBlob = null;
+    let verificationTimeout = null;
+    
+    // Start camera with improved error handling
+    function startCamera() {
+        // Reset camera state first
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user' 
+            },
+            audio: false 
+        })
+        .then(function(s) {
+            stream = s;
+            cameraPreview.srcObject = stream;
+            document.getElementById('cameraContainer').style.display = 'block';
+            captureBtn.disabled = false;
+            console.log('Camera started successfully');
+        })
+        .catch(function(err) {
+            console.error("Camera error: ", err);
+            showError("Could not access the camera. Please ensure you've granted camera permissions.");
+            captureBtn.disabled = true;
+        });
+    }
+    
+    // Capture photo with error handling
+    captureBtn.addEventListener('click', function() {
+        try {
+            // Disable capture button during processing
+            captureBtn.disabled = true;
+            
+            // Check if camera is ready
+            if (!stream || !cameraPreview.videoWidth) {
+                throw new Error("Camera not ready");
+            }
+            
+            canvas.width = cameraPreview.videoWidth;
+            canvas.height = cameraPreview.videoHeight;
+            const context = canvas.getContext('2d');
+            
+            // Draw image with mirror effect
+            context.save();
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
+            context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+            context.restore();
+            
+            // Convert canvas to Blob directly
+            canvas.toBlob(function(blob) {
+                if (!blob || blob.size < 10000) { // Increased minimum size
+                    throw new Error("Invalid image data captured");
+                }
+
+                // Store the Blob directly
+                capturedImageBlob = blob;
+
+                // Show preview using object URL
+                capturedPhoto.src = URL.createObjectURL(blob);
+
+                // Show captured photo and hide camera
+                capturedPhotoContainer.style.display = 'block';
+                cameraPreview.style.display = 'none';
+                captureBtn.style.display = 'none';
+                retryBtn.style.display = 'inline-block';
+                retryBtn.disabled = false;
+                submitBtn.style.display = 'inline-block';
+                submitBtn.disabled = false;
+                
+                // Analyze image lighting
+                analyzeLighting();
+                
+                console.log('Photo captured successfully');
+            }, 'image/jpeg', 0.8); // Quality parameter
+
+        } catch (error) {
+            console.error('Capture error:', error);
+            showError("Failed to capture photo. Please try again.");
+            captureBtn.disabled = false;
+            startCamera();
+        }
+    });
+    
+    // Retry photo with proper cleanup
+    retryBtn.addEventListener('click', function() {
+        try {
+            // Reset UI
+            capturedPhotoContainer.style.display = 'none';
+            cameraPreview.style.display = 'block';
+            captureBtn.style.display = 'inline-block';
+            captureBtn.disabled = false;
+            retryBtn.style.display = 'none';
+            submitBtn.style.display = 'none';
+            lightFeedbackDiv.style.display = 'none';
+            verificationResult.style.display = 'none';
+            
+            // Clean up object URL if it exists
+            if (capturedPhoto.src.startsWith('blob:')) {
+                URL.revokeObjectURL(capturedPhoto.src);
+            }
+            
+            // Restart camera
+            startCamera();
+        } catch (error) {
+            console.error('Retry error:', error);
+            showError("Failed to reset camera. Please refresh the page.");
+        }
+    });
+    
+    // Submit for verification with enhanced error handling
+   // Inside your submitBtn.addEventListener('click', ...) function
+submitBtn.addEventListener('click', async function() {
+    if (!capturedImageBlob) {
+        showError("Please capture a photo first.");
+        return;
+    }
+
+    try {
+        // Disable buttons during verification
+        submitBtn.disabled = true;
+        retryBtn.disabled = true;
+        
+        loadingModal.show();
+        console.log('Starting verification...');
+
+        // Set timeout for loading modal (3 seconds)
+        const loadingTimeout = setTimeout(() => {
+            loadingModal.hide();
+            window.location.href = "approval_response.html";
+        }, 3000);
+
+        // Create fresh FormData with proper filename
+        const formData = new FormData();
+        formData.append('extracted_id', '{{ extracted_id }}');
+        
+        // Convert blob to File if needed
+        const file = new File([capturedImageBlob], 'captured_face.jpg', {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+        });
+        formData.append('captured_image', file);
+
+        // Set timeout for verification (30 seconds - increased from 15)
+        verificationTimeout = setTimeout(() => {
+            loadingModal.hide();
+            clearTimeout(loadingTimeout);
+            throw new Error("Verification timed out after 30 seconds");
+        }, 30000);
+
+        // Send to server for verification
+        const response = await fetch("{% url 'verify_face' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        });
+
+        // Clear both timeouts if we get a response
+        clearTimeout(verificationTimeout);
+        clearTimeout(loadingTimeout);
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        loadingModal.hide();
+        console.log('Verification response:', data);
+
+        if (data.success) {
+            verificationResult.innerHTML = `
+                <div class="success-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    ${data.message || 'Verification successful!'}
+                </div>
+            `;
+            verificationResult.style.display = 'block';
+            
+            setTimeout(() => {
+                window.location.href = data.redirect || "{% url 'beneficiary_verification' %}";
+            }, 1500);
+        } else {
+            attemptsLeft--;
+            attemptsLeftSpan.textContent = attemptsLeft > 0 ? attemptsLeft : 0;
+            
+            if (attemptsLeft <= 0) {
+                showError(`Verification failed: ${data.message || 'Unknown error'}. No attempts left.`);
+                submitBtn.disabled = true;
+                retryBtn.disabled = true;
+                
+                setTimeout(() => {
+                    window.location.href = "{% url 'beneficiary_verification' %}";
+                }, 3000);
+            } else {
+                showError(`Verification failed: ${data.message || 'Unknown error'}. ${attemptsLeft} attempts left.`);
+                retryBtn.click();
+            }
+        }
+    } catch (error) {
+        clearTimeout(verificationTimeout);
+        loadingModal.hide();
+        console.error('Verification error:', error);
+        
+        submitBtn.disabled = false;
+        retryBtn.disabled = false;
+        
+        showError(`Verification failed: ${error.message || 'Please try again.'}`);
+        
+        // Redirect after 3 seconds if there's an error
+        setTimeout(() => {
+            window.location.href = "{% url 'dashboard' %}";
+        }, 3000);
+    }
+});
+
+    // Helper function to analyze lighting conditions
+    function analyzeLighting() {
+        try {
+            createImageBitmap(capturedImageBlob).then(bitmap => {
+                const offscreenCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                const context = offscreenCanvas.getContext('2d');
+                context.drawImage(bitmap, 0, 0);
+                
+                const imageData = context.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                const data = imageData.data;
+                
+                let brightnessSum = 0;
+                let pixelCount = 0;
+                
+                // Sample every 10th pixel for performance
+                for (let i = 0; i < data.length; i += 40) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    brightnessSum += (r + g + b) / 3;
+                    pixelCount++;
+                }
+                
+                const avgBrightness = brightnessSum / pixelCount;
+                
+                if (avgBrightness < 80) {
+                    lightFeedbackText.textContent = "Image is too dark. Please try in better lighting.";
+                    lightFeedbackDiv.style.display = 'block';
+                } else if (avgBrightness > 200) {
+                    lightFeedbackText.textContent = "Image is too bright. Please reduce glare.";
+                    lightFeedbackDiv.style.display = 'block';
+                } else {
+                    lightFeedbackDiv.style.display = 'none';
+                }
+            });
+        } catch (error) {
+            console.error('Light analysis error:', error);
+            lightFeedbackDiv.style.display = 'none';
+        }
+    }
+    
+    // Helper function to show error messages
+    function showError(message) {
+        verificationResult.innerHTML = `
+            <div class="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                ${message}
+            </div>
+        `;
+        verificationResult.style.display = 'block';
+    }
+    
+    // Initialize camera
+    startCamera();
+    
+    // Clean up camera stream when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        if (verificationTimeout) {
+            clearTimeout(verificationTimeout);
+        }
+        // Clean up object URL if it exists
+        if (capturedPhoto.src.startsWith('blob:')) {
+            URL.revokeObjectURL(capturedPhoto.src);
+        }
+    });
+});
+</script>
+{% endblock %}
+
+</script>
+</body>
+</html>
