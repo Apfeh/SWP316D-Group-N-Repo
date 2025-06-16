@@ -1069,7 +1069,7 @@ def resend_otp(request):
 
 
 
-
+@login_required
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
@@ -1229,7 +1229,7 @@ def suspend_user_view(request, user_id):
     messages.success(request, f"{user.get_full_name()} has been suspended.")
     return redirect('user_management')
 
-
+@login_required
 def user_management_view(request):
     role = request.GET.get('role', 'all')
     status = request.GET.get('status', 'all')
@@ -1292,7 +1292,7 @@ def reset_password_view(request, user_id):
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def policyholder_details(request, id):
+def policyholder_details_admin(request, id):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id)
         num_insured = InsuredPerson.objects.filter(holder=policyholder).count()
@@ -1334,7 +1334,7 @@ def admin_details(request, id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-
+@login_required
 def claim_review(request):
     query = request.GET.get('search')
     status = request.GET.get('status')
@@ -1373,7 +1373,7 @@ def claim_review(request):
          'end_date': end_date or '',
 })
 
-
+@login_required
 def policy_review(request):
     query = request.GET.get('q', '')
     insured_name = request.GET.get('insured_name', '')
@@ -1461,7 +1461,7 @@ def update_policy_status(request, policy_id):
 
 
 
-
+@login_required
 def policyholder_details(request, id_number):
     try:
         logger.info(f"Fetching details for id_number: {id_number}")
@@ -1486,7 +1486,7 @@ def policyholder_details(request, id_number):
         logger.error(f"Error in policyholder_details for id_number {id_number}: {str(e)}")
         return JsonResponse({'error': 'Failed to load details'}, status=500)
 
-
+@login_required
 def insured_persons_list(request, id_number):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
@@ -1507,7 +1507,7 @@ def insured_persons_list(request, id_number):
         logger.error(f"Error in insured_persons_list for id_number {id_number}: {e}")
         return JsonResponse({'error': 'Failed to load insured persons'}, status=500)
 
-
+@login_required
 def insured_person_detail(request, insured_id):
     try:
         person = get_object_or_404(InsuredPerson, id=insured_id)
@@ -1537,7 +1537,7 @@ def suspicious_patterns(request, id_number):
         logger.error(f"Error in suspicious_patterns for id_number {id_number}: {e}")
         return JsonResponse({'error': 'Failed to load timeline'}, status=500)
 
-
+@login_required
 def policyholder_policies(request, id_number):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
@@ -1548,7 +1548,7 @@ def policyholder_policies(request, id_number):
         logger.error(f"Error in policyholder_policies for id_number {id_number}: {e}")
         return render(request, 'Admin Templates/error.html', {'error': 'Failed to load policies'}, status=500)
 
-
+@login_required
 def policyholder_beneficiaries(request, id_number):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
@@ -1559,7 +1559,7 @@ def policyholder_beneficiaries(request, id_number):
         logger.error(f"Error in policyholder_beneficiaries for id_number {id_number}: {e}")
         return render(request, 'Admin Templates/error.html', {'error': 'Failed to load beneficiaries'}, status=500)
 
-
+@login_required
 def policyholder_insured(request, id_number):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id_number)
@@ -1570,7 +1570,7 @@ def policyholder_insured(request, id_number):
         logger.error(f"Error in policyholder_insured for id_number {id_number}: {e}")
         return render(request, 'Admin Templates/error.html', {'error': 'Failed to load insured persons'}, status=500)
 
-
+@login_required
 def policyholder_claims(request, id_number):
     try:
         policyholder = get_object_or_404(PolicyHolder, id_number=id_number)

@@ -2,6 +2,7 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
+from .notifications import send_claim_status_email
 from asgiref.sync import async_to_sync
 from IFPWebApp.models import (
     PolicyHolder, Policy, Beneficiary, Claim, InsuredPerson, FraudPreventionTeam,
@@ -411,3 +412,11 @@ def notify_notification_delete(sender, instance, **kwargs):
     broadcast_notification(message, notification.created_at.isoformat(), notification.id)
 
 print("Signals loaded")  # Debug
+
+
+@receiver(post_save, sender=Claim)
+def send_claim_status_update(sender, instance, **kwargs):
+    if instance.status:  # or check if status was changed
+        email = instance.policyholder.email
+        send_claim_status_email(email, instance.status)
+

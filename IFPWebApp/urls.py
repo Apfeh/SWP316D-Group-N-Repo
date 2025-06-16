@@ -23,7 +23,7 @@ urlpatterns = [
 
     path('user/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user_status'),
     path('user/<int:user_id>/reset-password/', views.reset_password_view, name='reset_password'),
-    path('policyholder/<str:id>/details/', views.policyholder_details, name='policyholder_details'),
+    path('policyholder/<str:id>/details/', views.policyholder_details_admin, name='policyholder_details_admin'),
     path('beneficiary/<int:id>/details/', views.beneficiary_details, name='beneficiary_details'),
     path('admin/<int:id>/details/', views.admin_details, name='admin_details'),
     path('user-management/', views.user_management_view, name='user_management'),
