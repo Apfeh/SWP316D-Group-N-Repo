@@ -27,6 +27,7 @@
             --dark-gray: #333;
             --white: #ffffff;
             --accent-yellow: #ffd166;
+            --error-red: #e74c3c;
         }
 
         header {
@@ -189,7 +190,7 @@
         }
         
         .confirm-no {
-            background-color: #e74c3c;
+            background-color: var(--error-red);
             color: white;
         }
         
@@ -197,7 +198,6 @@
             opacity: 0.9;
         }
 
-        /* New: Checkbox styling */
         .checkbox-container {
             display: flex;
             align-items: center;
@@ -223,12 +223,99 @@
             color: var(--primary-blue);
         }
         
-        /* New: Button container */
         .fetch-button-container {
             display: flex;
             gap: 10px;
             align-items: center;
             margin-top: 0.5rem;
+        }
+
+        /* NEW: Error notification styles */
+        .error-notification {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--error-red);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            animation: slideIn 0.5s ease, fadeOut 0.5s ease 4.5s forwards;
+        }
+        
+        .error-notification .error-icon {
+            font-size: 1.5rem;
+        }
+        
+        .error-notification .error-content {
+            flex: 1;
+        }
+        
+        .error-notification .error-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .error-notification .close-btn {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        @keyframes slideIn {
+            from { top: -100px; opacity: 0; }
+            to { top: 80px; opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        /* NEW: Form error styling */
+        .error-message {
+            color: var(--error-red);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .has-error input, 
+        .has-error select {
+            border-color: var(--error-red);
+        }
+        
+        /* NEW: Support box */
+        .support-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid var(--primary-blue);
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .support-box p {
+            margin-bottom: 10px;
+        }
+        
+        .support-contact {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .support-contact .icon {
+            font-size: 1.2rem;
+            color: var(--primary-blue);
         }
 
         @media (max-width: 768px) {
@@ -255,6 +342,12 @@
                 flex-direction: column;
                 gap: 5px;
             }
+            
+            .error-notification {
+                top: 100px;
+                width: 95%;
+                padding: 12px 20px;
+            }
         }
     </style>
 </head>
@@ -276,6 +369,18 @@
     <!-- Add Policy Form -->
     <section class="form-container fade-in">
         <h2>Add New Policy</h2>
+        
+        <!-- NEW: Display Django messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <form method="post" id="policyForm" enctype="multipart/form-data">
             {% csrf_token %}
             
@@ -283,6 +388,7 @@
             <div class="form-group">
                 <label for="insured-id">Insured Person ID Number *</label>
                 <input type="text" id="insured-id" name="insured_id" required>
+                <div class="error-message" id="insured-id-error"></div>
                 <div class="fetch-button-container">
                     <button type="button" id="fetch-details" class="fetch-button">Fetch Details from Home Affairs</button>
                 </div>
@@ -313,6 +419,7 @@
                 <div class="form-group">
                     <label for="parent-id">Parent/Guardian ID Number *</label>
                     <input type="text" id="parent-id" name="parent_id">
+                    <div class="error-message" id="parent-id-error"></div>
                     <div class="fetch-button-container">
                         <button type="button" id="fetch-parent" class="fetch-button">Fetch Parent Details</button>
                     </div>
@@ -337,10 +444,12 @@
                 <div class="form-group">
                     <label for="contact-email">Contact Email *</label>
                     <input type="email" id="contact-email" name="contact_email" required>
+                    <div class="error-message" id="email-error"></div>
                 </div>
                 <div class="form-group">
                     <label for="contact-phone">Contact Phone</label>
                     <input type="text" id="contact-phone" name="contact_phone">
+                    <div class="error-message" id="phone-error"></div>
                 </div>
             </div>
             
@@ -356,6 +465,7 @@
                     <option value="Sibling">Sibling</option>
                     <option value="Other">Other</option>
                 </select>
+                <div class="error-message" id="relationship-error"></div>
             </div>
             
             <!-- Policy Type -->
@@ -366,13 +476,17 @@
                     <option value="life">Life Insurance</option>
                     <option value="funeral">Funeral Insurance</option>
                 </select>
+                <div class="error-message" id="policy-type-error"></div>
             </div>
             
             <!-- Documents -->
             <div class="form-group">
                 <label for="relationship-docs">Relationship Documents (e.g., Marriage Certificate)</label>
                 <input type="file" id="relationship-docs" name="relationship_docs" accept=".pdf,.jpg,.png" required>
+                <div class="error-message" id="docs-error"></div>
             </div>
+            
+           
             
             <button type="submit" class="cta-button">Submit Policy</button>
         </form>
@@ -387,6 +501,59 @@
             const fetchBtn = document.getElementById('fetch-details');
             const fetchParentBtn = document.getElementById('fetch-parent');
             
+            // NEW: Show error notification function
+            function showErrorNotification(title, message) {
+                const notification = document.createElement('div');
+                notification.className = 'error-notification';
+                notification.innerHTML = `
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-content">
+                        <div class="error-title">${title}</div>
+                        <div class="error-details">${message}</div>
+                    </div>
+                    <button class="close-btn">&times;</button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 500);
+                }, 5000);
+                
+                // Close button functionality
+                notification.querySelector('.close-btn').addEventListener('click', () => {
+                    notification.remove();
+                });
+            }
+            
+            // NEW: Show field error function
+            function showFieldError(fieldId, message) {
+                const field = document.getElementById(fieldId);
+                const errorElement = document.getElementById(`${fieldId}-error`);
+                
+                if (field && errorElement) {
+                    field.classList.add('has-error');
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                    
+                    // Scroll to the field with error
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            
+            // NEW: Clear field error
+            function clearFieldError(fieldId) {
+                const field = document.getElementById(fieldId);
+                const errorElement = document.getElementById(`${fieldId}-error`);
+                
+                if (field && errorElement) {
+                    field.classList.remove('has-error');
+                    errorElement.style.display = 'none';
+                }
+            }
+            
             // Toggle parent section based on underage status
             isUnderage.addEventListener('change', () => {
                 parentSection.style.display = isUnderage.checked ? 'block' : 'none';
@@ -394,6 +561,7 @@
                     document.getElementById('parent-id').value = '';
                     document.getElementById('parent-confirmation').style.display = 'none';
                     document.getElementById('parent-confirmed-status').value = '0';
+                    clearFieldError('parent-id');
                 }
             });
             
@@ -401,8 +569,10 @@
             fetchBtn.addEventListener('click', async () => {
                 const idNumber = document.getElementById('insured-id').value;
                 if (!idNumber) {
-                    alert('Please enter an ID number');
+                    showFieldError('insured-id', 'Please enter an ID number');
                     return;
+                } else {
+                    clearFieldError('insured-id');
                 }
                 
                 try {
@@ -410,7 +580,7 @@
                     const data = await response.json();
                     
                     if (data.error) {
-                        alert(data.error);
+                        showFieldError('insured-id', data.error);
                         return;
                     }
                     
@@ -424,7 +594,10 @@
                     
                 } catch (error) {
                     console.error('Error fetching citizen data:', error);
-                    alert('Failed to fetch details. Please try again.');
+                    showErrorNotification(
+                        'Network Error', 
+                        'Failed to fetch details. Please check your network connection and try again.'
+                    );
                 }
             });
             
@@ -432,8 +605,10 @@
             fetchParentBtn.addEventListener('click', async () => {
                 const parentId = document.getElementById('parent-id').value;
                 if (!parentId) {
-                    alert('Please enter a parent ID number');
+                    showFieldError('parent-id', 'Please enter a parent ID number');
                     return;
+                } else {
+                    clearFieldError('parent-id');
                 }
                 
                 try {
@@ -441,7 +616,7 @@
                     const data = await response.json();
                     
                     if (data.error) {
-                        alert(data.error);
+                        showFieldError('parent-id', data.error);
                         return;
                     }
                     
@@ -455,7 +630,10 @@
                     
                 } catch (error) {
                     console.error('Error fetching parent data:', error);
-                    alert('Failed to fetch parent details. Please try again.');
+                    showErrorNotification(
+                        'Network Error', 
+                        'Failed to fetch parent details. Please check your network connection and try again.'
+                    );
                 }
             });
             
@@ -471,7 +649,6 @@
             confirmYesBtn.addEventListener('click', () => {
                 confirmedStatus.value = '1';
                 document.getElementById('confirmation-box').classList.add('confirmed');
-                alert('Details confirmed!');
             });
 
             confirmNoBtn.addEventListener('click', () => {
@@ -481,14 +658,13 @@
                 document.getElementById('confirmed-dob').textContent = '';
                 confirmedStatus.value = '0';
                 document.getElementById('confirmation-box').classList.remove('confirmed');
-                alert('Please enter a different ID number');
+                showFieldError('insured-id', 'Please enter a different ID number');
             });
 
             // Handle parent confirmation
             confirmParentYesBtn.addEventListener('click', () => {
                 parentConfirmedStatus.value = '1';
                 document.getElementById('parent-confirmation').classList.add('confirmed');
-                alert('Parent details confirmed!');
             });
 
             confirmParentNoBtn.addEventListener('click', () => {
@@ -498,25 +674,73 @@
                 document.getElementById('parent-dob').textContent = '';
                 parentConfirmedStatus.value = '0';
                 document.getElementById('parent-confirmation').classList.remove('confirmed');
-                alert('Please enter a different parent ID number');
+                showFieldError('parent-id', 'Please enter a different parent ID number');
             });
 
             // Form validation
             form.addEventListener('submit', (e) => {
-                const confirmation = document.getElementById('confirmation-box');
+                let isValid = true;
+                
+                // Clear all errors
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.has-error').forEach(el => {
+                    el.classList.remove('has-error');
+                });
                 
                 // Check if insured person details are confirmed
                 if (confirmedStatus.value !== '1') {
-                    e.preventDefault();
-                    alert('Please confirm the insured person details before submitting');
-                    return;
+                    isValid = false;
+                    showFieldError('insured-id', 'Please confirm the insured person details');
                 }
                 
                 // Check if parent details are confirmed for underage
                 if (isUnderage.checked && parentConfirmedStatus.value !== '1') {
-                    e.preventDefault();
-                    alert('Please confirm the parent details before submitting');
+                    isValid = false;
+                    showFieldError('parent-id', 'Please confirm the parent details');
                 }
+                
+                // NEW: Validate email format
+                const email = document.getElementById('contact-email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    isValid = false;
+                    showFieldError('contact-email', 'Please enter a valid email address');
+                }
+                
+                // NEW: Validate phone number format
+                const phone = document.getElementById('contact-phone').value;
+                if (phone && !/^[\d\s+\-()]{7,20}$/.test(phone)) {
+                    isValid = false;
+                    showFieldError('contact-phone', 'Please enter a valid phone number');
+                }
+                
+                // NEW: Validate file type
+                const fileInput = document.getElementById('relationship-docs');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+                    if (!validTypes.includes(file.type)) {
+                        isValid = false;
+                        showFieldError('relationship-docs', 'Only PDF, JPG, and PNG files are allowed');
+                    }
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    showErrorNotification(
+                        'Form Validation Error', 
+                        'Please fix the highlighted errors in the form'
+                    );
+                }
+            });
+            
+            // NEW: Clear errors when fields are edited
+            document.querySelectorAll('input, select').forEach(field => {
+                field.addEventListener('input', () => {
+                    clearFieldError(field.id);
+                });
             });
         });
     </script>

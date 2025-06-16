@@ -7,7 +7,88 @@
     <title>FraudShield • Manage Beneficiaries</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Integrated Styles (unchanged) */
+        /* Add modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-actions button {
+            padding: 0.75rem 1.5rem;
+        }
+        .danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .danger:hover {
+            background-color: #c0392b;
+        }
+        .error-message {
+            color: #e74c3c;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Confirmation box styles */
+        .confirmation-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #0077b6;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .confirmation-box.confirmed {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .confirmation-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .confirmation-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .confirm-yes {
+            background-color: #00b894;
+            color: white;
+        }
+        
+        .confirm-no {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        /* Existing styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -15,23 +96,15 @@
         }
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
+            background-color: #f4f7fa;
+            color: #333;
             line-height: 1.6;
-        }
-        :root {
-            --primary-blue: #0077b6;
-            --secondary-green: #00b894;
-            --light-gray: #f4f7fa;
-            --dark-gray: #333;
-            --white: #ffffff;
-            --accent-yellow: #ffd166;
         }
         header {
             position: fixed;
             top: 0;
             width: 100%;
-            background-color: var(--white);
+            background-color: #ffffff;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 1rem 2rem;
             display: flex;
@@ -42,31 +115,31 @@
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--primary-blue);
+            color: #0077b6;
         }
         nav {
             display: flex;
             align-items: center;
         }
         nav a {
-            color: var(--dark-gray);
+            color: #333;
             text-decoration: none;
             margin-left: 2rem;
             font-size: 1rem;
             transition: color 0.3s ease;
         }
         nav a:hover {
-            color: var(--secondary-green);
+            color: #00b894;
         }
         nav a.active {
-            background-color: var(--secondary-green);
-            color: var(--white);
+            background-color: #00b894;
+            color: #ffffff;
             padding: 0.5rem 1rem;
             border-radius: 5px;
         }
         .cta-button {
-            background-color: var(--secondary-green);
-            color: var(--white);
+            background-color: #00b894;
+            color: #ffffff;
             padding: 0.75rem 2rem;
             border: none;
             border-radius: 5px;
@@ -77,8 +150,18 @@
         .cta-button:hover {
             background-color: #009e7f;
         }
+        .fetch-button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
         .form-container {
-            background-color: var(--white);
+            background-color: #ffffff;
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -87,7 +170,7 @@
         }
         .form-container h2, .form-container h3 {
             font-size: 2rem;
-            color: var(--primary-blue);
+            color: #0077b6;
             margin-bottom: 1.5rem;
         }
         .form-group {
@@ -96,7 +179,7 @@
         .form-group label {
             display: block;
             font-size: 1rem;
-            color: var(--dark-gray);
+            color: #333;
             margin-bottom: 0.5rem;
         }
         .form-group input, .form-group select {
@@ -117,11 +200,11 @@
             border-bottom: 1px solid #ddd;
         }
         th {
-            background-color: var(--primary-blue);
-            color: var(--white);
+            background-color: #0077b6;
+            color: #ffffff;
         }
         td {
-            background-color: var(--white);
+            background-color: #ffffff;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -146,8 +229,9 @@
                 margin: 5rem 1rem 1rem;
                 padding: 1.5rem;
             }
-            table {
-                font-size: 0.9rem;
+            .confirmation-buttons {
+                flex-direction: column;
+                gap: 5px;
             }
         }
     </style>
@@ -167,152 +251,244 @@
         </nav>
     </header>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Removal</h3>
+            <p>Are you sure you want to remove this beneficiary?</p>
+            <div class="modal-actions">
+                <button id="cancelDelete" class="cta-button">Cancel</button>
+                <button id="confirmDelete" class="cta-button danger">Remove</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Manage Beneficiaries -->
     <section class="form-container fade-in">
         <h3>Approved Beneficiaries</h3>
-{% if beneficiaries %}
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Relationship</th>
-            <th>Policy Number</th>
-            <th>Approval Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for beneficiary in beneficiaries %}
-        <tr>
-            <td>{{ beneficiary.name }}</td>
-            <td>{{ beneficiary.contactNumber }}</td>
-            <td>{{ beneficiary.relationshipToInsured }}</td>
-            <td>{{ beneficiary.policy.policyId }}</td>
-            <td>{{ beneficiary.created_at|date:"M d, Y" }}</td>
-            <td>
-                <button class="cta-button danger" 
-                        onclick="confirmDelete('{{ beneficiary.id }}')">
-                    Remove
-                </button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<div class="empty-state">
-  
-    <p>No approved beneficiaries found.</p>
-</div>
-{% endif %}
-        <h2>Add Beneficiaries</h2>
         {% if messages %}
             {% for message in messages %}
-                <p class="{{ message.tags }}">{{ message }}</p>
+                <div class="{% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
             {% endfor %}
         {% endif %}
-        <form method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="policy-id">Policy</label>
-        <select id="policy-id" name="policy_id" required>
-            <option value="">Select Policy</option>
-            {% for policy in policy_options %}
-            <option value="{{ policy.policyId }}">
-                Policy {{ policy.policyId }} - {{ policy.policyType }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
+        
+        {% if beneficiaries %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>ID Number</th>
+                    <th>Relationship</th>
+                    <th>Policy Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for beneficiary in beneficiaries %}
+                <tr>
+                    <td>{{ beneficiary.name }}</td>
+                    <td>{{ beneficiary.beneficiaryId }}</td>
+                    <td>{{ beneficiary.relationshipToInsured }}</td>
+                    <td>{{ beneficiary.policy.policyId }}</td>
+                    <td>
+                        <button class="cta-button danger remove-btn" 
+                                data-id="{{ beneficiary.beneficiaryId }}">
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No approved beneficiaries found.</p>
+        </div>
+        {% endif %}
+        
+        <h2>Add Beneficiary</h2>
+        <form id="addBeneficiaryForm" method="post">
+            {% csrf_token %}
             <div class="form-group">
-                <label for="beneficiary-name">Beneficiary Name</label>
-                <input type="text" id="beneficiary-name" name="beneficiary_name" required>
+                <label for="policy-id">Policy</label>
+                <select id="policy-id" name="policy_id" required>
+                    <option value="">Select Policy</option>
+                    {% for policy in policy_options %}
+                    <option value="{{ policy.policyId }}">
+                        Policy {{ policy.policyId }} - {{ policy.policyType }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
+            
+            <!-- Beneficiary ID Number with Fetch button -->
             <div class="form-group">
-    <label for="relationship">Relationship to Insured</label>
-    <select id="relationship" name="relationship" required>
-        <option value="">Select Relationship</option>
-        <option value="Spouse">Spouse</option>
-        <option value="Child">Child</option>
-        <option value="Parent">Parent</option>
-        <option value="Sibling">Sibling</option>
-        <option value="Other">Other</option>
-    </select>
-</div>
-<div class="form-group">
-    <label for="beneficiary-contact">Beneficiary Email</label>
-    <input type="email" id="beneficiary-contact" name="beneficiary_contact" required>
-</div>
+                <label for="id-number">Beneficiary ID Number *</label>
+                <input type="text" id="id-number" name="id_number" required>
+                <div class="fetch-button-container">
+                    <button type="button" id="fetch-beneficiary" class="fetch-button">
+                        Verify with Home Affairs
+                    </button>
+                </div>
+                <div id="id-error" class="error-message" style="display: none;"></div>
+            </div>
+            
+            <!-- Home Affairs confirmation box -->
+            <div id="confirmation-box" class="confirmation-box">
+                <p>Confirm details from Home Affairs database:</p>
+                <p><strong>Name:</strong> <span id="confirmed-name"></span></p>
+                <p><strong>Surname:</strong> <span id="confirmed-surname"></span></p>
+                <p><strong>Date of Birth:</strong> <span id="confirmed-dob"></span></p>
+                
+                <div class="confirmation-buttons">
+                    <button type="button" id="confirm-yes" class="confirmation-button confirm-yes">
+                        Yes, this is correct
+                    </button>
+                    <button type="button" id="confirm-no" class="confirmation-button confirm-no">
+                        No, try again
+                    </button>
+                </div>
+                
+                <input type="hidden" id="confirmed-status" name="confirmed_status" value="0">
+            </div>
+            
+            <!-- Email field -->
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="relationship">Relationship to Insured *</label>
+                <select id="relationship" name="relationship" required>
+                    <option value="">Select Relationship</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Child">Child</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
             <button type="submit" class="cta-button">Add Beneficiary</button>
         </form>
-
-       <h3>Pending Approval Requests</h3>
-<table>
-    <thead>
-        <tr>
-            <th>Policy</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Relationship</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for pending in pending_beneficiaries %}
-        <tr>
-            <td>Policy {{ pending.policy.policyID }}</td>
-            <td>{{ pending.name }}</td>
-            <td>{{ pending.email }}</td>
-            <td>{{ pending.relationship }}</td>
-            <td>Pending</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">No pending requests</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
     </section>
 
-    <!-- Embedded JavaScript for Form Validation -->
     <script>
-        // Add this to your existing validation script
-const selects = form.querySelectorAll('select[required]');
-selects.forEach(select => {
-    if (!select.value) {
-        valid = false;
-        select.style.borderColor = '#ff0000';
-    }
-});
         document.addEventListener('DOMContentLoaded', () => {
-            const form = document.querySelector('form');
-            form.addEventListener('submit', (e) => {
-                const inputs = form.querySelectorAll('input[required], select[required]');
-                let valid = true;
-                inputs.forEach(input => {
-                    if (!input.value.trim()) {
-                        valid = false;
-                        input.style.borderColor = '#ff0000';
-                    } else {
-                        input.style.borderColor = '#ccc';
-                    }
+            const form = document.getElementById('addBeneficiaryForm');
+            const idInput = document.getElementById('id-number');
+            const idError = document.getElementById('id-error');
+            const fetchBtn = document.getElementById('fetch-beneficiary');
+            const confirmationBox = document.getElementById('confirmation-box');
+            const confirmYesBtn = document.getElementById('confirm-yes');
+            const confirmNoBtn = document.getElementById('confirm-no');
+            const confirmedStatus = document.getElementById('confirmed-status');
+            const modal = document.getElementById('deleteModal');
+            const cancelBtn = document.getElementById('cancelDelete');
+            const confirmBtn = document.getElementById('confirmDelete');
+            
+            let currentBeneficiaryId = null;
+
+            // Delete beneficiary modal handling
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    currentBeneficiaryId = e.target.getAttribute('data-id');
+                    modal.style.display = 'flex';
                 });
-                if (!valid) {
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                currentBeneficiaryId = null;
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                if (currentBeneficiaryId) {
+                    window.location.href = `/delete-beneficiary/${currentBeneficiaryId}/`;
+                }
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    currentBeneficiaryId = null;
+                }
+            });
+            
+            // Fetch beneficiary details from Home Affairs
+            fetchBtn.addEventListener('click', async () => {
+                const idNumber = idInput.value.trim();
+                if (!idNumber) {
+                    idError.textContent = 'Please enter an ID number';
+                    idError.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Get citizen details
+                    const response = await fetch(`/get-citizen/?id_number=${idNumber}`);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        idError.textContent = data.error;
+                        idError.style.display = 'block';
+                        return;
+                    }
+                    
+                    // Display details for confirmation
+                    document.getElementById('confirmed-name').textContent = data.name;
+                    document.getElementById('confirmed-surname').textContent = data.surname;
+                    document.getElementById('confirmed-dob').textContent = data.dateOfBirth;
+                    
+                    // Show confirmation box
+                    confirmationBox.style.display = 'block';
+                    confirmedStatus.value = '0';
+                    confirmationBox.classList.remove('confirmed');
+                    idError.style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    idError.textContent = 'Error validating ID, please try again';
+                    idError.style.display = 'block';
+                }
+            });
+            
+            // Handle confirmation buttons
+            confirmYesBtn.addEventListener('click', () => {
+                confirmedStatus.value = '1';
+                confirmationBox.classList.add('confirmed');
+                idError.style.display = 'none';
+            });
+            
+            confirmNoBtn.addEventListener('click', () => {
+                idInput.value = '';
+                confirmationBox.style.display = 'none';
+                document.getElementById('confirmed-name').textContent = '';
+                document.getElementById('confirmed-surname').textContent = '';
+                document.getElementById('confirmed-dob').textContent = '';
+                confirmedStatus.value = '0';
+                confirmationBox.classList.remove('confirmed');
+                idError.textContent = 'Please enter a different ID number';
+                idError.style.display = 'block';
+            });
+            
+            // Form validation
+            form.addEventListener('submit', (e) => {
+                // Clear previous errors
+                idError.style.display = 'none';
+                
+                // Check if Home Affairs details are confirmed
+                if (confirmedStatus.value !== '1') {
                     e.preventDefault();
-                    alert('Please fill in all required fields.');
+                    idError.textContent = 'Please verify beneficiary details with Home Affairs';
+                    idError.style.display = 'block';
                 }
             });
         });
-        // Add this to existing validation
-
-        function confirmDelete(beneficiaryId) {
-    if (confirm('Are you sure you want to remove this beneficiary?')) {
-        // Add your deletion logic here
-        window.location.href = `/delete-beneficiary/${beneficiaryId}/`;
-    }
-}
     </script>
 </body>
 </html>

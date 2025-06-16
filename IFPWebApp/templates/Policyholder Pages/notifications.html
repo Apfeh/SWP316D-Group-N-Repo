@@ -90,60 +90,65 @@
     <header>
         <div class="logo">IFPS</div>
         <nav>
+            <!-- Updated navigation with count wrapper -->
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'policy_status' %}">Policy Status</a>
             <a href="{% url 'manage_beneficiaries' %}">Beneficiaries</a>
             <a href="{% url 'file_claim' %}">File Claim</a>
-            <a href="{% url 'claim_status' %}">Claim Status</a>
-            <a href="{% url 'notifications' %}">Notifications ({{ pending_claims.count }})</a>
+            <a href="{% url 'notifications' %}">
+                Notifications <span class="nav-notification-count">({{ total_notifications }})</span>
+            </a>
             <a href="{% url 'landing_page' %}">Logout</a>
+            <a href="{% url 'claim_status' %}">Claim Status</a>
+            
         </nav>
     </header>
-   <div class="card fade-in">
-    <h2>Notifications</h2>
     
-    <!-- Policy Notifications -->
-    <div class="notification-section">
-        <h3>Policy Approvals</h3>
-        {% if notifications %}
-            <ul class="notification-list">
-                {% for notification in notifications %}
-                    <li class="notification-item {% if not notification.read %}unread{% endif %}">
-                        <p class="notification-message">{{ notification.message }}</p>
-                        <p class="notification-time">{{ notification.created_at|timesince }} ago</p>
-                        {% if notification.related_policy %}
-                            <a href="{% url 'policy_status' %}" class="view-link">View Policy</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="no-notifications">No new policy notifications.</p>
-        {% endif %}
+    <div class="card fade-in">
+        <h2>Notifications</h2>
+        
+        <!-- Policy Notifications -->
+        <div class="notification-section">
+            <h3>Policy Approvals</h3>
+            {% if notifications %}
+                <ul class="notification-list">
+                    {% for notification in notifications %}
+                        <!-- Added data-id attribute -->
+                        <li class="notification-item {% if not notification.read %}unread{% endif %}" 
+                            data-id="{{ notification.id }}">
+                            <p class="notification-message">{{ notification.message }}</p>
+                            <p class="notification-time">{{ notification.created_at|timesince }} ago</p>
+                            {% if notification.related_policy %}
+                                <a href="{% url 'policy_status' %}" class="view-link">View Policy</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-notifications">No new policy notifications.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Claim Notifications -->
+        <div class="notification-section">
+            <h3>Pending Claims</h3>
+            {% if pending_claims %}
+                <ul class="notification-list">
+                    {% for claim in pending_claims %}
+                        <li class="notification-item">
+                            <p><strong>Pending Claim for Policy {{ claim.policy.policyId }}</strong></p>
+                            <p>Beneficiary: {{ claim.beneficiary.name }}</p>
+                            <p>Amount: {{ claim.claimAmount }}</p>
+                            <p>Status: {{ claim.status }}</p>
+                            <p>View details on <a href="{% url 'claim_status' %}">Claim Status</a></p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-notifications">No pending claims.</p>
+            {% endif %}
+        </div>
     </div>
-    
-    <!-- Claim Notifications -->
-    <div class="notification-section">
-        <h3>Pending Claims</h3>
-        {% if pending_claims %}
-            <ul class="notification-list">
-                {% for claim in pending_claims %}
-                    <li class="notification-item">
-                        <p><strong>Pending Claim for Policy {{ claim.policy.policyId }}</strong></p>
-                        <p>Beneficiary: {{ claim.beneficiary.name }}</p>
-                        <p>Amount: {{ claim.claimAmount }}</p>
-                        <p>Status: {{ claim.status }}</p>
-                        <p>View details on <a href="{% url 'claim_status' %}">Claim Status</a></p>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="no-notifications">No pending claims.</p>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Add notification styles -->
 <style>
     .notification-section {
         margin-bottom: 2rem;
@@ -185,5 +190,56 @@
         margin-top: 0.5rem;
     }
 </style>
+    <script>
+        // CSRF Token function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Mark as read functionality
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+            item.addEventListener('click', function() {
+                const notificationId = this.dataset.id;
+                fetch(`/mark-read/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.classList.remove('unread');
+                        // Update notification count
+                        const countBadge = document.querySelector('.nav-notification-count');
+                        const currentCount = parseInt(countBadge.textContent.match(/\d+/)[0]);
+                        countBadge.textContent = `(${currentCount - 1})`;
+                    }
+                });
+            });
+        });
+
+        // Periodic updates
+        setInterval(() => {
+            fetch('/get-notification-count/')
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.nav-notification-count').textContent = `(${data.count})`;
+                });
+        }, 30000);
+    </script>
 </body>
+</html>
 </html>
