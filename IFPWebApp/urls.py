@@ -26,6 +26,8 @@ urlpatterns = [
     path('policyholder/<str:id>/details/', views.policyholder_details_admin, name='policyholder_details_admin'),
     path('beneficiary/<int:id>/details/', views.beneficiary_details, name='beneficiary_details'),
     path('admin/<int:id>/details/', views.admin_details, name='admin_details'),
+    path('insuredperson/<int:id>/simulate-death/', views.simulate_death, name='simulate_death'),
+    path('insuredperson/<int:id>/details/', views.insuredperson_details, name='insuredperson_details'),
     path('user-management/', views.user_management_view, name='user_management'),
 
     # Dalphy's Beneficiary Pages
@@ -121,3 +123,6 @@ urlpatterns = [
     path('check-duplicate-beneficiary/<str:id_number>/', views.check_duplicate_beneficiary, name='check_duplicate_beneficiary'),
     path('verify-face-beneficiary/', views.verify_face_beneficiary, name='verify_face_beneficiary'),
 ]
+handler403 = 'IFPWebApp.views.custom_403'
+handler404 = 'IFPWebApp.views.custom_404'
+handler500 = 'IFPWebApp.views.custom_500'

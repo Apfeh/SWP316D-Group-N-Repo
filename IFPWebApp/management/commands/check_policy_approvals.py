@@ -1,6 +1,7 @@
+import json
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from myapp.models import ApprovalRequest, Notification, PolicyHolder
+from models import ApprovalRequest, Notification, PolicyHolder
 from datetime import timedelta
 
 class Command(BaseCommand):

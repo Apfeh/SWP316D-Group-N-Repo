@@ -146,16 +146,14 @@
     <a href="{% url 'claim_review' %}">Claim Review</a>
     <a href="{% url 'Risk_reports' %}">Risk Reports</a>
     <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
-    <a href="#">User Management</a>
+    <a href="{% url 'user_management' %}">User Management</a>
   </div>
   <nav class="navbar d-flex align-items-center justify-content-between">
     <form class="d-flex ms-3" role="search" style="width: 300px;">
       <input class="form-control me-2" type="search" placeholder="Search ..." aria-label="Search">
       <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
-    <div class="top-right-icons">
-      <a href="{% url 'ad_profile' %}"><i class="bi bi-person-circle"></i></a>
-      <a href="{% url 'ad_notifications' %}"><i class="bi bi-bell-fill"></i></a>
+  <div class="top-right-icons">
       <a href="{% url 'landing_page' %}"><i class="bi bi-box-arrow-right"></i></a>
   </div>
   </nav>

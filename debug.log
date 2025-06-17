@@ -1120,3 +1120,705 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\migrations\0001_initial.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\migrations\0001_initial.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Creating notification: New Claim filed: #2 for Policy #1
+Broadcasting notification: New Claim filed: #2 for Policy #1 (ID: 13)
+Internal Server Error: /file-claim/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 893, in file_claim
+    claim.save()
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 1023, in save_base
+    post_save.send(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py", line 420, in send_claim_status_update
+    email = instance.policyholder.email
+            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Claim' object has no attribute 'policyholder'. Did you mean: 'policyHolderId'?
+Creating notification: New Claim filed: #3 for Policy #1
+Broadcasting notification: New Claim filed: #3 for Policy #1 (ID: 14)
+Internal Server Error: /file-claim/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 893, in file_claim
+    claim.save()
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 1023, in save_base
+    post_save.send(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py", line 420, in send_claim_status_update
+    email = instance.policyholder.email
+            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Claim' object has no attribute 'policyholder'. Did you mean: 'policyHolderId'?
+Creating notification: New Claim filed: #4 for Policy #1
+Broadcasting notification: New Claim filed: #4 for Policy #1 (ID: 15)
+Internal Server Error: /file-claim/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 893, in file_claim
+    claim.save()
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 1023, in save_base
+    post_save.send(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py", line 420, in send_claim_status_update
+    email = instance.policyholder.email
+            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Claim' object has no attribute 'policyholder'. Did you mean: 'policyHolderId'?
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py changed, reloading.
+Watching for file changes with StatReloader
+Creating notification: New Claim filed: #5 for Policy #1
+Broadcasting notification: New Claim filed: #5 for Policy #1 (ID: 16)
+Internal Server Error: /file-claim/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 893, in file_claim
+    claim.save()
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\base.py", line 1023, in save_base
+    post_save.send(
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\dispatch\dispatcher.py", line 189, in send
+    response = receiver(signal=self, sender=sender, **named)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py", line 420, in send_claim_status_update
+    email = instance.PolicyHolder.email
+            ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Claim' object has no attribute 'PolicyHolder'. Did you mean: 'policyHolderId'?
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py changed, reloading.
+Watching for file changes with StatReloader
+Creating notification: New Claim filed: #6 for Policy #1
+Broadcasting notification: New Claim filed: #6 for Policy #1 (ID: 17)
+Creating notification: New PolicyHolder created: John Doe (ID: 1234567890123)
+Broadcasting notification: New PolicyHolder created: John Doe (ID: 1234567890123) (ID: 18)
+Creating notification: New Policy created: #5 for John Doe
+Broadcasting notification: New Policy created: #5 for John Doe (ID: 19)
+Creating notification: New Policy created: #6 for John Doe
+Broadcasting notification: New Policy created: #6 for John Doe (ID: 20)
+Creating notification: New InsuredPerson added to Policy #5: John Doe
+Broadcasting notification: New InsuredPerson added to Policy #5: John Doe (ID: 21)
+Creating notification: New InsuredPerson added to Policy #6: Jane Smith
+Broadcasting notification: New InsuredPerson added to Policy #6: Jane Smith (ID: 22)
+Creating notification: New Beneficiary added to Policy #5: Alice Brown
+Broadcasting notification: New Beneficiary added to Policy #5: Alice Brown (ID: 23)
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\signals.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Creating notification: New PolicyHolder created: PolicyHolder 1 (ID: PH000001)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 1 (ID: PH000001) (ID: 1)
+Creating notification: New PolicyHolder created: PolicyHolder 2 (ID: PH000002)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 2 (ID: PH000002) (ID: 2)
+Creating notification: New PolicyHolder created: PolicyHolder 3 (ID: PH000003)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 3 (ID: PH000003) (ID: 3)
+Creating notification: New PolicyHolder created: PolicyHolder 4 (ID: PH000004)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 4 (ID: PH000004) (ID: 4)
+Creating notification: New PolicyHolder created: PolicyHolder 5 (ID: PH000005)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 5 (ID: PH000005) (ID: 5)
+Creating notification: New PolicyHolder created: PolicyHolder 6 (ID: PH000006)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 6 (ID: PH000006) (ID: 6)
+Creating notification: New PolicyHolder created: PolicyHolder 7 (ID: PH000007)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 7 (ID: PH000007) (ID: 7)
+Creating notification: New PolicyHolder created: PolicyHolder 8 (ID: PH000008)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 8 (ID: PH000008) (ID: 8)
+Creating notification: New PolicyHolder created: PolicyHolder 9 (ID: PH000009)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 9 (ID: PH000009) (ID: 9)
+Creating notification: New PolicyHolder created: PolicyHolder 10 (ID: PH000010)
+Broadcasting notification: New PolicyHolder created: PolicyHolder 10 (ID: PH000010) (ID: 10)
+Creating notification: New Policy created: #1 for PolicyHolder 1
+Broadcasting notification: New Policy created: #1 for PolicyHolder 1 (ID: 11)
+Creating notification: New Policy created: #2 for PolicyHolder 2
+Broadcasting notification: New Policy created: #2 for PolicyHolder 2 (ID: 12)
+Creating notification: New Policy created: #3 for PolicyHolder 3
+Broadcasting notification: New Policy created: #3 for PolicyHolder 3 (ID: 13)
+Creating notification: New Policy created: #4 for PolicyHolder 4
+Broadcasting notification: New Policy created: #4 for PolicyHolder 4 (ID: 14)
+Creating notification: New Policy created: #5 for PolicyHolder 5
+Broadcasting notification: New Policy created: #5 for PolicyHolder 5 (ID: 15)
+Creating notification: New Policy created: #6 for PolicyHolder 6
+Broadcasting notification: New Policy created: #6 for PolicyHolder 6 (ID: 16)
+Creating notification: New Policy created: #7 for PolicyHolder 7
+Broadcasting notification: New Policy created: #7 for PolicyHolder 7 (ID: 17)
+Creating notification: New Policy created: #8 for PolicyHolder 8
+Broadcasting notification: New Policy created: #8 for PolicyHolder 8 (ID: 18)
+Creating notification: New Policy created: #9 for PolicyHolder 9
+Broadcasting notification: New Policy created: #9 for PolicyHolder 9 (ID: 19)
+Creating notification: New Policy created: #10 for PolicyHolder 10
+Broadcasting notification: New Policy created: #10 for PolicyHolder 10 (ID: 20)
+Creating notification: New Beneficiary added to Policy #1: Beneficiary 1
+Broadcasting notification: New Beneficiary added to Policy #1: Beneficiary 1 (ID: 21)
+Creating notification: New Beneficiary added to Policy #2: Beneficiary 2
+Broadcasting notification: New Beneficiary added to Policy #2: Beneficiary 2 (ID: 22)
+Creating notification: New Beneficiary added to Policy #3: Beneficiary 3
+Broadcasting notification: New Beneficiary added to Policy #3: Beneficiary 3 (ID: 23)
+Creating notification: New Beneficiary added to Policy #4: Beneficiary 4
+Broadcasting notification: New Beneficiary added to Policy #4: Beneficiary 4 (ID: 24)
+Creating notification: New Beneficiary added to Policy #5: Beneficiary 5
+Broadcasting notification: New Beneficiary added to Policy #5: Beneficiary 5 (ID: 25)
+Creating notification: New Beneficiary added to Policy #6: Beneficiary 6
+Broadcasting notification: New Beneficiary added to Policy #6: Beneficiary 6 (ID: 26)
+Creating notification: New Beneficiary added to Policy #7: Beneficiary 7
+Broadcasting notification: New Beneficiary added to Policy #7: Beneficiary 7 (ID: 27)
+Creating notification: New Beneficiary added to Policy #8: Beneficiary 8
+Broadcasting notification: New Beneficiary added to Policy #8: Beneficiary 8 (ID: 28)
+Creating notification: New Beneficiary added to Policy #9: Beneficiary 9
+Broadcasting notification: New Beneficiary added to Policy #9: Beneficiary 9 (ID: 29)
+Creating notification: New Beneficiary added to Policy #10: Beneficiary 10
+Broadcasting notification: New Beneficiary added to Policy #10: Beneficiary 10 (ID: 30)
+Creating notification: New Claim filed: #1 for Policy #1
+Broadcasting notification: New Claim filed: #1 for Policy #1 (ID: 31)
+Creating notification: New Claim filed: #2 for Policy #2
+Broadcasting notification: New Claim filed: #2 for Policy #2 (ID: 32)
+Creating notification: New Claim filed: #3 for Policy #3
+Broadcasting notification: New Claim filed: #3 for Policy #3 (ID: 33)
+Creating notification: New Claim filed: #4 for Policy #4
+Broadcasting notification: New Claim filed: #4 for Policy #4 (ID: 34)
+Creating notification: New Claim filed: #5 for Policy #5
+Broadcasting notification: New Claim filed: #5 for Policy #5 (ID: 35)
+Creating notification: New Claim filed: #6 for Policy #6
+Broadcasting notification: New Claim filed: #6 for Policy #6 (ID: 36)
+Creating notification: New Claim filed: #7 for Policy #7
+Broadcasting notification: New Claim filed: #7 for Policy #7 (ID: 37)
+Creating notification: New Claim filed: #8 for Policy #8
+Broadcasting notification: New Claim filed: #8 for Policy #8 (ID: 38)
+Creating notification: New Claim filed: #9 for Policy #9
+Broadcasting notification: New Claim filed: #9 for Policy #9 (ID: 39)
+Creating notification: New Claim filed: #10 for Policy #10
+Broadcasting notification: New Claim filed: #10 for Policy #10 (ID: 40)
+Creating notification: New InsuredPerson added to Policy #1: Insured 1
+Broadcasting notification: New InsuredPerson added to Policy #1: Insured 1 (ID: 41)
+Creating notification: New InsuredPerson added to Policy #2: Insured 2
+Broadcasting notification: New InsuredPerson added to Policy #2: Insured 2 (ID: 42)
+Creating notification: New InsuredPerson added to Policy #3: Insured 3
+Broadcasting notification: New InsuredPerson added to Policy #3: Insured 3 (ID: 43)
+Creating notification: New InsuredPerson added to Policy #4: Insured 4
+Broadcasting notification: New InsuredPerson added to Policy #4: Insured 4 (ID: 44)
+Creating notification: New InsuredPerson added to Policy #5: Insured 5
+Broadcasting notification: New InsuredPerson added to Policy #5: Insured 5 (ID: 45)
+Creating notification: New InsuredPerson added to Policy #6: Insured 6
+Broadcasting notification: New InsuredPerson added to Policy #6: Insured 6 (ID: 46)
+Creating notification: New InsuredPerson added to Policy #7: Insured 7
+Broadcasting notification: New InsuredPerson added to Policy #7: Insured 7 (ID: 47)
+Creating notification: New InsuredPerson added to Policy #8: Insured 8
+Broadcasting notification: New InsuredPerson added to Policy #8: Insured 8 (ID: 48)
+Creating notification: New InsuredPerson added to Policy #9: Insured 9
+Broadcasting notification: New InsuredPerson added to Policy #9: Insured 9 (ID: 49)
+Creating notification: New InsuredPerson added to Policy #10: Insured 10
+Broadcasting notification: New InsuredPerson added to Policy #10: Insured 10 (ID: 50)
+Creating notification: New FraudPreventionTeam assigned to Claim #1: Investigator 1
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #1: Investigator 1 (ID: 51)
+Creating notification: New FraudPreventionTeam assigned to Claim #2: Investigator 2
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #2: Investigator 2 (ID: 52)
+Creating notification: New FraudPreventionTeam assigned to Claim #3: Investigator 3
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #3: Investigator 3 (ID: 53)
+Creating notification: New FraudPreventionTeam assigned to Claim #4: Investigator 4
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #4: Investigator 4 (ID: 54)
+Creating notification: New FraudPreventionTeam assigned to Claim #5: Investigator 5
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #5: Investigator 5 (ID: 55)
+Creating notification: New FraudPreventionTeam assigned to Claim #6: Investigator 6
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #6: Investigator 6 (ID: 56)
+Creating notification: New FraudPreventionTeam assigned to Claim #7: Investigator 7
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #7: Investigator 7 (ID: 57)
+Creating notification: New FraudPreventionTeam assigned to Claim #8: Investigator 8
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #8: Investigator 8 (ID: 58)
+Creating notification: New FraudPreventionTeam assigned to Claim #9: Investigator 9
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #9: Investigator 9 (ID: 59)
+Creating notification: New FraudPreventionTeam assigned to Claim #10: Investigator 10
+Broadcasting notification: New FraudPreventionTeam assigned to Claim #10: Investigator 10 (ID: 60)
+Creating notification: New Officer assigned to Claim #1: Officer 1
+Broadcasting notification: New Officer assigned to Claim #1: Officer 1 (ID: 61)
+Creating notification: New Officer assigned to Claim #2: Officer 2
+Broadcasting notification: New Officer assigned to Claim #2: Officer 2 (ID: 62)
+Creating notification: New Officer assigned to Claim #3: Officer 3
+Broadcasting notification: New Officer assigned to Claim #3: Officer 3 (ID: 63)
+Creating notification: New Officer assigned to Claim #4: Officer 4
+Broadcasting notification: New Officer assigned to Claim #4: Officer 4 (ID: 64)
+Creating notification: New Officer assigned to Claim #5: Officer 5
+Broadcasting notification: New Officer assigned to Claim #5: Officer 5 (ID: 65)
+Creating notification: New Officer assigned to Claim #6: Officer 6
+Broadcasting notification: New Officer assigned to Claim #6: Officer 6 (ID: 66)
+Creating notification: New Officer assigned to Claim #7: Officer 7
+Broadcasting notification: New Officer assigned to Claim #7: Officer 7 (ID: 67)
+Creating notification: New Officer assigned to Claim #8: Officer 8
+Broadcasting notification: New Officer assigned to Claim #8: Officer 8 (ID: 68)
+Creating notification: New Officer assigned to Claim #9: Officer 9
+Broadcasting notification: New Officer assigned to Claim #9: Officer 9 (ID: 69)
+Creating notification: New Officer assigned to Claim #10: Officer 10
+Broadcasting notification: New Officer assigned to Claim #10: Officer 10 (ID: 70)
+Creating notification: New Case created: #1 by Officer Officer 1
+Broadcasting notification: New Case created: #1 by Officer Officer 1 (ID: 71)
+Creating notification: New Case created: #2 by Officer Officer 2
+Broadcasting notification: New Case created: #2 by Officer Officer 2 (ID: 72)
+Creating notification: New Case created: #3 by Officer Officer 3
+Broadcasting notification: New Case created: #3 by Officer Officer 3 (ID: 73)
+Creating notification: New Case created: #4 by Officer Officer 4
+Broadcasting notification: New Case created: #4 by Officer Officer 4 (ID: 74)
+Creating notification: New Case created: #5 by Officer Officer 5
+Broadcasting notification: New Case created: #5 by Officer Officer 5 (ID: 75)
+Creating notification: New Case created: #6 by Officer Officer 6
+Broadcasting notification: New Case created: #6 by Officer Officer 6 (ID: 76)
+Creating notification: New Case created: #7 by Officer Officer 7
+Broadcasting notification: New Case created: #7 by Officer Officer 7 (ID: 77)
+Creating notification: New Case created: #8 by Officer Officer 8
+Broadcasting notification: New Case created: #8 by Officer Officer 8 (ID: 78)
+Creating notification: New Case created: #9 by Officer Officer 9
+Broadcasting notification: New Case created: #9 by Officer Officer 9 (ID: 79)
+Creating notification: New Case created: #10 by Officer Officer 10
+Broadcasting notification: New Case created: #10 by Officer Officer 10 (ID: 80)
+Creating notification: New Approval Request created: Token 366e769a-a4cf-4548-9d0f-cad8083d6e74
+Broadcasting notification: New Approval Request created: Token 366e769a-a4cf-4548-9d0f-cad8083d6e74 (ID: 81)
+Creating notification: New Approval Request created: Token 8e3d7b49-0053-45ba-a174-7976873899ac
+Broadcasting notification: New Approval Request created: Token 8e3d7b49-0053-45ba-a174-7976873899ac (ID: 82)
+Creating notification: New Approval Request created: Token a34cea47-08bd-4eaf-9556-6518a6e7df75
+Broadcasting notification: New Approval Request created: Token a34cea47-08bd-4eaf-9556-6518a6e7df75 (ID: 83)
+Creating notification: New Approval Request created: Token 208ad0ad-8df7-4d1a-9b87-d0988e233220
+Broadcasting notification: New Approval Request created: Token 208ad0ad-8df7-4d1a-9b87-d0988e233220 (ID: 84)
+Creating notification: New Approval Request created: Token 443bad06-51ed-493c-8086-016ab805dce7
+Broadcasting notification: New Approval Request created: Token 443bad06-51ed-493c-8086-016ab805dce7 (ID: 85)
+Creating notification: New Approval Request created: Token fb3ef7a8-b98b-4e3e-9e03-f52b94fd73db
+Broadcasting notification: New Approval Request created: Token fb3ef7a8-b98b-4e3e-9e03-f52b94fd73db (ID: 86)
+Creating notification: New Approval Request created: Token 814a7175-9470-45e7-a1de-cb0093468dfe
+Broadcasting notification: New Approval Request created: Token 814a7175-9470-45e7-a1de-cb0093468dfe (ID: 87)
+Creating notification: New Approval Request created: Token 7d91f5be-9692-4194-a667-cbee789e9d69
+Broadcasting notification: New Approval Request created: Token 7d91f5be-9692-4194-a667-cbee789e9d69 (ID: 88)
+Creating notification: New Approval Request created: Token ed7976fc-3613-4b60-adcd-c9d4a365465e
+Broadcasting notification: New Approval Request created: Token ed7976fc-3613-4b60-adcd-c9d4a365465e (ID: 89)
+Creating notification: New Approval Request created: Token 91a27584-0934-43f0-afb2-1a47c86e1d18
+Broadcasting notification: New Approval Request created: Token 91a27584-0934-43f0-afb2-1a47c86e1d18 (ID: 90)
+Creating notification: New Notification created for User user1: Notification 1 for user 1
+Broadcasting notification: New Notification created for User user1: Notification 1 for user 1 (ID: 91)
+Creating notification: New Notification created for User user2: Notification 2 for user 2
+Broadcasting notification: New Notification created for User user2: Notification 2 for user 2 (ID: 92)
+Creating notification: New Notification created for User user3: Notification 3 for user 3
+Broadcasting notification: New Notification created for User user3: Notification 3 for user 3 (ID: 93)
+Creating notification: New Notification created for User user4: Notification 4 for user 4
+Broadcasting notification: New Notification created for User user4: Notification 4 for user 4 (ID: 94)
+Creating notification: New Notification created for User user5: Notification 5 for user 5
+Broadcasting notification: New Notification created for User user5: Notification 5 for user 5 (ID: 95)
+Creating notification: New Notification created for User user6: Notification 6 for user 6
+Broadcasting notification: New Notification created for User user6: Notification 6 for user 6 (ID: 96)
+Creating notification: New Notification created for User user7: Notification 7 for user 7
+Broadcasting notification: New Notification created for User user7: Notification 7 for user 7 (ID: 97)
+Creating notification: New Notification created for User user8: Notification 8 for user 8
+Broadcasting notification: New Notification created for User user8: Notification 8 for user 8 (ID: 98)
+Creating notification: New Notification created for User user9: Notification 9 for user 9
+Broadcasting notification: New Notification created for User user9: Notification 9 for user 9 (ID: 99)
+Creating notification: New Notification created for User user10: Notification 10 for user 10
+Broadcasting notification: New Notification created for User user10: Notification 10 for user 10 (ID: 100)
+Signal triggered for DeathCertificate: Citizen object (ID000001), created=True
+Found 1 InsuredPerson(s) for id_number=ID000001
+Processing InsuredPerson: Insured 1, policy=1
+Creating notification: InsuredPerson updated (Policy #1): Status changed from 'alive' to 'deceased'
+Broadcasting notification: InsuredPerson updated (Policy #1): Status changed from 'alive' to 'deceased' (ID: 111)
+Updated status to deceased for Insured 1
+Sending email to beneficiary: Beneficiary 1, email=ben1@example.com
+Email sent to ben1@example.com
+Signal triggered for DeathCertificate: Citizen object (ID000002), created=True
+Found 1 InsuredPerson(s) for id_number=ID000002
+Processing InsuredPerson: Insured 2, policy=2
+Creating notification: InsuredPerson updated (Policy #2): Status changed from 'alive' to 'deceased'
+Broadcasting notification: InsuredPerson updated (Policy #2): Status changed from 'alive' to 'deceased' (ID: 112)
+Updated status to deceased for Insured 2
+Sending email to beneficiary: Beneficiary 2, email=ben2@example.com
+Email sent to ben2@example.com
+Creating notification: New PolicyHolder created: Sipho Mkhize (ID: 8502230001081)
+Broadcasting notification: New PolicyHolder created: Sipho Mkhize (ID: 8502230001081) (ID: 1)
+Signal triggered for DeathCertificate: Citizen object (8512100001081), created=True
+Found 0 InsuredPerson(s) for id_number=8512100001081
+Signal triggered for DeathCertificate: Citizen object (8510030002081), created=True
+Found 0 InsuredPerson(s) for id_number=8510030002081
+Signal triggered for DeathCertificate: Citizen object (8512170003081), created=True
+Found 0 InsuredPerson(s) for id_number=8512170003081
+Creating notification: New PolicyHolder created: Sipho Mkhize (ID: 8501130001081)
+Broadcasting notification: New PolicyHolder created: Sipho Mkhize (ID: 8501130001081) (ID: 1)
+Creating notification: New PolicyHolder created: Thandi Zulu (ID: 8512030002081)
+Broadcasting notification: New PolicyHolder created: Thandi Zulu (ID: 8512030002081) (ID: 2)
+Creating notification: New PolicyHolder created: Johan van Wyk (ID: 8510030003081)
+Broadcasting notification: New PolicyHolder created: Johan van Wyk (ID: 8510030003081) (ID: 3)
+Creating notification: New PolicyHolder created: Aisha Patel (ID: 8508200004081)
+Broadcasting notification: New PolicyHolder created: Aisha Patel (ID: 8508200004081) (ID: 4)
+Creating notification: New PolicyHolder created: Lerato Molefe (ID: 8503120005081)
+Broadcasting notification: New PolicyHolder created: Lerato Molefe (ID: 8503120005081) (ID: 5)
+Creating notification: New PolicyHolder created: Pieter Botha (ID: 8509160006081)
+Broadcasting notification: New PolicyHolder created: Pieter Botha (ID: 8509160006081) (ID: 6)
+Creating notification: New PolicyHolder created: Nomsa Ngwenya (ID: 8506210007081)
+Broadcasting notification: New PolicyHolder created: Nomsa Ngwenya (ID: 8506210007081) (ID: 7)
+Creating notification: New PolicyHolder created: Ahmed Khan (ID: 8502170008081)
+Broadcasting notification: New PolicyHolder created: Ahmed Khan (ID: 8502170008081) (ID: 8)
+Creating notification: New PolicyHolder created: Zanele Dlamini (ID: 8504110009081)
+Broadcasting notification: New PolicyHolder created: Zanele Dlamini (ID: 8504110009081) (ID: 9)
+Creating notification: New PolicyHolder created: Hendrik Smit (ID: 8511090010081)
+Broadcasting notification: New PolicyHolder created: Hendrik Smit (ID: 8511090010081) (ID: 10)
+Watching for file changes with StatReloader
+Creating notification: New PolicyHolder created: Apfeswaho Ramarumo (ID: 0506086332083)
+Broadcasting notification: New PolicyHolder created: Apfeswaho Ramarumo (ID: 0506086332083) (ID: 1)
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+Internal Server Error: /verify-face/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1936, in verify_face
+    return redirect('otp_verification')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 51, in redirect
+    resolve_url(to, *args, **kwargs),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 184, in resolve_url
+    return reverse(to, args=args, kwargs=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'otp_verification' not found. 'otp_verification' is not a valid view function or pattern name.
+Internal Server Error: /verify-face/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1936, in verify_face
+    return redirect('otp_verification')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 51, in redirect
+    resolve_url(to, *args, **kwargs),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 184, in resolve_url
+    return reverse(to, args=args, kwargs=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'otp_verification' not found. 'otp_verification' is not a valid view function or pattern name.
+Internal Server Error: /verify-face/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1936, in verify_face
+    return redirect('otp_verification')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 51, in redirect
+    resolve_url(to, *args, **kwargs),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\shortcuts.py", line 184, in resolve_url
+    return reverse(to, args=args, kwargs=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'otp_verification' not found. 'otp_verification' is not a valid view function or pattern name.
+Internal Server Error: /verify-otp/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1009, in verify_otp
+    email = request.user.email  # Or get from session/request
+            ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 253, in inner
+    return func(_wrapped, *args)
+           ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'AnonymousUser' object has no attribute 'email'
+Internal Server Error: /send-otp/
+Traceback (most recent call last):
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 974, in send_otp
+    email = request.user.email   # Or get from request.POST
+            ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 253, in inner
+    return func(_wrapped, *args)
+           ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'AnonymousUser' object has no attribute 'email'
+Creating notification: New PolicyHolder created: Apfeswaho Ramarumo (ID: 0506086332083)
+Broadcasting notification: New PolicyHolder created: Apfeswaho Ramarumo (ID: 0506086332083) (ID: 2)
+Forbidden (CSRF token from POST incorrect.): /register-face/
+Forbidden (CSRF token from POST incorrect.): /register-face/
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+PolicyHolders Count: 11
+Creating notification: PolicyHolder updated (ID: 8501010001081): Risk score changed from 45.6 to 0
+Broadcasting notification: PolicyHolder updated (ID: 8501010001081): Risk score changed from 45.6 to 0 (ID: 3)
+Creating notification: PolicyHolder updated (ID: 8502020002081): Risk score changed from 67.8 to 40
+Broadcasting notification: PolicyHolder updated (ID: 8502020002081): Risk score changed from 67.8 to 40 (ID: 4)
+Creating notification: PolicyHolder updated (ID: 8503030003081): Risk score changed from 89.2 to 15
+Broadcasting notification: PolicyHolder updated (ID: 8503030003081): Risk score changed from 89.2 to 15 (ID: 5)
+Creating notification: PolicyHolder updated (ID: 8504040004081): Risk score changed from 23.4 to 40
+Broadcasting notification: PolicyHolder updated (ID: 8504040004081): Risk score changed from 23.4 to 40 (ID: 6)
+Creating notification: PolicyHolder updated (ID: 8505050005081): Risk score changed from 56.7 to 0
+Broadcasting notification: PolicyHolder updated (ID: 8505050005081): Risk score changed from 56.7 to 0 (ID: 7)
+Creating notification: PolicyHolder updated (ID: 8506060006081): Risk score changed from 78.9 to 20
+Broadcasting notification: PolicyHolder updated (ID: 8506060006081): Risk score changed from 78.9 to 20 (ID: 8)
+Creating notification: PolicyHolder updated (ID: 8507070007081): Risk score changed from 34.5 to 35
+Broadcasting notification: PolicyHolder updated (ID: 8507070007081): Risk score changed from 34.5 to 35 (ID: 9)
+Creating notification: PolicyHolder updated (ID: 8508080008081): Risk score changed from 65.4 to 20
+Broadcasting notification: PolicyHolder updated (ID: 8508080008081): Risk score changed from 65.4 to 20 (ID: 10)
+Creating notification: PolicyHolder updated (ID: 8509090009081): Risk score changed from 12.3 to 0
+Broadcasting notification: PolicyHolder updated (ID: 8509090009081): Risk score changed from 12.3 to 0 (ID: 11)
+Creating notification: PolicyHolder updated (ID: 8510100010081): Risk score changed from 90.1 to 40
+Broadcasting notification: PolicyHolder updated (ID: 8510100010081): Risk score changed from 90.1 to 40 (ID: 12)
+Watching for file changes with StatReloader
+Creating notification: Claim updated (#7): Status changed from 'Pending' to 'Investigating'
+Broadcasting notification: Claim updated (#7): Status changed from 'Pending' to 'Investigating' (ID: 13)
+PolicyHolders Count: 11
+Found 1 beneficiaries for id_number 8502020002081
+PolicyHolders Count: 11
+PolicyHolders Count: 11
+Forbidden (CSRF token from POST incorrect.): /register-face/
+Forbidden (CSRF token from POST incorrect.): /register-face/
+Error registering face: Unsupported image type, must be 8bit gray or RGB image.
+Traceback (most recent call last):
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py", line 1897, in register_face
+    FaceEncoding.create_from_image(id_number, face_image)
+  File "C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\models.py", line 447, in create_from_image
+    face_encodings = face_recognition.face_encodings(img_array)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 213, in face_encodings
+    raw_landmarks = _raw_face_landmarks(face_image, known_face_locations, model)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 156, in _raw_face_landmarks
+    face_locations = _raw_face_locations(face_image)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ramar\AppData\Local\Programs\Python\Python312\Lib\site-packages\face_recognition\api.py", line 105, in _raw_face_locations
+    return face_detector(img, number_of_times_to_upsample)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unsupported image type, must be 8bit gray or RGB image.
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Forbidden (CSRF token from POST incorrect.): /login/
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Forbidden (CSRF token from POST incorrect.): /login/
+Forbidden (CSRF token from POST has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from POST has incorrect length.): /insuredperson/1/simulate-death/
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+Forbidden (CSRF token from POST has incorrect length.): /insuredperson/1/simulate-death/
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPWebApp\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+C:\Users\Ramar\Downloads\SWP316D-Group-N-Repo\SWP316D-Group-N-Repo\IFPSystem\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/
+Forbidden (CSRF token from the 'X-Csrftoken' HTTP header has incorrect length.): /insuredperson/1/simulate-death/

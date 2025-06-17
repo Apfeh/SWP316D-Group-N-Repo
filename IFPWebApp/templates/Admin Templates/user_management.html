@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{% csrf_token %}">
   <title>User Management</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -13,7 +14,6 @@
       margin: 0;
       padding: 0;
     }
-
     .sidebar {
       height: 100vh;
       width: 250px;
@@ -25,7 +25,6 @@
       padding-top: 90px;
       padding-left: 20px;
     }
-
     .sidebar a {
       color: white;
       text-decoration: none;
@@ -34,11 +33,9 @@
       font-size: 1.1rem;
       font-weight: bold;
     }
-
     .sidebar a:hover {
       color: #00b894;
     }
-
     .navbar {
       background-color: white;
       padding: 1rem;
@@ -51,64 +48,52 @@
       z-index: 1000;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-
     .navbar a {
       color: #003366;
       text-decoration: none;
     }
-
     .navbar a:hover {
       color: #00b894;
     }
-
     .container {
       margin-top: 90px;
       margin-left: 270px;
       margin-bottom: 80px;
     }
-
     .table th, .table td {
       text-align: center;
       padding: 1rem;
     }
-
     .table thead {
       background-color: #003366;
       color: white;
     }
-
     .table tr:nth-child(even) {
       background-color: #f2f2f2;
     }
-
     .action-buttons {
       display: flex;
       justify-content: center;
       gap: 10px;
     }
-
     .action-buttons button {
       font-size: 1rem;
       padding: 0.4rem 1.5rem;
     }
-
     .filters-container {
       margin-bottom: 20px;
     }
-
     .top-right-icons {
       position: absolute;
       top: 50%;
       right: 20px;
       transform: translateY(-50%);
     }
-
     .top-right-icons a {
       margin-left: 15px;
       color: #003366;
       font-size: 1.5rem;
     }
-
     .footer {
       text-align: center;
       padding: 1rem;
@@ -122,17 +107,15 @@
   </style>
 </head>
 <body>
-
 <!-- Sidebar -->
 <div class="sidebar">
-  <a href="{% url 'admin_dashboard' %}">Dashboard</a>
-  <a href="{% url 'policy_review' %}">Policy Review</a>
-  <a href="{% url 'claim_review' %}">Claim Review</a>
-  <a href="{% url 'Risk_reports' %}">Risk Reports</a>
-  <a href="{% url 'fraud_alerts' %}">Fraud Alerts</a>
-  <a href="{% url 'user_management' %}">User Management</a>
+    <a href="#">Dashboard</a>
+    <a href="#">Policy Review</a> 
+    <a href="#">Claim Review</a>
+    <a href="#">Risk Reports</a>
+    <a href="#">Fraud Alerts</a>
+    <a href="#">User Management</a>
 </div>
-
 <!-- Navbar -->
 <nav class="navbar d-flex align-items-center justify-content-between">
   <form class="d-flex ms-3" role="search" style="width: 300px;">
@@ -145,11 +128,9 @@
     <a href="#"><i class="bi bi-box-arrow-right"></i></a>
   </div>
 </nav>
-
 <!-- Main Content -->
 <div class="container">
   <h2>User Management</h2>
-
   <!-- Filters Section -->
   <div class="filters-container">
     <label for="roleFilter">Role: </label>
@@ -158,17 +139,18 @@
       <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
       <option value="policyholder" {% if selected_role == 'policyholder' %}selected{% endif %}>Policyholder</option>
       <option value="beneficiary" {% if selected_role == 'beneficiary' %}selected{% endif %}>Beneficiary</option>
+      <option value="insuredperson" {% if selected_role == 'insuredperson' %}selected{% endif %}>Insured Person</option>
     </select>
-
-    <label for="statusFilter" class="ms-3">Account Status: </label>
+    <label for="statusFilter" class="ms-3">Status: </label>
     <select id="statusFilter" class="form-select d-inline w-auto">
       <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All</option>
       <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
       <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>Suspended</option>
       <option value="flagged" {% if selected_status == 'flagged' %}selected{% endif %}>Flagged</option>
+      <option value="alive" {% if selected_status == 'alive' %}selected{% endif %}>Alive</option>
+      <option value="deceased" {% if selected_status == 'deceased' %}selected{% endif %}>Deceased</option>
     </select>
   </div>
-
   <!-- User Table -->
   <table class="table table-bordered">
     <thead>
@@ -204,7 +186,6 @@
         </td>
       </tr>
       {% endfor %}
-
       {% for user in beneficiaries %}
       <tr>
         <td>{{ user.name }}</td>
@@ -212,12 +193,10 @@
         <td>Active</td>
         <td>{{ user.created_at|default:"N/A" }}</td>
         <td class="action-buttons">
-          <button class="btn btn-warning btn-sm reset-password-btn" data-id="{{ user.beneficiaryId }}" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Reset Password</button>
           <button class="btn btn-info btn-sm view-profile-btn" data-id="{{ user.beneficiaryId }}" data-type="beneficiary" data-bs-toggle="modal" data-bs-target="#beneficiaryModal">View Profile</button>
         </td>
       </tr>
       {% endfor %}
-
       {% for user in admins %}
       <tr>
         <td>{{ user.get_full_name|default:user.username }}</td>
@@ -241,10 +220,23 @@
         </td>
       </tr>
       {% endfor %}
+      {% for person in insured_persons %}
+      <tr>
+        <td>{{ person.name }}</td>
+        <td>Insured Person</td>
+        <td>{{ person.status|capfirst }}</td>
+        <td>N/A</td>
+        <td class="action-buttons">
+          {% if person.status == 'alive' %}
+          <button class="btn btn-danger btn-sm simulate-death-btn" data-id="{{ person.id }}" data-bs-toggle="modal" data-bs-target="#simulateDeathModal">Simulate Death</button>
+          {% endif %}
+          <button class="btn btn-info btn-sm view-profile-btn" data-id="{{ person.id }}" data-type="insuredperson" data-bs-toggle="modal" data-bs-target="#insuredPersonModal">View Information</button>
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>
-
 <!-- Modals -->
 <div class="modal fade" id="policyholderModal" tabindex="-1">
   <div class="modal-dialog">
@@ -268,7 +260,6 @@
     </div>
   </div>
 </div>
-
 <div class="modal fade" id="beneficiaryModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -287,7 +278,6 @@
     </div>
   </div>
 </div>
-
 <div class="modal fade" id="adminModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -304,7 +294,6 @@
     </div>
   </div>
 </div>
-
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -333,12 +322,55 @@
     </div>
   </div>
 </div>
-
+<div class="modal fade" id="simulateDeathModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Simulate Death</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="simulate-death-error" class="alert alert-danger d-none"></div>
+        <p><strong>Warning:</strong> Simulating death will mark the insured person as deceased and create a death certificate in the Home Affairs database. This action cannot be undone.</p>
+        <p>Are you sure you want to proceed?</p>
+        <form id="simulate-death-form">
+          <div class="mb-3">
+            <label for="death-admin-password" class="form-label">Admin Password</label>
+            <input type="password" class="form-control" id="death-admin-password" required>
+          </div>
+          <button type="submit" class="btn btn-danger">Confirm Simulate Death</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="insuredPersonModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Insured Person Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="insured-person-error" class="alert alert-danger d-none"></div>
+        <p><strong>Name:</strong> <span id="insured-person-name"></span></p>
+        <p><strong>ID Number:</strong> <span id="insured-person-id"></span></p>
+        <p><strong>Date of Birth:</strong> <span id="insured-person-dob"></span></p>
+        <p><strong>Relationship to Policyholder:</strong> <span id="insured-person-relationship"></span></p>
+        <p><strong>Policy ID:</strong> <span id="insured-person-policy-id"></span></p>
+        <p><strong>Policyholder Name:</strong> <span id="insured-person-holder-name"></span></p>
+        <p><strong>Contact Email:</strong> <span id="insured-person-email"></span></p>
+        <p><strong>Contact Phone:</strong> <span id="insured-person-phone"></span></p>
+        <p><strong>Status:</strong> <span id="insured-person-status"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Footer -->
 <div class="footer text-center py-3">
   © 2025 Insurance Fraud Prevention System. All Rights Reserved.
 </div>
-
 <!-- JavaScript -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -346,101 +378,164 @@
 $(document).ready(function() {
     // CSRF Token Setup
     function getCsrfToken() {
-        return $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token }}';
+        var token = $('meta[name="csrf-token"]').attr('content');
+        if (token && token.length > 0) {
+            console.log('CSRF token from meta:', token); // Debug
+            return token;
+        }
+        var cookieToken = document.cookie.match(/csrftoken=([^;]+)/);
+        if (cookieToken) {
+            console.log('CSRF token from cookie:', cookieToken[1]); // Debug
+            return cookieToken[1];
+        }
+        console.error('CSRF token not found in meta tag or cookie');
+        return null;
     }
-
+    // Global AJAX setup for CSRF token
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                var csrfToken = getCsrfToken();
+                if (csrfToken) {
+                    console.log('Setting X-CSRFToken:', csrfToken); // Debug
+                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                } else {
+                    console.error('No CSRF token available for AJAX request');
+                }
+            }
+        }
+    });
     // Policyholder Modal
     $('#policyholderModal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
+        console.log('Policyholder ID:', id);
         var errorDiv = $('#policyholder-error');
         errorDiv.addClass('d-none');
         $('#policyholder-name, #policyholder-id, #policyholder-score, #policyholder-num-insured, #policyholder-phone, #policyholder-email, #policyholder-beneficiary-changes, #policyholder-claims-last-year, #policyholder-incomplete-docs').text('');
-        
         $.ajax({
-            url: '/policyholder/' + id + '/details/',
+            url: '/policyholder/' + encodeURIComponent(id) + '/details/',
             method: 'GET',
             success: function(data) {
                 if (data.error) {
-                    errorDiv.text(data.error);
+                    errorDiv.text(data.error || 'Unable to load policyholder details.');
                     errorDiv.removeClass('d-none');
                 } else {
-                    $('#policyholder-name').text(data.name);
-                    $('#policyholder-id').text(data.id_number);
-                    $('#policyholder-score').text(data.risk_score);
-                    $('#policyholder-num-insured').text(data.num_insured);
-                    $('#policyholder-phone').text(data.phone_number);
-                    $('#policyholder-email').text(data.email);
-                    $('#policyholder-beneficiary-changes').text(data.beneficiary_changes);
-                    $('#policyholder-claims-last-year').text(data.claims_last_year);
-                    $('#policyholder-incomplete-docs').text(data.incomplete_documents);
+                    $('#policyholder-name').text(data.name || 'N/A');
+                    $('#policyholder-id').text(data.id_number || 'N/A');
+                    $('#policyholder-score').text(data.risk_score !== undefined ? data.risk_score : 'N/A');
+                    $('#policyholder-num-insured').text(data.num_insured !== undefined ? data.num_insured : 'N/A');
+                    $('#policyholder-phone').text(data.phone_number || 'N/A');
+                    $('#policyholder-email').text(data.email || 'N/A');
+                    $('#policyholder-beneficiary-changes').text(data.beneficiary_changes !== undefined ? data.beneficiary_changes : 'N/A');
+                    $('#policyholder-claims-last-year').text(data.claims_last_year !== undefined ? data.claims_last_year : 'N/A');
+                    $('#policyholder-incomplete-docs').text(data.incomplete_documents || 'N/A');
                 }
             },
             error: function(xhr) {
-                errorDiv.text(xhr.responseJSON?.error || 'Failed to load policyholder details.');
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to load policyholder details.';
+                errorDiv.text(errorMsg);
                 errorDiv.removeClass('d-none');
             }
         });
     });
-
     // Beneficiary Modal
     $('#beneficiaryModal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
+        console.log('Beneficiary ID:', id);
         var errorDiv = $('#beneficiary-error');
         errorDiv.addClass('d-none');
         $('#beneficiary-name, #beneficiary-email, #beneficiary-contact, #beneficiary-relationship, #beneficiary-policy-id').text('');
-        
         $.ajax({
-            url: '/beneficiary/' + id + '/details/',
+            url: '/beneficiary/' + encodeURIComponent(id) + '/details/',
             method: 'GET',
             success: function(data) {
                 if (data.error) {
-                    errorDiv.text(data.error);
+                    errorDiv.text(data.error || 'Unable to load beneficiary details.');
                     errorDiv.removeClass('d-none');
                 } else {
-                    $('#beneficiary-name').text(data.name);
-                    $('#beneficiary-email').text(data.email);
-                    $('#beneficiary-contact').text(data.contact_number);
-                    $('#beneficiary-relationship').text(data.relationship);
-                    $('#beneficiary-policy-id').text(data.policy_id);
+                    $('#beneficiary-name').text(data.name || 'N/A');
+                    $('#beneficiary-email').text(data.email || 'N/A');
+                    $('#beneficiary-contact').text(data.contact_number || 'N/A');
+                    $('#beneficiary-relationship').text(data.relationship || 'N/A');
+                    $('#beneficiary-policy-id').text(data.policy_id || 'N/A');
                 }
             },
             error: function(xhr) {
-                errorDiv.text(xhr.responseJSON?.error || 'Failed to load beneficiary details.');
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to load beneficiary details.';
+                errorDiv.text(errorMsg);
                 errorDiv.removeClass('d-none');
             }
         });
     });
-
     // Admin Modal
     $('#adminModal').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
+        console.log('Admin ID:', id);
         var errorDiv = $('#admin-error');
         errorDiv.addClass('d-none');
         $('#admin-name, #admin-email, #admin-username').text('');
-        
         $.ajax({
-            url: '/admin/' + id + '/details/',
+            url: '/admin/' + encodeURIComponent(id) + '/details/',
             method: 'GET',
             success: function(data) {
                 if (data.error) {
-                    errorDiv.text(data.error);
+                    console.error('Admin details error:', data.error);
+                    errorDiv.text(data.error || 'Unable to load admin details.');
                     errorDiv.removeClass('d-none');
                 } else {
-                    $('#admin-name').text(data.name);
-                    $('#admin-email').text(data.email);
-                    $('#admin-username').text(data.username);
+                    $('#admin-name').text(data.name || 'N/A');
+                    $('#admin-email').text(data.email || 'N/A');
+                    $('#admin-username').text(data.username || 'N/A');
                 }
             },
             error: function(xhr) {
-                errorDiv.text(xhr.responseJSON?.error || 'Failed to load admin details.');
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to load admin details.';
+                errorDiv.text(errorMsg);
                 errorDiv.removeClass('d-none');
             }
         });
     });
-
+    // Insured Person Modal
+    $('#insuredPersonModal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        console.log('Insured Person ID:', id);
+        var errorDiv = $('#insured-person-error');
+        errorDiv.addClass('d-none');
+        $('#insured-person-name, #insured-person-id, #insured-person-dob, #insured-person-relationship, #insured-person-policy-id, #insured-person-holder-name, #insured-person-email, #insured-person-phone, #insured-person-status').text('');
+        $.ajax({
+            url: '/insuredperson/' + encodeURIComponent(id) + '/details/',
+            method: 'GET',
+            success: function(data) {
+                if (data.error) {
+                    errorDiv.text(data.error || 'Unable to load insured person details.');
+                    errorDiv.removeClass('d-none');
+                } else {
+                    $('#insured-person-name').text(data.name || 'N/A');
+                    $('#insured-person-id').text(data.id_number || 'N/A');
+                    $('#insured-person-dob').text(data.date_of_birth || 'N/A');
+                    $('#insured-person-relationship').text(data.relationship || 'N/A');
+                    $('#insured-person-policy-id').text(data.policy_id || 'N/A');
+                    $('#insured-person-holder-name').text(data.holder_name || 'N/A');
+                    $('#insured-person-email').text(data.contact_email || 'N/A');
+                    $('#insured-person-phone').text(data.contact_phone || 'N/A');
+                    $('#insured-person-status').text(data.status || 'N/A');
+                }
+            },
+            error: function(xhr) {
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to load insured person details.';
+                errorDiv.text(errorMsg);
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
     // Reset Password
     $('.reset-password-btn').on('click', function() {
         var userId = $(this).data('id');
@@ -448,47 +543,92 @@ $(document).ready(function() {
         $('#reset-password-error').addClass('d-none');
         $('#admin-password, #new-password, #confirm-password').val('');
     });
-
     $('#reset-password-form').on('submit', function(e) {
         e.preventDefault();
         var userId = $(this).data('user-id');
         var errorDiv = $('#reset-password-error');
         errorDiv.addClass('d-none');
-        
+        var csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            errorDiv.text('CSRF token missing. Please refresh the page.');
+            errorDiv.removeClass('d-none');
+            return;
+        }
         $.ajax({
             url: '/user/' + userId + '/reset-password/',
             method: 'POST',
             data: {
                 admin_password: $('#admin-password').val(),
                 new_password: $('#new-password').val(),
-                confirm_password: $('#confirm-password').val(),
-                csrfmiddlewaretoken: getCsrfToken()
+                confirm_password: $('#confirm-password').val()
             },
             success: function(data) {
                 if (data.success) {
                     $('#resetPasswordModal').modal('hide');
                     alert('Password reset successfully');
                 } else {
-                    errorDiv.text(data.error);
+                    errorDiv.text(data.error || 'Failed to reset password.');
                     errorDiv.removeClass('d-none');
                 }
             },
             error: function(xhr) {
-                errorDiv.text(xhr.responseJSON?.error || 'Failed to reset password.');
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to reset password.';
+                errorDiv.text(errorMsg);
                 errorDiv.removeClass('d-none');
             }
         });
     });
-
+    // Simulate Death
+    $('.simulate-death-btn').on('click', function() {
+        var id = $(this).data('id');
+        $('#simulate-death-form').data('id', id);
+        $('#simulate-death-error').addClass('d-none');
+        $('#death-admin-password').val('');
+    });
+    $('#simulate-death-form').on('submit', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var errorDiv = $('#simulate-death-error');
+        errorDiv.addClass('d-none');
+        var csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            errorDiv.text('CSRF token missing. Please refresh the page.');
+            errorDiv.removeClass('d-none');
+            return;
+        }
+        $.ajax({
+            url: '/insuredperson/' + encodeURIComponent(id) + '/simulate-death/',
+            method: 'POST',
+            data: {
+                admin_password: $('#death-admin-password').val()
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('#simulateDeathModal').modal('hide');
+                    alert('Death simulated successfully');
+                    window.location.reload();
+                } else {
+                    errorDiv.text(data.error || 'Failed to simulate death.');
+                    errorDiv.removeClass('d-none');
+                }
+            },
+            error: function(xhr) {
+                console.error('AJAX error:', xhr);
+                var errorMsg = xhr.responseJSON?.error || 'Failed to simulate death. Please try again.';
+                errorDiv.text(errorMsg);
+                errorDiv.removeClass('d-none');
+            }
+        });
+    });
     // Filter Handling
-    $('#roleFilter').on('change', function () {
+    $('#roleFilter').on('change', function() {
         const selectedRole = this.value;
         const url = new URL(window.location.href);
         url.searchParams.set('role', selectedRole);
         window.location.href = url.toString();
     });
-
-    $('#statusFilter').on('change', function () {
+    $('#statusFilter').on('change', function() {
         const selectedStatus = this.value;
         const url = new URL(window.location.href);
         url.searchParams.set('status', selectedStatus);
@@ -498,6 +638,5 @@ $(document).ready(function() {
     });
 });
 </script>
-
 </body>
 </html>

@@ -70,7 +70,7 @@ class PolicyHolder(models.Model):
     incomplete_documents = models.BooleanField(default=False)
     activity_timeline = models.JSONField(default=list)
     risk_score = models.FloatField(default=0.0)
-    email = models.CharField(max_length=100, unique=True)
+    email = models.CharField(max_length=100)
     class Meta:
         db_table = 'policyholder'
 
@@ -279,10 +279,14 @@ class BirthCertificate(models.Model):
 
 class DeathCertificate(models.Model):
     deathCertId = models.AutoField(primary_key=True)
-    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE)
+    idNumber = models.ForeignKey(Citizen, on_delete=models.CASCADE,db_column='idNumber')
     deathDate = models.DateField()
     causeOfDeath = models.CharField(max_length=255)
     placeOfDeath = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'deathcertificate'
+        managed = False
 
 class Passport(models.Model):
     passportId = models.AutoField(primary_key=True)

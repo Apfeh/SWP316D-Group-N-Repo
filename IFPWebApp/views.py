@@ -1,3 +1,4 @@
+from django.db import connections
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -574,7 +575,6 @@ def notifications(request):
         'notifications': user_notifications
     }
     return render(request, 'Policyholder Pages/notifications.html', context)
-<<<<<<< Updated upstream
 # views.py
 @login_required
 def dashboard(request):
@@ -663,9 +663,6 @@ def mark_notification_read(request, notification_id):
     notification.read = True
     notification.save()
     return JsonResponse({'status': 'success'})
-=======
-
->>>>>>> Stashed changes
 @login_required
 def policy_status(request):
     logger.debug(f"User email: {request.user.email}")
@@ -718,10 +715,11 @@ def manage_beneficiaries(request):
             # Create beneficiary
             Beneficiary.objects.create(
                 policy=policy,
-                beneficiaryId =citizen.idNumber,
+                citizen=citizen,
                 name=f"{citizen.name} {citizen.surname}",
                 relationshipToInsured=relationship
             )
+
             
             messages.success(request, 'Beneficiary added successfully')
         except Citizen.DoesNotExist:
@@ -1067,15 +1065,7 @@ def resend_otp(request):
     except OTP.DoesNotExist:
         return redirect('send_otp')
     
-
-
-
-
-
-
 @login_required
-<<<<<<< Updated upstream
-=======
 def delete_beneficiary(request, beneficiary_id):
     try:
         beneficiary = Beneficiary.objects.get(
@@ -1089,7 +1079,6 @@ def delete_beneficiary(request, beneficiary_id):
     return redirect('manage_beneficiaries')
 
 @login_required
->>>>>>> Stashed changes
 def risk_reports(request):
     reports = []
     policyholders = PolicyHolder.objects.all()
@@ -1253,32 +1242,32 @@ def suspend_user_view(request, user_id):
 def user_management_view(request):
     role = request.GET.get('role', 'all')
     status = request.GET.get('status', 'all')
-
     policyholders = []
     beneficiaries = []
     admins = []
-
+    insured_persons = []
     if role in ['policyholder', 'all']:
         policyholders = PolicyHolder.objects.select_related('user').all()
-
         if status != 'all':
             is_active = (status == 'active')
             policyholders = policyholders.filter(user__is_active=is_active)
-
     if role in ['beneficiary', 'all']:
-        beneficiaries = Beneficiary.objects.all()
-        # You can later add status filtering logic if Beneficiary has status fields
-
+        beneficiaries = Beneficiary.objects.select_related('policy').all()
     if role in ['admin', 'all']:
         admins = User.objects.filter(is_staff=True)
         if status != 'all':
             is_active = (status == 'active')
             admins = admins.filter(is_active=is_active)
-
+    if role in ['insuredperson', 'all']:
+        insured_persons = InsuredPerson.objects.select_related('holder', 'policy_id').all()
+        if status != 'all':
+            insured_persons = insured_persons.filter(status=status)
+    logger.debug(f"CSRF token in context: {request.META.get('CSRF_COOKIE')}")
     return render(request, 'Admin Templates/user_management.html', {
         'policyholders': policyholders,
         'beneficiaries': beneficiaries,
         'admins': admins,
+        'insured_persons': insured_persons,
         'selected_role': role,
         'selected_status': status,
     })
@@ -1291,6 +1280,7 @@ def toggle_user_status(request, user_id):
     messages.success(request, f"{user.get_full_name()} has been {action}.")
     return redirect('user_management')
 
+@login_required
 def reset_password_view(request, user_id):
     if request.method == 'POST':
         admin_password = request.POST.get('admin_password')
@@ -1311,6 +1301,80 @@ def reset_password_view(request, user_id):
         return JsonResponse({'success': 'Password reset successfully'})
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def simulate_death(request, id=None, **kwargs):
+    logger.debug(f"Request headers: {dict(request.META)}")
+    logger.debug(f"POST data: {request.POST}")
+    if request.method == 'POST':
+        admin_password = request.POST.get('admin_password')
+        admin = authenticate(username=request.user.username, password=admin_password)
+        if not admin or not admin.is_staff:
+            logger.error(f"Invalid admin credentials for user {request.user.username}")
+            return JsonResponse({'error': 'Invalid admin credentials'}, status=403)
+        try:
+            id = id or kwargs.get('id')
+            insured_person = get_object_or_404(InsuredPerson, id=id)
+            if insured_person.status == 'deceased':
+                return JsonResponse({'error': 'Insured person is already deceased'}, status=400)
+            with connections['homeaffairs'].cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO deathcertificate (idNumber, deathDate, causeOfDeath, placeOfDeath)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    [
+                        insured_person.id_number,
+                        timezone.now().date(),
+                        'Simulated Death',
+                        'Unknown'
+                    ]
+                )
+            insured_person.status = 'deceased'
+            insured_person.save()
+            logger.info(f"Simulated death for InsuredPerson ID {id}, id_number {insured_person.id_number}")
+            return JsonResponse({'success': 'Death simulated successfully'})
+        except Exception as e:
+            logger.error(f"Error simulating death for InsuredPerson ID {id}: {str(e)}", exc_info=True)
+            return JsonResponse({'error': 'Failed to simulate death'}, status=500)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def insuredperson_details(request, id=None, **kwargs):
+    try:
+        id = id or kwargs.get('id')
+        if not id:
+            logger.error("No id provided in insuredperson_details")
+            return JsonResponse({'error': 'No ID provided'}, status=400)
+        
+        logger.debug(f"Fetching insured person with id: {id}")
+        insured_person = get_object_or_404(InsuredPerson, id=id)
+        logger.debug(f"Found insured person: {insured_person.name}")
+        return JsonResponse({
+            'name': insured_person.name or 'N/A',
+            'id_number': insured_person.id_number or 'N/A',
+            'date_of_birth': insured_person.date_of_birth.strftime('%Y-%m-%d') if insured_person.date_of_birth else 'N/A',
+            'relationship': insured_person.relationship_to_policy_holder or 'N/A',
+            'policy_id': insured_person.policy_id_id if insured_person.policy_id else 'N/A',
+            'holder_name': insured_person.holder.name if insured_person.holder else 'N/A',
+            'contact_email': insured_person.contact_email or 'N/A',
+            'contact_phone': insured_person.contact_phone or 'N/A',
+            'status': insured_person.status or 'N/A'
+        })
+    except InsuredPerson.DoesNotExist:
+        logger.error(f"InsuredPerson with id {id} not found")
+        return JsonResponse({'error': 'Insured person not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error fetching insured person details: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+def toggle_user_status(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = not user.is_active
+    user.save()
+    action = "reactivated" if user.is_active else "suspended"
+    messages.success(request, f"{user.get_full_name() or user.username} has been {action}.")
+    return redirect('user_management')
 
 def policyholder_details_admin(request, id):
     try:
@@ -2285,3 +2349,11 @@ def manual_notify_claim(request, claim_id):
 
     return HttpResponse("Notifications sent!")
 
+def custom_403(request, exception=None):
+    return render(request, '403.html', status=403)
+
+def custom_404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def custom_500(request):
+    return render(request, '500.html', status=500)

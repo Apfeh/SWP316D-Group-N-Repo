@@ -2,10 +2,11 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
+from django.core.mail import send_mail
 from .notifications import send_claim_status_email
 from asgiref.sync import async_to_sync
 from IFPWebApp.models import (
-    PolicyHolder, Policy, Beneficiary, Claim, InsuredPerson, FraudPreventionTeam,
+    DeathCertificate, PolicyHolder, Policy, Beneficiary, Claim, InsuredPerson, FraudPreventionTeam,
     Officer, Case, ApprovalRequest, Notification, Admin_notification
 )
 import logging
@@ -415,8 +416,56 @@ print("Signals loaded")  # Debug
 
 
 @receiver(post_save, sender=Claim)
-def send_claim_status_update(sender, instance, **kwargs):
-    if instance.status:  # or check if status was changed
-        email = instance.policyholder.email
-        send_claim_status_email(email, instance.status)
+def send_claim_status_update(sender, instance, created, **kwargs):
+    try:
+        if instance.status:
+            email = instance.policyHolderId.user.email  # Assumes PolicyHolder has OneToOne link to User
+            send_claim_status_email(email, instance.status)
+    except Exception as e:
+        logger.error(f"Failed to send claim status email: {e}")
 
+import logging
+logger = logging.getLogger(__name__)
+
+@receiver(post_save, sender=DeathCertificate)
+def notify_beneficiary_on_death(sender, instance, created, **kwargs):
+    logger.info(f"Signal triggered for DeathCertificate: {instance.idNumber}, created={created}")
+    if created:
+        insured_persons = InsuredPerson.objects.filter(id_number=instance.idNumber.idNumber)
+        logger.info(f"Found {insured_persons.count()} InsuredPerson(s) for id_number={instance.idNumber.idNumber}")
+
+        for person in insured_persons:
+            logger.info(f"Processing InsuredPerson: {person.name}, policy={person.policy_id.policyId}")
+            if person.status != 'deceased':
+                person.status = 'deceased'
+                person.save()
+                logger.info(f"Updated status to deceased for {person.name}")
+
+            beneficiaries = Beneficiary.objects.filter(policy=person.policy_id)
+            if not beneficiaries.exists():
+                logger.warning(f"No beneficiaries found for policy {person.policy_id.policyId}")
+                continue
+
+            for beneficiary in beneficiaries:
+                logger.info(f"Sending email to beneficiary: {beneficiary.name}, email={beneficiary.email}")
+                try:
+                    send_mail(
+                        subject='Notice: Insured Person Has Been Declared Deceased',
+                        message=(
+                            f"Dear {beneficiary.name},\n\n"
+                            f"We regret to inform you that {person.name}, the insured individual under policy number {person.policy_id.policyId}, "
+                            "has been officially marked as deceased in the National Citizen Register.\n\n"
+                            "As the designated beneficiary, you may now initiate the claims process.\n\n"
+                            "Please log in to your account using the link below to begin:\n"
+                            "http://127.0.0.1:8000/beneficiary/login/\n\n"
+                            "If you have any questions or need assistance, feel free to contact our support team.\n\n"
+                            "Sincerely,\n"
+                            "The Insurance Claims Department"
+                        ),
+                        from_email='noreply@insurance-system.com',
+                        recipient_list=[beneficiary.email],
+                        fail_silently=False,
+                    )
+                    logger.info(f"Email sent to {beneficiary.email}")
+                except Exception as e:
+                    logger.error(f"Failed to send email to {beneficiary.email}: {e}")

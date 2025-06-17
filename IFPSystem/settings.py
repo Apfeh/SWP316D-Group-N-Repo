@@ -123,21 +123,20 @@ WSGI_APPLICATION = 'IFPSystem.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'newdb',
-        'USER':'Buks',
-        'PASSWORD' :'buks123',
-        'HOST':'10.2.41.237',
-        'PORT':'3306',
-   },
-    'homeaffairs': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'homeaffairsdb',
+        'NAME': 'ifpsystemdb',
         'USER': 'Buks',
         'PASSWORD': 'buks123',
-        'HOST': '10.2.41.237',
+        'HOST': 'localhost',  # Update if needed
+        'PORT': '3306',
+    },
+    'homeaffairs': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'homeaffairsdb2',
+        'USER': 'Buks',
+        'PASSWORD': 'buks123',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }
@@ -145,6 +144,9 @@ DATABASES = {
 # settings.py
 DATABASE_ROUTERS = ['IFPWebApp.routers.HomeAffairsRouter']
 
+CSRF_COOKIE_SECURE = False  # For development
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
 #
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
